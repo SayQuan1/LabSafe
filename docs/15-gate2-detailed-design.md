@@ -1,6 +1,6 @@
 # Gate 2 详细设计
 
-状态：Gate 2 待用户确认
+状态：Gate 2 已确认，Gate 3 暂缓
 
 本文件将 Gate 0/1 架构转为可实现契约。它仍是设计文档，不包含业务代码、数据库迁移、依赖锁文件或部署脚本。
 
@@ -252,12 +252,12 @@ GET /internal/inference/v1/health
 | NFR-002 性能 | inference_runs、指标 | Worker/HTTP | TC-PERF-001 |
 | NFR-008 恢复 | 备份元数据、MinIO | 运维任务 | TC-DR-001 |
 
-## 11. Gate 2 待确认项
+## 11. Gate 2 已确认的实现选择
 
-1. Vue 组件库：Element Plus、Naive UI 或团队已有组件库。
-2. 是否采用 TanStack Query for Vue；若不采用，需确定缓存和失效方案。
-3. MySQL 迁移工具和具体版本。
-4. Celery Broker/Backend 的 Redis 数据库划分和任务保留期限。
-5. 规则首期是否启用按实验室灰度。
-6. 最小评测集和候选验收集的实际样本量。
+1. Vue 组件库：Element Plus。
+2. 服务端数据：TanStack Query for Vue；Pinia 仅管理会话和 UI 状态。
+3. MySQL 迁移：SQLAlchemy 2 + Alembic + MySQL 8.0+。
+4. Celery + Redis：Broker、Backend、缓存和锁使用独立 Redis DB；任务结果短期保留，业务事实写入 MySQL。
+5. 规则首期不做自动百分比灰度，采用实验室级受控切换。
+6. 评测集按类别记录实际样本量；基线目标为每类 20 个正样本和 20 个负样本，候选验收集目标为每类 50 个独立样本，样本不足如实标注。
 
