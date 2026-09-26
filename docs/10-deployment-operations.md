@@ -4,7 +4,7 @@
 
 ## 1. 首期部署形态
 
-单台校内服务器运行 Web/API、异步任务、AI 推理、MySQL、MinIO 和 Redis。服务器规格尚未提供；设计必须先定义最低 CPU/内存/磁盘配置。GPU 可选；GPU 不可用时切换 CPU 或降低分辨率，核心流程仍可运行。
+单台校内服务器运行 Vue Web/API、Celery Worker、AI 推理、MySQL、MinIO 和 Redis。服务器规格尚未提供；设计必须先定义最低 CPU/内存/磁盘配置。GPU 可选；GPU 不可用时切换 CPU 或降低分辨率，核心流程仍可运行。
 
 ## 2. 环境
 
