@@ -1,0 +1,757 @@
+{
+  "version": "1.1.0",
+  "operations": [
+    {
+      "operation_id": "login",
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "permission": "anonymous",
+      "request": "LoginRequest",
+      "response": "Session"
+    },
+    {
+      "operation_id": "logout",
+      "method": "POST",
+      "path": "/api/v1/auth/logout",
+      "permission": "authenticated",
+      "request": null,
+      "response": "Ack"
+    },
+    {
+      "operation_id": "getMe",
+      "method": "GET",
+      "path": "/api/v1/me",
+      "permission": "authenticated",
+      "request": null,
+      "response": "Session"
+    },
+    {
+      "operation_id": "getDashboard",
+      "method": "GET",
+      "path": "/api/v1/dashboard",
+      "permission": "read",
+      "request": null,
+      "response": "Dashboard"
+    },
+    {
+      "operation_id": "listColleges",
+      "method": "GET",
+      "path": "/api/v1/colleges",
+      "permission": "read",
+      "request": null,
+      "response": "CollegePage"
+    },
+    {
+      "operation_id": "createCollege",
+      "method": "POST",
+      "path": "/api/v1/colleges",
+      "permission": "admin",
+      "request": "CollegeCreate",
+      "response": "College"
+    },
+    {
+      "operation_id": "getCollege",
+      "method": "GET",
+      "path": "/api/v1/colleges/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "College"
+    },
+    {
+      "operation_id": "listLaboratories",
+      "method": "GET",
+      "path": "/api/v1/laboratories",
+      "permission": "read",
+      "request": null,
+      "response": "LaboratoryPage"
+    },
+    {
+      "operation_id": "createLaboratory",
+      "method": "POST",
+      "path": "/api/v1/laboratories",
+      "permission": "admin",
+      "request": "LaboratoryCreate",
+      "response": "Laboratory"
+    },
+    {
+      "operation_id": "getLaboratory",
+      "method": "GET",
+      "path": "/api/v1/laboratories/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "Laboratory"
+    },
+    {
+      "operation_id": "listUsers",
+      "method": "GET",
+      "path": "/api/v1/users",
+      "permission": "admin",
+      "request": null,
+      "response": "UserPage"
+    },
+    {
+      "operation_id": "createUser",
+      "method": "POST",
+      "path": "/api/v1/users",
+      "permission": "admin",
+      "request": "UserCreate",
+      "response": "User"
+    },
+    {
+      "operation_id": "getUser",
+      "method": "GET",
+      "path": "/api/v1/users/{id}",
+      "permission": "admin",
+      "request": null,
+      "response": "User"
+    },
+    {
+      "operation_id": "listTemplates",
+      "method": "GET",
+      "path": "/api/v1/templates",
+      "permission": "read",
+      "request": null,
+      "response": "TemplatePage"
+    },
+    {
+      "operation_id": "createTemplate",
+      "method": "POST",
+      "path": "/api/v1/templates",
+      "permission": "admin",
+      "request": "TemplateCreate",
+      "response": "Template"
+    },
+    {
+      "operation_id": "getTemplate",
+      "method": "GET",
+      "path": "/api/v1/templates/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "Template"
+    },
+    {
+      "operation_id": "listInspections",
+      "method": "GET",
+      "path": "/api/v1/inspections",
+      "permission": "read",
+      "request": null,
+      "response": "InspectionPage"
+    },
+    {
+      "operation_id": "createInspection",
+      "method": "POST",
+      "path": "/api/v1/inspections",
+      "permission": "capture",
+      "request": "InspectionCreate",
+      "response": "Inspection"
+    },
+    {
+      "operation_id": "getInspection",
+      "method": "GET",
+      "path": "/api/v1/inspections/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "Inspection"
+    },
+    {
+      "operation_id": "listLocations",
+      "method": "GET",
+      "path": "/api/v1/laboratories/{id}/locations",
+      "permission": "read",
+      "request": null,
+      "response": "LocationPage"
+    },
+    {
+      "operation_id": "createLocation",
+      "method": "POST",
+      "path": "/api/v1/laboratories/{id}/locations",
+      "permission": "admin",
+      "request": "LocationCreate",
+      "response": "Location"
+    },
+    {
+      "operation_id": "grantRole",
+      "method": "POST",
+      "path": "/api/v1/users/{id}/roles",
+      "permission": "admin",
+      "request": "RoleGrant",
+      "response": "User"
+    },
+    {
+      "operation_id": "revokeRole",
+      "method": "POST",
+      "path": "/api/v1/users/{id}/revoke-role",
+      "permission": "admin",
+      "request": "RoleRevoke",
+      "response": "User"
+    },
+    {
+      "operation_id": "disableUser",
+      "method": "POST",
+      "path": "/api/v1/users/{id}/disable",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "User"
+    },
+    {
+      "operation_id": "publishTemplate",
+      "method": "POST",
+      "path": "/api/v1/templates/{id}/publish",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "Template"
+    },
+    {
+      "operation_id": "cloneTemplate",
+      "method": "POST",
+      "path": "/api/v1/templates/{id}/clone",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "Template"
+    },
+    {
+      "operation_id": "completeInspection",
+      "method": "POST",
+      "path": "/api/v1/inspections/{id}/complete",
+      "permission": "capture",
+      "request": "VersionCommand",
+      "response": "Inspection"
+    },
+    {
+      "operation_id": "cancelInspection",
+      "method": "POST",
+      "path": "/api/v1/inspections/{id}/cancel",
+      "permission": "capture",
+      "request": "VersionCommand",
+      "response": "Inspection"
+    },
+    {
+      "operation_id": "listInspectionItems",
+      "method": "GET",
+      "path": "/api/v1/inspections/{id}/items",
+      "permission": "read",
+      "request": null,
+      "response": "InspectionItemPage"
+    },
+    {
+      "operation_id": "getInspectionItem",
+      "method": "GET",
+      "path": "/api/v1/inspection-items/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "InspectionItem"
+    },
+    {
+      "operation_id": "createUpload",
+      "method": "POST",
+      "path": "/api/v1/uploads",
+      "permission": "capture_or_evidence",
+      "request": "UploadRequest",
+      "response": "UploadGrant"
+    },
+    {
+      "operation_id": "completeUpload",
+      "method": "POST",
+      "path": "/api/v1/uploads/complete",
+      "permission": "capture_or_evidence",
+      "request": "UploadComplete",
+      "response": "Image"
+    },
+    {
+      "operation_id": "getImage",
+      "method": "GET",
+      "path": "/api/v1/images/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "Image"
+    },
+    {
+      "operation_id": "downloadImage",
+      "method": "GET",
+      "path": "/api/v1/images/{id}/download",
+      "permission": "image_read",
+      "request": null,
+      "response": "DownloadGrant"
+    },
+    {
+      "operation_id": "deleteImage",
+      "method": "POST",
+      "path": "/api/v1/images/{id}/delete",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "Image"
+    },
+    {
+      "operation_id": "submitInspectionItem",
+      "method": "POST",
+      "path": "/api/v1/inspection-items/{id}/submit",
+      "permission": "capture",
+      "request": "ItemSubmit",
+      "response": "InferenceRun"
+    },
+    {
+      "operation_id": "retryInspectionItem",
+      "method": "POST",
+      "path": "/api/v1/inspection-items/{id}/retry",
+      "permission": "review",
+      "request": "VersionCommand",
+      "response": "InferenceRun"
+    },
+    {
+      "operation_id": "factsInspectionItem",
+      "method": "POST",
+      "path": "/api/v1/inspection-items/{id}/facts",
+      "permission": "review",
+      "request": "FactsEdit",
+      "response": "Job"
+    },
+    {
+      "operation_id": "completeInspectionItem",
+      "method": "POST",
+      "path": "/api/v1/inspection-items/{id}/complete",
+      "permission": "review",
+      "request": "ItemComplete",
+      "response": "InspectionItem"
+    },
+    {
+      "operation_id": "getCurrentInference",
+      "method": "GET",
+      "path": "/api/v1/inspection-items/{id}/inference",
+      "permission": "read",
+      "request": null,
+      "response": "InferenceRun"
+    },
+    {
+      "operation_id": "getCurrentFacts",
+      "method": "GET",
+      "path": "/api/v1/inspection-items/{id}/facts",
+      "permission": "read",
+      "request": null,
+      "response": "FactRevision"
+    },
+    {
+      "operation_id": "getInferenceRun",
+      "method": "GET",
+      "path": "/api/v1/inference-runs/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "InferenceRun"
+    },
+    {
+      "operation_id": "listFindings",
+      "method": "GET",
+      "path": "/api/v1/findings",
+      "permission": "read",
+      "request": null,
+      "response": "FindingPage"
+    },
+    {
+      "operation_id": "getFinding",
+      "method": "GET",
+      "path": "/api/v1/findings/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "Finding"
+    },
+    {
+      "operation_id": "confirmFinding",
+      "method": "POST",
+      "path": "/api/v1/findings/{id}/confirm",
+      "permission": "review",
+      "request": "FindingDecision",
+      "response": "Finding"
+    },
+    {
+      "operation_id": "rejectFinding",
+      "method": "POST",
+      "path": "/api/v1/findings/{id}/reject",
+      "permission": "review",
+      "request": "FindingDecision",
+      "response": "Finding"
+    },
+    {
+      "operation_id": "cannotdetermineFinding",
+      "method": "POST",
+      "path": "/api/v1/findings/{id}/cannot-determine",
+      "permission": "review",
+      "request": "FindingUncertain",
+      "response": "Finding"
+    },
+    {
+      "operation_id": "dispatchRemediation",
+      "method": "POST",
+      "path": "/api/v1/findings/{id}/remediation-tasks",
+      "permission": "dispatch",
+      "request": "RemediationCreate",
+      "response": "Remediation"
+    },
+    {
+      "operation_id": "listRemediations",
+      "method": "GET",
+      "path": "/api/v1/remediation-tasks",
+      "permission": "read",
+      "request": null,
+      "response": "RemediationPage"
+    },
+    {
+      "operation_id": "getRemediation",
+      "method": "GET",
+      "path": "/api/v1/remediation-tasks/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "Remediation"
+    },
+    {
+      "operation_id": "acceptRemediation",
+      "method": "POST",
+      "path": "/api/v1/remediation-tasks/{id}/accept",
+      "permission": "assignee",
+      "request": "VersionCommand",
+      "response": "Remediation"
+    },
+    {
+      "operation_id": "submitevidenceRemediation",
+      "method": "POST",
+      "path": "/api/v1/remediation-tasks/{id}/submit-evidence",
+      "permission": "assignee",
+      "request": "EvidenceSubmit",
+      "response": "Evidence"
+    },
+    {
+      "operation_id": "recheckRemediation",
+      "method": "POST",
+      "path": "/api/v1/remediation-tasks/{id}/recheck",
+      "permission": "recheck",
+      "request": "Recheck",
+      "response": "Remediation"
+    },
+    {
+      "operation_id": "rejectRemediation",
+      "method": "POST",
+      "path": "/api/v1/remediation-tasks/{id}/reject",
+      "permission": "recheck",
+      "request": "Recheck",
+      "response": "Remediation"
+    },
+    {
+      "operation_id": "cannotremediateRemediation",
+      "method": "POST",
+      "path": "/api/v1/remediation-tasks/{id}/cannot-remediate",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "Remediation"
+    },
+    {
+      "operation_id": "reassignRemediation",
+      "method": "POST",
+      "path": "/api/v1/remediation-tasks/{id}/reassign",
+      "permission": "dispatch",
+      "request": "TaskAssignment",
+      "response": "Remediation"
+    },
+    {
+      "operation_id": "listEvidence",
+      "method": "GET",
+      "path": "/api/v1/remediation-tasks/{id}/evidence",
+      "permission": "read",
+      "request": null,
+      "response": "EvidencePage"
+    },
+    {
+      "operation_id": "searchChemicals",
+      "method": "GET",
+      "path": "/api/v1/chemical-entities",
+      "permission": "read",
+      "request": null,
+      "response": "ChemicalEntityPage"
+    },
+    {
+      "operation_id": "importDictionary",
+      "method": "POST",
+      "path": "/api/v1/dictionaries",
+      "permission": "admin",
+      "request": "DictionaryImport",
+      "response": "DictionaryVersion"
+    },
+    {
+      "operation_id": "listDictionaries",
+      "method": "GET",
+      "path": "/api/v1/dictionaries",
+      "permission": "read",
+      "request": null,
+      "response": "DictionaryVersionPage"
+    },
+    {
+      "operation_id": "getDictionary",
+      "method": "GET",
+      "path": "/api/v1/dictionaries/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "DictionaryVersion"
+    },
+    {
+      "operation_id": "publishDictionary",
+      "method": "POST",
+      "path": "/api/v1/dictionaries/{id}/publish",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "DictionaryVersion"
+    },
+    {
+      "operation_id": "createRuleSet",
+      "method": "POST",
+      "path": "/api/v1/rule-sets",
+      "permission": "admin",
+      "request": "RuleSetCreate",
+      "response": "RuleSet"
+    },
+    {
+      "operation_id": "listRuleSets",
+      "method": "GET",
+      "path": "/api/v1/rule-sets",
+      "permission": "read",
+      "request": null,
+      "response": "RuleSetPage"
+    },
+    {
+      "operation_id": "listRuleBundles",
+      "method": "GET",
+      "path": "/api/v1/rule-bundles",
+      "permission": "read",
+      "request": null,
+      "response": "RuleSnapshotPage"
+    },
+    {
+      "operation_id": "createRuleBundle",
+      "method": "POST",
+      "path": "/api/v1/rule-bundles",
+      "permission": "admin",
+      "request": "RuleSnapshotCreate",
+      "response": "RuleSnapshot"
+    },
+    {
+      "operation_id": "listRuleVersions",
+      "method": "GET",
+      "path": "/api/v1/rule-versions",
+      "permission": "read",
+      "request": null,
+      "response": "RuleVersionPage"
+    },
+    {
+      "operation_id": "getRuleVersion",
+      "method": "GET",
+      "path": "/api/v1/rule-versions/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "RuleVersion"
+    },
+    {
+      "operation_id": "listModelVersions",
+      "method": "GET",
+      "path": "/api/v1/model-versions",
+      "permission": "read",
+      "request": null,
+      "response": "ModelVersionPage"
+    },
+    {
+      "operation_id": "getModelVersion",
+      "method": "GET",
+      "path": "/api/v1/model-versions/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "ModelVersion"
+    },
+    {
+      "operation_id": "submitapprovalRuleVersion",
+      "method": "POST",
+      "path": "/api/v1/rule-versions/{id}/submit-approval",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "RuleVersion"
+    },
+    {
+      "operation_id": "approveRuleVersion",
+      "method": "POST",
+      "path": "/api/v1/rule-versions/{id}/approve",
+      "permission": "rule_approve",
+      "request": "VersionCommand",
+      "response": "RuleVersion"
+    },
+    {
+      "operation_id": "publishRuleVersion",
+      "method": "POST",
+      "path": "/api/v1/rule-versions/{id}/publish",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "RuleVersion"
+    },
+    {
+      "operation_id": "retireRuleVersion",
+      "method": "POST",
+      "path": "/api/v1/rule-versions/{id}/retire",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "RuleVersion"
+    },
+    {
+      "operation_id": "validateModelVersion",
+      "method": "POST",
+      "path": "/api/v1/model-versions/{id}/validate",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "ModelVersion"
+    },
+    {
+      "operation_id": "publishModelVersion",
+      "method": "POST",
+      "path": "/api/v1/model-versions/{id}/publish",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "ModelVersion"
+    },
+    {
+      "operation_id": "retireModelVersion",
+      "method": "POST",
+      "path": "/api/v1/model-versions/{id}/retire",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "ModelVersion"
+    },
+    {
+      "operation_id": "getActivation",
+      "method": "GET",
+      "path": "/api/v1/laboratories/{id}/activation",
+      "permission": "read",
+      "request": null,
+      "response": "Activation"
+    },
+    {
+      "operation_id": "setActivation",
+      "method": "POST",
+      "path": "/api/v1/laboratories/{id}/activation",
+      "permission": "admin",
+      "request": "Activate",
+      "response": "Activation"
+    },
+    {
+      "operation_id": "createExport",
+      "method": "POST",
+      "path": "/api/v1/reports/exports",
+      "permission": "export",
+      "request": "ExportCreate",
+      "response": "ReportExport"
+    },
+    {
+      "operation_id": "getExport",
+      "method": "GET",
+      "path": "/api/v1/reports/exports/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "ReportExport"
+    },
+    {
+      "operation_id": "downloadExport",
+      "method": "GET",
+      "path": "/api/v1/reports/exports/{id}/download",
+      "permission": "export",
+      "request": null,
+      "response": "DownloadGrant"
+    },
+    {
+      "operation_id": "listAuditEvents",
+      "method": "GET",
+      "path": "/api/v1/audit-events",
+      "permission": "audit",
+      "request": null,
+      "response": "AuditEventPage"
+    },
+    {
+      "operation_id": "listNotifications",
+      "method": "GET",
+      "path": "/api/v1/notifications",
+      "permission": "read",
+      "request": null,
+      "response": "NotificationPage"
+    },
+    {
+      "operation_id": "readNotification",
+      "method": "POST",
+      "path": "/api/v1/notifications/{id}/read",
+      "permission": "recipient",
+      "request": "VersionCommand",
+      "response": "Notification"
+    },
+    {
+      "operation_id": "getJob",
+      "method": "GET",
+      "path": "/api/v1/jobs/{id}",
+      "permission": "read",
+      "request": null,
+      "response": "Job"
+    },
+    {
+      "operation_id": "listDeadLetters",
+      "method": "GET",
+      "path": "/api/v1/dead-letters",
+      "permission": "admin",
+      "request": null,
+      "response": "JobPage"
+    },
+    {
+      "operation_id": "replayJob",
+      "method": "POST",
+      "path": "/api/v1/dead-letters/{id}/replay",
+      "permission": "admin",
+      "request": "VersionCommand",
+      "response": "Job"
+    },
+    {
+      "operation_id": "downloadCrop",
+      "method": "GET",
+      "path": "/api/v1/inference-runs/{id}/crops/{crop_id}/download",
+      "permission": "image_read",
+      "request": null,
+      "response": "DownloadGrant"
+    },
+    {
+      "operation_id": "listUserRoles",
+      "method": "GET",
+      "path": "/api/v1/users/{id}/roles",
+      "permission": "admin",
+      "request": null,
+      "response": "RoleAssignmentPage"
+    },
+    {
+      "operation_id": "listDictionaryEntries",
+      "method": "GET",
+      "path": "/api/v1/dictionaries/{id}/entries",
+      "permission": "read",
+      "request": null,
+      "response": "DictionaryEntryPage"
+    },
+    {
+      "operation_id": "importRuleVersion",
+      "method": "POST",
+      "path": "/api/v1/rule-versions",
+      "permission": "admin",
+      "request": "RuleImport",
+      "response": "RuleVersion"
+    },
+    {
+      "operation_id": "getModelManifest",
+      "method": "GET",
+      "path": "/api/v1/model-versions/{id}/manifest",
+      "permission": "admin",
+      "request": null,
+      "response": "ModelManifest"
+    },
+    {
+      "operation_id": "importModelVersion",
+      "method": "POST",
+      "path": "/api/v1/model-versions",
+      "permission": "admin",
+      "request": "ModelImport",
+      "response": "ModelVersion"
+    }
+  ]
+}

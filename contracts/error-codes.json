@@ -1,0 +1,114 @@
+{
+  "VALIDATION_ERROR": {
+    "http_status": 422,
+    "retryable": false
+  },
+  "UNAUTHENTICATED": {
+    "http_status": 401,
+    "retryable": false
+  },
+  "FORBIDDEN": {
+    "http_status": 403,
+    "retryable": false
+  },
+  "NOT_FOUND": {
+    "http_status": 404,
+    "retryable": false
+  },
+  "STATE_CONFLICT": {
+    "http_status": 409,
+    "retryable": false
+  },
+  "VERSION_CONFLICT": {
+    "http_status": 409,
+    "retryable": false
+  },
+  "IDEMPOTENCY_CONFLICT": {
+    "http_status": 409,
+    "retryable": false
+  },
+  "REQUEST_IN_PROGRESS": {
+    "http_status": 409,
+    "retryable": true
+  },
+  "RATE_LIMITED": {
+    "http_status": 429,
+    "retryable": true
+  },
+  "IMAGE_TOO_LARGE": {
+    "http_status": 413,
+    "retryable": false
+  },
+  "UNSUPPORTED_MEDIA_TYPE": {
+    "http_status": 415,
+    "retryable": false
+  },
+  "IMAGE_INVALID": {
+    "http_status": 422,
+    "retryable": false
+  },
+  "UNAUTHORIZED_REF": {
+    "http_status": 403,
+    "retryable": false
+  },
+  "OBJECT_NOT_FOUND": {
+    "http_status": 404,
+    "retryable": false
+  },
+  "HASH_MISMATCH": {
+    "http_status": 422,
+    "retryable": false
+  },
+  "MODEL_NOT_READY": {
+    "http_status": 503,
+    "retryable": true
+  },
+  "MODEL_VERSION_UNAVAILABLE": {
+    "http_status": 409,
+    "retryable": false
+  },
+  "AI_BUSY": {
+    "http_status": 429,
+    "retryable": true
+  },
+  "RUN_IN_PROGRESS": {
+    "http_status": 409,
+    "retryable": true
+  },
+  "AI_TIMEOUT": {
+    "http_status": 504,
+    "retryable": true
+  },
+  "STAGE_TIMEOUT": {
+    "http_status": 504,
+    "retryable": true
+  },
+  "MODEL_OOM": {
+    "http_status": 503,
+    "retryable": true
+  },
+  "DEPENDENCY_UNAVAILABLE": {
+    "http_status": 503,
+    "retryable": true
+  },
+  "MODEL_ERROR": {
+    "http_status": 500,
+    "retryable": false
+  },
+  "INTERNAL_ERROR": {
+    "http_status": 500,
+    "retryable": false
+  },
+  "SCHEMA_MISMATCH": {
+    "http_status": 502,
+    "retryable": false
+  },
+  "RULESET_INVALID": {
+    "http_status": 422,
+    "retryable": false
+  },
+  "LEASE_LOST": {
+    "http_status": 409,
+    "retryable": false
+  }
+}

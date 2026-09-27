@@ -1,0 +1,147 @@
+{
+  "notice": "Synthetic engineering fixtures only. Not validated chemical safety rules.",
+  "bundle": {
+    "rule_set_id": "11111111-1111-4111-8111-111111111111",
+    "version_label": "synthetic-v1",
+    "rules": [
+      {
+        "rule_id": "SYNTHETIC-PAIR",
+        "scope": "global",
+        "scope_id": null,
+        "priority": 1,
+        "enabled": true,
+        "effective_from": "2026-01-01T00:00:00Z",
+        "effective_to": null,
+        "clauses": [
+          [
+            {
+              "field": "same_location",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "adjacent",
+              "op": "eq",
+              "value": true
+            },
+            {
+              "field": "left.storage_class",
+              "op": "eq",
+              "value": "synthetic_a"
+            },
+            {
+              "field": "right.storage_class",
+              "op": "in",
+              "value": [
+                "synthetic_b"
+              ]
+            }
+          ]
+        ],
+        "finding_type": "incompatible_storage",
+        "severity": "low",
+        "action_code": "review_storage",
+        "explanation_template": "仅用于测试，不是化学品安全规则",
+        "source": "synthetic fixture; not approved for production",
+        "case_ids": [
+          "SYN-01",
+          "SYN-02",
+          "SYN-03"
+        ]
+      },
+      {
+        "rule_id": "SYNTHETIC-DATE",
+        "scope": "global",
+        "scope_id": null,
+        "priority": 1,
+        "enabled": true,
+        "effective_from": "2026-01-01T00:00:00Z",
+        "effective_to": null,
+        "clauses": [
+          [
+            {
+              "field": "expiry_date",
+              "op": "before_reference_date"
+            }
+          ]
+        ],
+        "finding_type": "expired_label",
+        "severity": "low",
+        "action_code": "review_date",
+        "explanation_template": "仅用于测试，不是化学品安全规则",
+        "source": "synthetic fixture; not approved for production",
+        "case_ids": [
+          "SYN-04",
+          "SYN-05",
+          "SYN-06"
+        ]
+      }
+    ],
+    "evaluator_version": "rules-dnf-v1"
+  },
+  "cases": [
+    {
+      "id": "SYN-01",
+      "rule_id": "SYNTHETIC-PAIR",
+      "facts": {
+        "same_location": true,
+        "adjacent": true,
+        "left.storage_class": "synthetic_a",
+        "right.storage_class": "synthetic_b"
+      },
+      "expected": true,
+      "reference_date": "2026-09-27"
+    },
+    {
+      "id": "SYN-02",
+      "rule_id": "SYNTHETIC-PAIR",
+      "facts": {
+        "same_location": true,
+        "adjacent": false,
+        "left.storage_class": "synthetic_a",
+        "right.storage_class": "synthetic_b"
+      },
+      "expected": false,
+      "reference_date": "2026-09-27"
+    },
+    {
+      "id": "SYN-03",
+      "rule_id": "SYNTHETIC-PAIR",
+      "facts": {
+        "same_location": true,
+        "adjacent": null,
+        "left.storage_class": "synthetic_a",
+        "right.storage_class": "synthetic_b"
+      },
+      "expected": null,
+      "reference_date": "2026-09-27"
+    },
+    {
+      "id": "SYN-04",
+      "rule_id": "SYNTHETIC-DATE",
+      "facts": {
+        "expiry_date": "2026-09-26"
+      },
+      "expected": true,
+      "reference_date": "2026-09-27"
+    },
+    {
+      "id": "SYN-05",
+      "rule_id": "SYNTHETIC-DATE",
+      "facts": {
+        "expiry_date": "2026-09-27"
+      },
+      "expected": false,
+      "reference_date": "2026-09-27"
+    },
+    {
+      "id": "SYN-06",
+      "rule_id": "SYNTHETIC-DATE",
+      "facts": {
+        "expiry_date": "ambiguous"
+      },
+      "expected": null,
+      "reference_date": "2026-09-27"
+    }
+  ]
+}

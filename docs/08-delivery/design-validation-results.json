@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "executed_at_utc": "2026-09-27T10:31:32.254226+00:00",
+  "python_version": "3.11.4",
+  "counts": {
+    "openapi_specs": 2,
+    "resolved_refs": 1270,
+    "operations": 99,
+    "positive_schema_instances": 170,
+    "negative_schema_instances": 340,
+    "json_schemas": 8,
+    "positive_message_instances": 28,
+    "negative_message_instances": 28,
+    "ai_negative_cases": 5,
+    "queue_negative_cases": 3,
+    "tables": 43,
+    "foreign_keys": 115,
+    "state_enum_tieouts": 8,
+    "rule_cases": 6,
+    "truth_table_cases": 9,
+    "rule_semantic_negative_cases": 1,
+    "rule_scope_cases": 2,
+    "doc_links": 140,
+    "public_operations": 94,
+    "traceable_test_ids": 42,
+    "synthetic_release_gate_checks": 41,
+    "synthetic_dfine_semantic_checks": 39,
+    "synthetic_readiness_checks": 148,
+    "dfine_doc_tieouts": 6
+  },
+  "limitations": [
+    "No application runtime tests",
+    "No live MySQL DDL execution",
+    "No real model or expert safety-rule evaluation",
+    "No GPU, ONNX export or real-image resize validation",
+    "No live MinIO IAM, nginx or presigned URL validation",
+    "No human approval"
+  ]
+}

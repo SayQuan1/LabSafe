@@ -1,0 +1,6108 @@
+{
+  "version": "1.1.0",
+  "engine": "MySQL 8.0.16+ / InnoDB",
+  "timezone": "UTC",
+  "tables": {
+    "tenants": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "code": {
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "name": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "timezone": {
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('active','suspended')",
+          "nullable": false,
+          "default_sql": "'active'",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "code"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "checks": [],
+      "append_only": false
+    },
+    "roles": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "code": {
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "name": {
+          "type": "VARCHAR(100)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "code"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [],
+      "checks": [],
+      "append_only": false
+    },
+    "colleges": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "code": {
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "name": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('active','archived')",
+          "nullable": false,
+          "default_sql": "'active'",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "code"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "laboratories": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "college_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "code": {
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "name": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('active','archived')",
+          "nullable": false,
+          "default_sql": "'active'",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "code"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "college_id"
+          ],
+          "target": "colleges",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "users": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "username": {
+          "type": "VARCHAR(128)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "display_name": {
+          "type": "VARCHAR(100)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "password_hash": {
+          "type": "VARCHAR(255)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('active','disabled')",
+          "nullable": false,
+          "default_sql": "'active'",
+          "description": "",
+          "generated_sql": null
+        },
+        "session_epoch": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "0",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "username"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "user_roles": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "user_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "role_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "laboratory_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "scope_kind": {
+          "type": "ENUM('tenant','laboratory')",
+          "nullable": false,
+          "default_sql": "'tenant'",
+          "description": "",
+          "generated_sql": null
+        },
+        "scope_key": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": "COALESCE(laboratory_id,'00000000-0000-0000-0000-000000000000')"
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "user_id",
+          "role_id",
+          "scope_key"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "user_id"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id"
+          ],
+          "target": "laboratories",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "role_id"
+          ],
+          "target": "roles",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [
+        "(scope_kind='tenant' AND laboratory_id IS NULL) OR (scope_kind='laboratory' AND laboratory_id IS NOT NULL)"
+      ],
+      "append_only": false
+    },
+    "sessions": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "user_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "token_hash": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "csrf_hash": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "session_epoch": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "0",
+          "description": "",
+          "generated_sql": null
+        },
+        "expires_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "idle_expires_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "revoked_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "token_hash"
+        ]
+      ],
+      "indexes": [
+        [
+          "expires_at"
+        ]
+      ],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "user_id"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "locations": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "laboratory_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "parent_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "type": {
+          "type": "ENUM('room','area','shelf','cabinet')",
+          "nullable": false,
+          "default_sql": "'room'",
+          "description": "",
+          "generated_sql": null
+        },
+        "label": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('active','archived')",
+          "nullable": false,
+          "default_sql": "'active'",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "laboratory_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id"
+          ],
+          "target": "laboratories",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id",
+            "parent_id"
+          ],
+          "target": "locations",
+          "references": [
+            "tenant_id",
+            "laboratory_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "inspection_templates": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "family_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "revision": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "name": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('draft','published','retired')",
+          "nullable": false,
+          "default_sql": "'draft'",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "family_id",
+          "revision"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "template_items": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "template_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "code": {
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "title": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "capture_hint": {
+          "type": "VARCHAR(1000)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "sort_order": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "0",
+          "description": "",
+          "generated_sql": null
+        },
+        "required": {
+          "type": "BOOLEAN",
+          "nullable": false,
+          "default_sql": "TRUE",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "template_id",
+          "code"
+        ],
+        [
+          "tenant_id",
+          "template_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "template_id"
+          ],
+          "target": "inspection_templates",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "inspections": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "laboratory_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "template_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "inspector_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('draft','in_progress','completed','cancelled')",
+          "nullable": false,
+          "default_sql": "'draft'",
+          "description": "",
+          "generated_sql": null
+        },
+        "completed_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "laboratory_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id"
+          ],
+          "target": "laboratories",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "template_id"
+          ],
+          "target": "inspection_templates",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "inspector_id"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "inspection_items": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "inspection_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "laboratory_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "template_item_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "location_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('draft','uploaded','queued','quality_checking','needs_retake','processing','needs_review','completed','failed')",
+          "nullable": false,
+          "default_sql": "'draft'",
+          "description": "",
+          "generated_sql": null
+        },
+        "submission_revision": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "0",
+          "description": "",
+          "generated_sql": null
+        },
+        "current_run_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "current_fact_revision_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "current_evaluation_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "review_outcome": {
+          "type": "ENUM('no_issue','issues_confirmed','cannot_determine')",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "reviewed_by": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "reviewed_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "laboratory_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "inspection_id",
+          "template_item_id",
+          "location_id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id",
+            "inspection_id"
+          ],
+          "target": "inspections",
+          "references": [
+            "tenant_id",
+            "laboratory_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "template_item_id"
+          ],
+          "target": "template_items",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id",
+            "location_id"
+          ],
+          "target": "locations",
+          "references": [
+            "tenant_id",
+            "laboratory_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "reviewed_by"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "id",
+            "current_run_id"
+          ],
+          "target": "inference_runs",
+          "references": [
+            "tenant_id",
+            "item_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "id",
+            "current_fact_revision_id"
+          ],
+          "target": "fact_revisions",
+          "references": [
+            "tenant_id",
+            "item_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "id",
+            "current_evaluation_id"
+          ],
+          "target": "rule_evaluations",
+          "references": [
+            "tenant_id",
+            "item_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "dictionary_versions": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "version_label": {
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "checksum": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "object_key": {
+          "type": "VARCHAR(1024)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "source": {
+          "type": "VARCHAR(2000)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('draft','published','retired')",
+          "nullable": false,
+          "default_sql": "'draft'",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "version_label"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "chemical_entities": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "dictionary_version_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "canonical_name": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "cas_number": {
+          "type": "VARCHAR(32)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "hazard_class": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "storage_class": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "dictionary_version_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "dictionary_version_id"
+          ],
+          "target": "dictionary_versions",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "chemical_aliases": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "dictionary_version_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "entity_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "normalized_alias": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "dictionary_version_id",
+          "entity_id",
+          "normalized_alias"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "dictionary_version_id",
+            "entity_id"
+          ],
+          "target": "chemical_entities",
+          "references": [
+            "tenant_id",
+            "dictionary_version_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "model_versions": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "name": {
+          "type": "VARCHAR(100)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "bundle_version": {
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "dictionary_version_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "checksum": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "manifest": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('registered','validated','published','retired')",
+          "nullable": false,
+          "default_sql": "'registered'",
+          "description": "",
+          "generated_sql": null
+        },
+        "evaluation_report_key": {
+          "type": "VARCHAR(1024)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "bundle_version"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "dictionary_version_id"
+          ],
+          "target": "dictionary_versions",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "rule_sets": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "name": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "description": {
+          "type": "VARCHAR(2000)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "name"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "rule_versions": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "rule_set_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "revision": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "checksum": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "definition": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('draft','submitted','approved','published','retired')",
+          "nullable": false,
+          "default_sql": "'draft'",
+          "description": "",
+          "generated_sql": null
+        },
+        "submitted_by": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "approved_by": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "approved_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "rule_set_id",
+          "revision"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "rule_set_id"
+          ],
+          "target": "rule_sets",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "submitted_by"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "approved_by"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "rule_bundles": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "checksum": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "evaluator_version": {
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "checksum"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "rule_bundle_members": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "bundle_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "rule_version_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "bundle_id",
+          "rule_version_id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "bundle_id"
+          ],
+          "target": "rule_bundles",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "rule_version_id"
+          ],
+          "target": "rule_versions",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "activations": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "laboratory_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "model_bundle_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "dictionary_version_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "rule_bundle_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "pipeline_version": {
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "device_profile": {
+          "type": "ENUM('cpu','cuda')",
+          "nullable": false,
+          "default_sql": "'cpu'",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "laboratory_id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id"
+          ],
+          "target": "laboratories",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "model_bundle_id"
+          ],
+          "target": "model_versions",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "dictionary_version_id"
+          ],
+          "target": "dictionary_versions",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "rule_bundle_id"
+          ],
+          "target": "rule_bundles",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "inference_runs": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "item_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "laboratory_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "submission_revision": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "replay_of": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "input_hash": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "model_bundle_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "dictionary_version_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "rule_bundle_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "pipeline_version": {
+          "type": "VARCHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "device_profile": {
+          "type": "ENUM('cpu','cuda')",
+          "nullable": false,
+          "default_sql": "'cpu'",
+          "description": "",
+          "generated_sql": null
+        },
+        "reference_date": {
+          "type": "DATE",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('queued','processing','retrying','completed','needs_retake','needs_review','failed','superseded')",
+          "nullable": false,
+          "default_sql": "'queued'",
+          "description": "",
+          "generated_sql": null
+        },
+        "stage": {
+          "type": "ENUM('queued','quality','facts','rules','done')",
+          "nullable": false,
+          "default_sql": "'queued'",
+          "description": "",
+          "generated_sql": null
+        },
+        "result": {
+          "type": "JSON",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "result_hash": {
+          "type": "CHAR(64)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "error_code": {
+          "type": "VARCHAR(80)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "started_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "finished_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "item_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "item_id",
+          "submission_revision"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id",
+            "item_id"
+          ],
+          "target": "inspection_items",
+          "references": [
+            "tenant_id",
+            "laboratory_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "replay_of"
+          ],
+          "target": "inference_runs",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "model_bundle_id"
+          ],
+          "target": "model_versions",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "dictionary_version_id"
+          ],
+          "target": "dictionary_versions",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "rule_bundle_id"
+          ],
+          "target": "rule_bundles",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "fact_revisions": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "item_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "run_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "revision": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "entities": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "relations": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "dates": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "reason": {
+          "type": "VARCHAR(2000)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_by": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "item_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "run_id",
+          "revision"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "item_id",
+            "run_id"
+          ],
+          "target": "inference_runs",
+          "references": [
+            "tenant_id",
+            "item_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "created_by"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "rule_evaluations": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "item_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "run_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "fact_revision_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "rule_bundle_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "reference_date": {
+          "type": "DATE",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('queued','running','completed','failed','superseded')",
+          "nullable": false,
+          "default_sql": "'queued'",
+          "description": "",
+          "generated_sql": null
+        },
+        "result": {
+          "type": "JSON",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "result_hash": {
+          "type": "CHAR(64)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "finished_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "item_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "fact_revision_id",
+          "rule_bundle_id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "item_id",
+            "run_id"
+          ],
+          "target": "inference_runs",
+          "references": [
+            "tenant_id",
+            "item_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "item_id",
+            "fact_revision_id"
+          ],
+          "target": "fact_revisions",
+          "references": [
+            "tenant_id",
+            "item_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "rule_bundle_id"
+          ],
+          "target": "rule_bundles",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "findings": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "item_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "run_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "fact_revision_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "rule_evaluation_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "rule_id": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "fingerprint": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "type": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "severity": {
+          "type": "ENUM('low','medium','high','critical')",
+          "nullable": false,
+          "default_sql": "'low'",
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('needs_review','confirmed','rejected','cannot_determine','dispatched','closed')",
+          "nullable": false,
+          "default_sql": "'needs_review'",
+          "description": "",
+          "generated_sql": null
+        },
+        "explanation": {
+          "type": "VARCHAR(4000)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "evidence": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "superseded_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "confirmed_by": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "rule_evaluation_id",
+          "fingerprint"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "item_id",
+            "run_id"
+          ],
+          "target": "inference_runs",
+          "references": [
+            "tenant_id",
+            "item_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "item_id",
+            "fact_revision_id"
+          ],
+          "target": "fact_revisions",
+          "references": [
+            "tenant_id",
+            "item_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "item_id",
+            "rule_evaluation_id"
+          ],
+          "target": "rule_evaluations",
+          "references": [
+            "tenant_id",
+            "item_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "confirmed_by"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "review_actions": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "actor_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "resource_type": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "resource_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "action": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "reason": {
+          "type": "VARCHAR(2000)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "before_version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "after_version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "actor_id"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "remediation_tasks": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "finding_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "laboratory_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "assignee_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('pending_dispatch','in_progress','pending_recheck','rejected','cannot_remediate','closed')",
+          "nullable": false,
+          "default_sql": "'pending_dispatch'",
+          "description": "",
+          "generated_sql": null
+        },
+        "priority": {
+          "type": "ENUM('low','medium','high','critical')",
+          "nullable": false,
+          "default_sql": "'low'",
+          "description": "",
+          "generated_sql": null
+        },
+        "due_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "description": {
+          "type": "VARCHAR(4000)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "latest_evidence_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "closed_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "finding_id"
+        ],
+        [
+          "tenant_id",
+          "laboratory_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "finding_id"
+          ],
+          "target": "findings",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id"
+          ],
+          "target": "laboratories",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "assignee_id"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "id",
+            "latest_evidence_id"
+          ],
+          "target": "remediation_evidence",
+          "references": [
+            "tenant_id",
+            "task_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "remediation_evidence": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "task_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "description": {
+          "type": "VARCHAR(4000)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "submitted_by": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "task_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "task_id"
+          ],
+          "target": "remediation_tasks",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "submitted_by"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "uploads": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "laboratory_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "inspection_item_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "remediation_task_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "requested_by": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "object_key": {
+          "type": "VARCHAR(1024)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "expected_sha256": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "mime_type": {
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "size_bytes": {
+          "type": "BIGINT UNSIGNED",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "captured_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "expires_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('granted','validating','ready','rejected','expired')",
+          "nullable": false,
+          "default_sql": "'granted'",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "requested_by"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id"
+          ],
+          "target": "laboratories",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id",
+            "inspection_item_id"
+          ],
+          "target": "inspection_items",
+          "references": [
+            "tenant_id",
+            "laboratory_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id",
+            "remediation_task_id"
+          ],
+          "target": "remediation_tasks",
+          "references": [
+            "tenant_id",
+            "laboratory_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [
+        "(inspection_item_id IS NULL) <> (remediation_task_id IS NULL)"
+      ],
+      "append_only": false
+    },
+    "asset_images": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "laboratory_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "inspection_item_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "remediation_task_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "upload_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('validating','ready','rejected','deleted')",
+          "nullable": false,
+          "default_sql": "'validating'",
+          "description": "",
+          "generated_sql": null
+        },
+        "original_key": {
+          "type": "VARCHAR(1024)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "original_object_version": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "original_sha256": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "analysis_key": {
+          "type": "VARCHAR(1024)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "analysis_object_version": {
+          "type": "VARCHAR(200)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "analysis_sha256": {
+          "type": "CHAR(64)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "width": {
+          "type": "INT UNSIGNED",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "height": {
+          "type": "INT UNSIGNED",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "mime_type": {
+          "type": "VARCHAR(40)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "captured_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "legal_hold": {
+          "type": "BOOLEAN",
+          "nullable": false,
+          "default_sql": "FALSE",
+          "description": "",
+          "generated_sql": null
+        },
+        "deleted_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "upload_id"
+        ],
+        [
+          "tenant_id",
+          "inspection_item_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "remediation_task_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "upload_id"
+          ],
+          "target": "uploads",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id"
+          ],
+          "target": "laboratories",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id",
+            "inspection_item_id"
+          ],
+          "target": "inspection_items",
+          "references": [
+            "tenant_id",
+            "laboratory_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "laboratory_id",
+            "remediation_task_id"
+          ],
+          "target": "remediation_tasks",
+          "references": [
+            "tenant_id",
+            "laboratory_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [
+        "(inspection_item_id IS NULL) <> (remediation_task_id IS NULL)"
+      ],
+      "append_only": false
+    },
+    "evidence_images": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "task_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "evidence_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "image_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "ordinal": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "0",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "evidence_id",
+          "image_id"
+        ],
+        [
+          "tenant_id",
+          "evidence_id",
+          "ordinal"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "task_id",
+            "evidence_id"
+          ],
+          "target": "remediation_evidence",
+          "references": [
+            "tenant_id",
+            "task_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "task_id",
+            "image_id"
+          ],
+          "target": "asset_images",
+          "references": [
+            "tenant_id",
+            "remediation_task_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "run_images": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "item_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "run_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "image_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "ordinal": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "0",
+          "description": "",
+          "generated_sql": null
+        },
+        "role": {
+          "type": "ENUM('overview','detail')",
+          "nullable": false,
+          "default_sql": "'overview'",
+          "description": "",
+          "generated_sql": null
+        },
+        "parent_image_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "analysis_sha256": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "run_id",
+          "image_id"
+        ],
+        [
+          "tenant_id",
+          "run_id",
+          "ordinal"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "item_id",
+            "run_id"
+          ],
+          "target": "inference_runs",
+          "references": [
+            "tenant_id",
+            "item_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "item_id",
+            "image_id"
+          ],
+          "target": "asset_images",
+          "references": [
+            "tenant_id",
+            "inspection_item_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "run_id",
+            "parent_image_id"
+          ],
+          "target": "run_images",
+          "references": [
+            "tenant_id",
+            "run_id",
+            "image_id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "image_derivatives": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "run_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "image_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "crop_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "detection_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "kind": {
+          "type": "ENUM('crop')",
+          "nullable": false,
+          "default_sql": "'crop'",
+          "description": "",
+          "generated_sql": null
+        },
+        "recipe": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "object_key": {
+          "type": "VARCHAR(1024)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "object_version": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "sha256": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "run_id",
+          "crop_id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "run_id",
+            "image_id"
+          ],
+          "target": "run_images",
+          "references": [
+            "tenant_id",
+            "run_id",
+            "image_id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "api_idempotency": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "actor_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "method": {
+          "type": "VARCHAR(10)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "path_hash": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "key_hash": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "request_hash": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "state": {
+          "type": "ENUM('pending','completed')",
+          "nullable": false,
+          "default_sql": "'pending'",
+          "description": "",
+          "generated_sql": null
+        },
+        "response_status": {
+          "type": "SMALLINT UNSIGNED",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "response": {
+          "type": "JSON",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "lease_owner": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "lease_until": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "expires_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "actor_id",
+          "method",
+          "path_hash",
+          "key_hash"
+        ]
+      ],
+      "indexes": [
+        [
+          "expires_at"
+        ]
+      ],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "actor_id"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "outbox_events": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "event_type": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "aggregate_type": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "aggregate_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "aggregate_version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "payload": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "state": {
+          "type": "ENUM('pending','leased','published')",
+          "nullable": false,
+          "default_sql": "'pending'",
+          "description": "",
+          "generated_sql": null
+        },
+        "lease_owner": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "lease_until": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "attempts": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "0",
+          "description": "",
+          "generated_sql": null
+        },
+        "available_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "published_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ]
+      ],
+      "indexes": [
+        [
+          "state",
+          "available_at",
+          "id"
+        ],
+        [
+          "state",
+          "lease_until"
+        ]
+      ],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "event_inbox": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "event_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "consumer": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "processed_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "event_id",
+          "consumer"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "event_id"
+          ],
+          "target": "outbox_events",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "task_runs": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "task_type": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "resource_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "logical_key": {
+          "type": "VARCHAR(200)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "payload": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "state": {
+          "type": "ENUM('ready','leased','retry_wait','succeeded','failed','dead_letter')",
+          "nullable": false,
+          "default_sql": "'ready'",
+          "description": "",
+          "generated_sql": null
+        },
+        "attempt": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "0",
+          "description": "",
+          "generated_sql": null
+        },
+        "replay_generation": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "0",
+          "description": "",
+          "generated_sql": null
+        },
+        "dispatch_sequence": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "lease_owner": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "lease_until": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "fencing_token": {
+          "type": "BIGINT UNSIGNED",
+          "nullable": false,
+          "default_sql": "0",
+          "description": "",
+          "generated_sql": null
+        },
+        "heartbeat_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "available_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "last_dispatched_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "last_error_code": {
+          "type": "VARCHAR(80)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "started_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "finished_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "logical_key"
+        ]
+      ],
+      "indexes": [
+        [
+          "state",
+          "available_at",
+          "id"
+        ],
+        [
+          "state",
+          "lease_until"
+        ]
+      ],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [
+        "attempt <= 4"
+      ],
+      "append_only": false
+    },
+    "task_attempts": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "task_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "replay_generation": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "0",
+          "description": "",
+          "generated_sql": null
+        },
+        "attempt": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "fencing_token": {
+          "type": "BIGINT UNSIGNED",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "lease_owner": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "started_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "finished_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('running','succeeded','failed','abandoned')",
+          "nullable": false,
+          "default_sql": "'running'",
+          "description": "",
+          "generated_sql": null
+        },
+        "error_code": {
+          "type": "VARCHAR(80)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "task_id",
+          "replay_generation",
+          "attempt"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "task_id"
+          ],
+          "target": "task_runs",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "notifications": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "event_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "recipient_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "type": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "resource_type": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "resource_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "read_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "event_id",
+          "recipient_id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "event_id"
+          ],
+          "target": "outbox_events",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "recipient_id"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "audit_events": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "actor_id": {
+          "type": "CHAR(36)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "action": {
+          "type": "VARCHAR(100)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "resource_type": {
+          "type": "VARCHAR(80)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "resource_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "changes": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "reason": {
+          "type": "VARCHAR(2000)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "request_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ]
+      ],
+      "indexes": [
+        [
+          "tenant_id",
+          "resource_type",
+          "resource_id",
+          "created_at"
+        ]
+      ],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "actor_id"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "report_exports": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "requested_by": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "format": {
+          "type": "ENUM('csv','pdf')",
+          "nullable": false,
+          "default_sql": "'csv'",
+          "description": "",
+          "generated_sql": null
+        },
+        "filters": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "snapshot_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "snapshot": {
+          "type": "JSON",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('queued','running','ready','failed','expired')",
+          "nullable": false,
+          "default_sql": "'queued'",
+          "description": "",
+          "generated_sql": null
+        },
+        "object_key": {
+          "type": "VARCHAR(1024)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "checksum": {
+          "type": "CHAR(64)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "expires_at": {
+          "type": "DATETIME(3)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "last_error_code": {
+          "type": "VARCHAR(80)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "requested_by"
+          ],
+          "target": "users",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": false
+    },
+    "dataset_versions": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "name": {
+          "type": "VARCHAR(100)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "checksum": {
+          "type": "CHAR(64)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "manifest_key": {
+          "type": "VARCHAR(1024)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "authorization_ref": {
+          "type": "VARCHAR(1000)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "status": {
+          "type": "ENUM('draft','frozen','retired')",
+          "nullable": false,
+          "default_sql": "'draft'",
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "name"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    },
+    "dataset_images": {
+      "columns": {
+        "id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "created_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "updated_at": {
+          "type": "DATETIME(3)",
+          "nullable": false,
+          "default_sql": "CURRENT_TIMESTAMP(3)",
+          "description": "",
+          "generated_sql": null
+        },
+        "version": {
+          "type": "INT UNSIGNED",
+          "nullable": false,
+          "default_sql": "1",
+          "description": "",
+          "generated_sql": null
+        },
+        "tenant_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "dataset_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "image_id": {
+          "type": "CHAR(36)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "scene_id": {
+          "type": "VARCHAR(100)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "split": {
+          "type": "ENUM('train','validation','test')",
+          "nullable": false,
+          "default_sql": "'train'",
+          "description": "",
+          "generated_sql": null
+        },
+        "annotation_key": {
+          "type": "VARCHAR(1024)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "provenance": {
+          "type": "VARCHAR(2000)",
+          "nullable": false,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        }
+      },
+      "primary_key": [
+        "id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "id"
+        ],
+        [
+          "tenant_id",
+          "dataset_id",
+          "image_id"
+        ]
+      ],
+      "indexes": [],
+      "foreign_keys": [
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "references": [
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "dataset_id"
+          ],
+          "target": "dataset_versions",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "image_id"
+          ],
+          "target": "asset_images",
+          "references": [
+            "tenant_id",
+            "id"
+          ],
+          "on_delete": "RESTRICT",
+          "on_update": "RESTRICT"
+        }
+      ],
+      "checks": [],
+      "append_only": true
+    }
+  }
+}

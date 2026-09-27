@@ -1,0 +1,1164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "ImageValidated"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "image_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "owner_type": {
+              "type": "string",
+              "enum": [
+                "inspection_item",
+                "remediation_task"
+              ]
+            },
+            "analysis_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "image_id",
+            "owner_id",
+            "owner_type",
+            "analysis_sha256"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "InferenceRequested"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "run_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "submission_revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            },
+            "model_bundle_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "dictionary_version_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "rule_bundle_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "run_id",
+            "submission_revision",
+            "model_bundle_id",
+            "dictionary_version_id",
+            "rule_bundle_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "InferenceCompleted"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "run_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "item_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "fact_revision_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "result_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "run_id",
+            "item_id",
+            "fact_revision_id",
+            "result_hash"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "QualityCheckFailed"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "run_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "item_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "image_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "minItems": 1,
+              "maxItems": 3
+            }
+          },
+          "required": [
+            "run_id",
+            "item_id",
+            "image_ids"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "FactsRevised"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "run_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "fact_revision_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "rule_bundle_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "run_id",
+            "fact_revision_id",
+            "rule_bundle_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "RuleEvaluationCompleted"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "evaluation_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "fact_revision_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "finding_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "minItems": 0,
+              "maxItems": 200
+            }
+          },
+          "required": [
+            "evaluation_id",
+            "fact_revision_id",
+            "finding_ids"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "FindingConfirmed"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "finding_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "actor_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "finding_id",
+            "actor_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "FindingRejected"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "finding_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "actor_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "finding_id",
+            "actor_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "RemediationDispatched"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "task_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "assignee_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "finding_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "task_id",
+            "assignee_id",
+            "finding_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "EvidenceSubmitted"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "task_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "evidence_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "task_id",
+            "evidence_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "RemediationClosed"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "task_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "finding_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "reviewer_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "task_id",
+            "finding_id",
+            "reviewer_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "RuleVersionPublished"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "rule_version_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "checksum": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "rule_version_id",
+            "checksum"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "ReportRequested"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "export_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "export_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "ObjectDeletionRequested"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "image_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "deletion_request_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "image_id",
+            "deletion_request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "const": "RemediationOverdue"
+        },
+        "aggregate_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "aggregate_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "task_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "assignee_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "due_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "notification_date": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "required": [
+            "task_id",
+            "assignee_id",
+            "due_at",
+            "notification_date"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "occurred_at",
+        "aggregate_version",
+        "payload"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

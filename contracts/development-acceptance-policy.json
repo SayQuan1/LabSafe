@@ -1,0 +1,186 @@
+{
+  "policy_id": "LABSAFE-PILOT-DRAFT-01",
+  "version": "1.0",
+  "status": "proposed",
+  "profile": "cuda-single-v1",
+  "metrics": [
+    {
+      "metric_id": "DET-P",
+      "groups": [
+        "bottle",
+        "label",
+        "shelf",
+        "cabinet"
+      ],
+      "unit": "ratio",
+      "direction": "ge",
+      "target": 0.85,
+      "min_denominator": 200,
+      "min_scene_count": 30,
+      "min_positive_count": 200,
+      "min_negative_count": 0
+    },
+    {
+      "metric_id": "DET-R",
+      "groups": [
+        "bottle",
+        "label",
+        "shelf",
+        "cabinet"
+      ],
+      "unit": "ratio",
+      "direction": "ge",
+      "target": 0.9,
+      "min_denominator": 200,
+      "min_scene_count": 30,
+      "min_positive_count": 200,
+      "min_negative_count": 0
+    },
+    {
+      "metric_id": "OCR-NAME",
+      "groups": [
+        "overall"
+      ],
+      "unit": "ratio",
+      "direction": "ge",
+      "target": 0.9,
+      "min_denominator": 200,
+      "min_scene_count": 30,
+      "min_positive_count": 0,
+      "min_negative_count": 0
+    },
+    {
+      "metric_id": "OCR-DATE",
+      "groups": [
+        "overall"
+      ],
+      "unit": "ratio",
+      "direction": "ge",
+      "target": 0.95,
+      "min_denominator": 100,
+      "min_scene_count": 30,
+      "min_positive_count": 0,
+      "min_negative_count": 0
+    },
+    {
+      "metric_id": "ENT-P",
+      "groups": [
+        "overall"
+      ],
+      "unit": "ratio",
+      "direction": "ge",
+      "target": 0.98,
+      "min_denominator": 200,
+      "min_scene_count": 30,
+      "min_positive_count": 0,
+      "min_negative_count": 0
+    },
+    {
+      "metric_id": "ENT-COVER",
+      "groups": [
+        "overall"
+      ],
+      "unit": "ratio",
+      "direction": "ge",
+      "target": 0.8,
+      "min_denominator": 200,
+      "min_scene_count": 30,
+      "min_positive_count": 0,
+      "min_negative_count": 0
+    },
+    {
+      "metric_id": "ENT-OOV",
+      "groups": [
+        "overall"
+      ],
+      "unit": "ratio",
+      "direction": "ge",
+      "target": 0.99,
+      "min_denominator": 100,
+      "min_scene_count": 30,
+      "min_positive_count": 0,
+      "min_negative_count": 0
+    },
+    {
+      "metric_id": "Q-FALSE-REJECT",
+      "groups": [
+        "overall"
+      ],
+      "unit": "ratio",
+      "direction": "le",
+      "target": 0.1,
+      "min_denominator": 100,
+      "min_scene_count": 30,
+      "min_positive_count": 0,
+      "min_negative_count": 0
+    },
+    {
+      "metric_id": "Q-FALSE-ACCEPT",
+      "groups": [
+        "overall"
+      ],
+      "unit": "ratio",
+      "direction": "le",
+      "target": 0.05,
+      "min_denominator": 100,
+      "min_scene_count": 30,
+      "min_positive_count": 0,
+      "min_negative_count": 0
+    },
+    {
+      "metric_id": "RISK-P",
+      "groups": [
+        "incompatible_storage",
+        "expired_label"
+      ],
+      "unit": "ratio",
+      "direction": "ge",
+      "target": 0.85,
+      "min_denominator": 100,
+      "min_scene_count": 30,
+      "min_positive_count": 100,
+      "min_negative_count": 100
+    },
+    {
+      "metric_id": "RISK-R",
+      "groups": [
+        "incompatible_storage",
+        "expired_label"
+      ],
+      "unit": "ratio",
+      "direction": "ge",
+      "target": 0.95,
+      "min_denominator": 100,
+      "min_scene_count": 30,
+      "min_positive_count": 100,
+      "min_negative_count": 100
+    },
+    {
+      "metric_id": "UNCERTAIN-ROUTING",
+      "groups": [
+        "overall"
+      ],
+      "unit": "ratio",
+      "direction": "ge",
+      "target": 0.99,
+      "min_denominator": 100,
+      "min_scene_count": 30,
+      "min_positive_count": 0,
+      "min_negative_count": 0
+    },
+    {
+      "metric_id": "LATENCY-CUDA",
+      "groups": [
+        "cuda-single-v1"
+      ],
+      "unit": "seconds",
+      "direction": "le",
+      "target": 30,
+      "min_denominator": 200,
+      "min_scene_count": 0,
+      "min_positive_count": 0,
+      "min_negative_count": 0
+    }
+  ],
+  "description": "Explicit engineering development targets. Not achieved measurements, expert approval or permission for production deployment."
+}

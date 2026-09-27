@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://labsafe.local/contracts/ModelEvaluation.json",
+  "$ref": "#/$defs/ModelEvaluation",
+  "$defs": {
+    "ModelEvaluation": {
+      "type": "object",
+      "properties": {
+        "bundle_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "policy_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "dataset_split_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evaluator_commit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "environment_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "measurements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MetricMeasurement"
+          },
+          "minItems": 1,
+          "maxItems": 1000
+        },
+        "latency_samples_ms": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "minItems": 0,
+          "maxItems": 100000
+        },
+        "technical_failure_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        }
+      },
+      "required": [
+        "bundle_id",
+        "content_sha256",
+        "policy_id",
+        "policy_sha256",
+        "dataset_split_sha256",
+        "evaluator_commit",
+        "environment_ref",
+        "completed_at",
+        "measurements",
+        "latency_samples_ms",
+        "technical_failure_count"
+      ],
+      "additionalProperties": false
+    },
+    "MetricMeasurement": {
+      "type": "object",
+      "properties": {
+        "metric_id": {
+          "type": "string",
+          "enum": [
+            "DET-P",
+            "DET-R",
+            "OCR-NAME",
+            "OCR-DATE",
+            "ENT-P",
+            "ENT-COVER",
+            "ENT-OOV",
+            "Q-FALSE-REJECT",
+            "Q-FALSE-ACCEPT",
+            "RISK-P",
+            "RISK-R",
+            "UNCERTAIN-ROUTING",
+            "LATENCY-CUDA"
+          ]
+        },
+        "group": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "numerator": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "denominator": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "scene_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "positive_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "negative_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail",
+            "inconclusive"
+          ]
+        }
+      },
+      "required": [
+        "metric_id",
+        "group",
+        "numerator",
+        "denominator",
+        "scene_count",
+        "positive_count",
+        "negative_count",
+        "value",
+        "status"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

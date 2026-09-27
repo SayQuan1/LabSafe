@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://labsafe.local/contracts/RuleBundle.json",
+  "$ref": "#/$defs/RuleBundle",
+  "$defs": {
+    "RuleBundle": {
+      "type": "object",
+      "properties": {
+        "rule_set_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version_label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RuleDefinition"
+          },
+          "minItems": 1,
+          "maxItems": 200
+        },
+        "evaluator_version": {
+          "type": "string",
+          "enum": [
+            "rules-dnf-v1"
+          ]
+        }
+      },
+      "required": [
+        "rule_set_id",
+        "version_label",
+        "rules",
+        "evaluator_version"
+      ],
+      "additionalProperties": false
+    },
+    "RuleDefinition": {
+      "type": "object",
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "global",
+            "tenant",
+            "laboratory"
+          ]
+        },
+        "scope_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "effective_to": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "clauses": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/RuleAtom"
+            },
+            "minItems": 1,
+            "maxItems": 10
+          },
+          "minItems": 1,
+          "maxItems": 10
+        },
+        "finding_type": {
+          "type": "string",
+          "enum": [
+            "incompatible_storage",
+            "expired_label"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "action_code": {
+          "type": "string",
+          "enum": [
+            "review_storage",
+            "review_date"
+          ]
+        },
+        "explanation_template": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "case_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "minItems": 3,
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "rule_id",
+        "scope",
+        "scope_id",
+        "priority",
+        "enabled",
+        "effective_from",
+        "effective_to",
+        "clauses",
+        "finding_type",
+        "severity",
+        "action_code",
+        "explanation_template",
+        "source",
+        "case_ids"
+      ],
+      "additionalProperties": false
+    },
+    "RuleAtom": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string",
+          "enum": [
+            "left.storage_class",
+            "right.storage_class",
+            "same_location",
+            "adjacent",
+            "expiry_date"
+          ]
+        },
+        "op": {
+          "type": "string",
+          "enum": [
+            "eq",
+            "in",
+            "before_reference_date"
+          ]
+        },
+        "value": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "minItems": 1,
+              "maxItems": 50
+            }
+          ]
+        }
+      },
+      "required": [
+        "field",
+        "op"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

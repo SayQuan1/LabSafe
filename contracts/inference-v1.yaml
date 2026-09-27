@@ -1,0 +1,1008 @@
+openapi: 3.1.0
+info:
+  title: LabSafe 独立 AI 事实 API
+  version: 1.1.0
+  description: 设计修订版，由 tools/design/build_specs.py 生成；未声明已部署。
+servers:
+- url: /internal/inference/v1
+security:
+- serviceToken: []
+paths:
+  /quality:
+    post:
+      operationId: aiQuality
+      responses:
+        '200':
+          description: 结构化事实或健康状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InferenceResult'
+        '401':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InferenceRequest'
+  /runs:
+    post:
+      operationId: aiRuns
+      responses:
+        '200':
+          description: 结构化事实或健康状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InferenceResult'
+        '401':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InferenceRequest'
+  /health:
+    get:
+      operationId: aiHealth
+      responses:
+        '200':
+          description: 结构化事实或健康状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '401':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /ready:
+    get:
+      operationId: aiReady
+      responses:
+        '200':
+          description: 结构化事实或健康状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '401':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /version:
+    get:
+      operationId: aiVersion
+      responses:
+        '200':
+          description: 结构化事实或健康状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Version'
+        '401':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '415':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: 统一错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    serviceToken:
+      type: http
+      scheme: bearer
+  schemas:
+    Error:
+      type: object
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              enum:
+              - VALIDATION_ERROR
+              - UNAUTHENTICATED
+              - FORBIDDEN
+              - NOT_FOUND
+              - STATE_CONFLICT
+              - VERSION_CONFLICT
+              - IDEMPOTENCY_CONFLICT
+              - REQUEST_IN_PROGRESS
+              - RATE_LIMITED
+              - IMAGE_TOO_LARGE
+              - UNSUPPORTED_MEDIA_TYPE
+              - IMAGE_INVALID
+              - UNAUTHORIZED_REF
+              - OBJECT_NOT_FOUND
+              - HASH_MISMATCH
+              - MODEL_NOT_READY
+              - MODEL_VERSION_UNAVAILABLE
+              - AI_BUSY
+              - RUN_IN_PROGRESS
+              - AI_TIMEOUT
+              - STAGE_TIMEOUT
+              - MODEL_OOM
+              - DEPENDENCY_UNAVAILABLE
+              - MODEL_ERROR
+              - INTERNAL_ERROR
+              - SCHEMA_MISMATCH
+              - RULESET_INVALID
+              - LEASE_LOST
+            message:
+              type: string
+              minLength: 1
+              maxLength: 500
+            retryable:
+              type: boolean
+            details:
+              type: array
+              items:
+                $ref: '#/components/schemas/ErrorDetail'
+              minItems: 0
+              maxItems: 30
+          required:
+          - code
+          - message
+          - retryable
+          - details
+          additionalProperties: false
+      required:
+      - request_id
+      - error
+      additionalProperties: false
+    ErrorDetail:
+      type: object
+      properties:
+        field:
+          type: string
+          minLength: 1
+          maxLength: 160
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+      - field
+      - reason
+      additionalProperties: false
+    ImageRef:
+      type: object
+      properties:
+        image_id: &id001
+          type: string
+          format: uuid
+        object_key:
+          type: string
+          minLength: 1
+          maxLength: 1024
+        sha256: &id002
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        mime_type:
+          type: string
+          enum:
+          - image/jpeg
+          - image/png
+          - image/webp
+        role:
+          type: string
+          enum:
+          - overview
+          - detail
+        location_id: *id001
+        parent_image_id:
+          anyOf:
+          - *id001
+          - type: 'null'
+      required:
+      - image_id
+      - object_key
+      - sha256
+      - mime_type
+      - role
+      - location_id
+      - parent_image_id
+      additionalProperties: false
+    InferenceRequest:
+      type: object
+      properties:
+        run_id: *id001
+        attempt_id: *id001
+        fencing_token:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+        tenant_id: *id001
+        laboratory_id: *id001
+        item_id: *id001
+        submission_revision:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+        model_bundle_id: *id001
+        model_checksum: *id002
+        dictionary_version_id: *id001
+        dictionary_sha256: *id002
+        pipeline_version:
+          type: string
+          enum:
+          - vision-v1
+        device_profile:
+          type: string
+          enum:
+          - cpu
+          - cuda
+        deadline_at:
+          type: string
+          format: date-time
+        request_hash: *id002
+        image_refs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageRef'
+          minItems: 1
+          maxItems: 3
+      required:
+      - run_id
+      - attempt_id
+      - fencing_token
+      - tenant_id
+      - laboratory_id
+      - item_id
+      - submission_revision
+      - model_bundle_id
+      - model_checksum
+      - dictionary_version_id
+      - dictionary_sha256
+      - pipeline_version
+      - device_profile
+      - deadline_at
+      - request_hash
+      - image_refs
+      additionalProperties: false
+    Point:
+      type: object
+      properties:
+        x: &id003
+          type: number
+          minimum: 0
+          maximum: 1
+        y: *id003
+      required:
+      - x
+      - y
+      additionalProperties: false
+    Quality:
+      type: object
+      properties:
+        image_id: *id001
+        status:
+          type: string
+          enum:
+          - pass
+          - needs_retake
+        reasons:
+          type: array
+          items:
+            type: string
+            enum:
+            - blur
+            - dark
+            - glare
+            - occluded
+            - unreadable
+          minItems: 0
+          maxItems: 5
+        blur_score:
+          type: number
+          minimum: 0
+        brightness: *id003
+        glare_ratio: *id003
+      required:
+      - image_id
+      - status
+      - reasons
+      - blur_score
+      - brightness
+      - glare_ratio
+      additionalProperties: false
+    Detection:
+      type: object
+      properties:
+        detection_id: *id001
+        image_id: *id001
+        parent_detection_id:
+          anyOf:
+          - *id001
+          - type: 'null'
+        type:
+          type: string
+          enum:
+          - bottle
+          - label
+          - shelf
+          - cabinet
+        bbox:
+          type: array
+          items: *id003
+          minItems: 4
+          maxItems: 4
+        confidence: *id003
+      required:
+      - detection_id
+      - image_id
+      - parent_detection_id
+      - type
+      - bbox
+      - confidence
+      additionalProperties: false
+    CropRecipe:
+      type: object
+      properties:
+        crop_id: *id001
+        image_id: *id001
+        detection_id: *id001
+        quad:
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+          minItems: 4
+          maxItems: 4
+        output_width:
+          type: integer
+          minimum: 1
+          maximum: 2048
+        output_height:
+          type: integer
+          minimum: 1
+          maximum: 2048
+        transform_version:
+          type: string
+          enum:
+          - perspective-rgb-v1
+      required:
+      - crop_id
+      - image_id
+      - detection_id
+      - quad
+      - output_width
+      - output_height
+      - transform_version
+      additionalProperties: false
+    OCRField:
+      type: object
+      properties:
+        image_id: *id001
+        detection_id: *id001
+        crop_id: *id001
+        field:
+          type: string
+          enum:
+          - name
+          - expiry
+          - production
+          - opened
+          - date_unknown
+          - concentration
+          - hazard_mark
+        raw_text:
+          type: string
+          minLength: 0
+          maxLength: 2000
+        normalized_text:
+          anyOf:
+          - type: string
+            minLength: 1
+            maxLength: 500
+          - type: 'null'
+        confidence: *id003
+      required:
+      - image_id
+      - detection_id
+      - crop_id
+      - field
+      - raw_text
+      - normalized_text
+      - confidence
+      additionalProperties: false
+    Candidate:
+      type: object
+      properties:
+        entity_id: *id001
+        canonical_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        confidence: *id003
+        match_method:
+          type: string
+          enum:
+          - cas_exact
+          - alias_exact
+          - fuzzy
+      required:
+      - entity_id
+      - canonical_name
+      - confidence
+      - match_method
+      additionalProperties: false
+    EntityCandidates:
+      type: object
+      properties:
+        image_id: *id001
+        detection_id: *id001
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Candidate'
+          minItems: 0
+          maxItems: 5
+        resolution:
+          type: string
+          enum:
+          - resolved
+          - candidate
+          - unknown
+      required:
+      - image_id
+      - detection_id
+      - candidates
+      - resolution
+      additionalProperties: false
+    Relation:
+      type: object
+      properties:
+        image_id: *id001
+        source_detection_id: *id001
+        target_detection_id: *id001
+        relation:
+          type: string
+          enum:
+          - adjacent
+          - not_adjacent
+          - unknown
+        confidence: *id003
+      required:
+      - image_id
+      - source_detection_id
+      - target_detection_id
+      - relation
+      - confidence
+      additionalProperties: false
+    Timing:
+      type: object
+      properties:
+        download_ms:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+        quality_ms:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+        detection_ms:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+        ocr_ms:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+        normalization_ms:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+        total_ms:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+      required:
+      - download_ms
+      - quality_ms
+      - detection_ms
+      - ocr_ms
+      - normalization_ms
+      - total_ms
+      additionalProperties: false
+    InferenceResult:
+      type: object
+      properties:
+        run_id: *id001
+        attempt_id: *id001
+        fencing_token:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+        tenant_id: *id001
+        request_hash: *id002
+        input_hashes:
+          type: array
+          items:
+            type: object
+            properties:
+              image_id: *id001
+              sha256: *id002
+            required:
+            - image_id
+            - sha256
+            additionalProperties: false
+          minItems: 1
+          maxItems: 3
+        model_bundle_id: *id001
+        model_checksum: *id002
+        dictionary_version_id: *id001
+        dictionary_sha256: *id002
+        pipeline_version:
+          type: string
+          enum:
+          - vision-v1
+        outcome:
+          type: string
+          enum:
+          - facts_ready
+          - needs_retake
+          - needs_review
+        quality:
+          type: array
+          items:
+            $ref: '#/components/schemas/Quality'
+          minItems: 1
+          maxItems: 3
+        detections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Detection'
+          minItems: 0
+          maxItems: 100
+        crops:
+          type: array
+          items:
+            $ref: '#/components/schemas/CropRecipe'
+          minItems: 0
+          maxItems: 100
+        ocr_fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/OCRField'
+          minItems: 0
+          maxItems: 500
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityCandidates'
+          minItems: 0
+          maxItems: 100
+        relations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Relation'
+          minItems: 0
+          maxItems: 200
+        timing_ms:
+          $ref: '#/components/schemas/Timing'
+      required:
+      - run_id
+      - attempt_id
+      - fencing_token
+      - tenant_id
+      - request_hash
+      - input_hashes
+      - model_bundle_id
+      - model_checksum
+      - dictionary_version_id
+      - dictionary_sha256
+      - pipeline_version
+      - outcome
+      - quality
+      - detections
+      - crops
+      - ocr_fields
+      - entities
+      - relations
+      - timing_ms
+      additionalProperties: false
+    Health:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - alive
+          - ready
+          - not_ready
+        model_bundle_id:
+          anyOf:
+          - *id001
+          - type: 'null'
+        active_attempt_id:
+          anyOf:
+          - *id001
+          - type: 'null'
+      required:
+      - status
+      - model_bundle_id
+      - active_attempt_id
+      additionalProperties: false
+    Version:
+      type: object
+      properties:
+        service_commit:
+          type: string
+          minLength: 1
+          maxLength: 40
+        pipeline_version:
+          type: string
+          enum:
+          - vision-v1
+        model_bundle_id: *id001
+        dictionary_version_id: *id001
+        device_profile:
+          type: string
+          enum:
+          - cpu
+          - cuda
+        purpose:
+          type: string
+          enum:
+          - development
+          - evaluation
+          - production
+        is_simulated:
+          type: boolean
+        adapter_id:
+          type: string
+          enum:
+          - dfine-n4-rgb-stretch-v1
+          - fixture-v1
+        runtime_profile:
+          type: string
+          enum:
+          - dfine-cpu-fp32-ocrv4cpu-v1
+          - dfine-cuda-fp32-ocrv4cpu-v1
+          - fixture-v1
+        runtime_lock_sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        detector_device:
+          type: string
+          enum:
+          - cpu
+          - cuda
+          - mock
+        ocr_device:
+          type: string
+          enum:
+          - cpu
+          - mock
+      required:
+      - service_commit
+      - pipeline_version
+      - model_bundle_id
+      - dictionary_version_id
+      - device_profile
+      - purpose
+      - is_simulated
+      - adapter_id
+      - runtime_profile
+      - runtime_lock_sha256
+      - detector_device
+      - ocr_device
+      additionalProperties: false
