@@ -1,0 +1,520 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "task_type": {
+          "const": "validate_image"
+        },
+        "resource_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "replay_generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "dispatch_sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "upload_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "image_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "upload_id",
+            "image_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "task_id",
+        "task_type",
+        "resource_id",
+        "replay_generation",
+        "dispatch_sequence",
+        "created_at",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "task_type": {
+          "const": "inference_pipeline"
+        },
+        "resource_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "replay_generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "dispatch_sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "run_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "submission_revision": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            },
+            "model_bundle_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "dictionary_version_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "rule_bundle_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "run_id",
+            "submission_revision",
+            "model_bundle_id",
+            "dictionary_version_id",
+            "rule_bundle_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "task_id",
+        "task_type",
+        "resource_id",
+        "replay_generation",
+        "dispatch_sequence",
+        "created_at",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "task_type": {
+          "const": "rule_evaluation"
+        },
+        "resource_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "replay_generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "dispatch_sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "run_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "fact_revision_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "rule_bundle_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "run_id",
+            "fact_revision_id",
+            "rule_bundle_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "task_id",
+        "task_type",
+        "resource_id",
+        "replay_generation",
+        "dispatch_sequence",
+        "created_at",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "task_type": {
+          "const": "report_export"
+        },
+        "resource_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "replay_generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "dispatch_sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "export_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "export_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "task_id",
+        "task_type",
+        "resource_id",
+        "replay_generation",
+        "dispatch_sequence",
+        "created_at",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "task_type": {
+          "const": "notification_create"
+        },
+        "resource_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "replay_generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "dispatch_sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "event_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "recipient_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "event_id",
+            "recipient_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "task_id",
+        "task_type",
+        "resource_id",
+        "replay_generation",
+        "dispatch_sequence",
+        "created_at",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "task_type": {
+          "const": "overdue_scan"
+        },
+        "resource_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "replay_generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "dispatch_sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "cutoff_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "cutoff_at"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "task_id",
+        "task_type",
+        "resource_id",
+        "replay_generation",
+        "dispatch_sequence",
+        "created_at",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "1.1"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "trace_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$"
+        },
+        "task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "task_type": {
+          "const": "object_cleanup"
+        },
+        "resource_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "replay_generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "dispatch_sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "image_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "deletion_request_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "image_id",
+            "deletion_request_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "trace_id",
+        "task_id",
+        "task_type",
+        "resource_id",
+        "replay_generation",
+        "dispatch_sequence",
+        "created_at",
+        "payload"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://labsafe.local/contracts/ReleaseApprovals.json",
+  "$ref": "#/$defs/ReleaseApprovals",
+  "$defs": {
+    "ReleaseApprovals": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "const": "1.0"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReleaseApproval"
+          },
+          "minItems": 0,
+          "maxItems": 10000
+        }
+      },
+      "required": [
+        "schema_version",
+        "entries"
+      ],
+      "additionalProperties": false
+    },
+    "ReleaseApproval": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "bundle_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "manifest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "policy_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "report_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "expert_approver": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "business_approver": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": [
+        "tenant_id",
+        "bundle_id",
+        "manifest_sha256",
+        "policy_id",
+        "policy_sha256",
+        "report_sha256",
+        "expert_approver",
+        "business_approver",
+        "approved_at",
+        "evidence_ref"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

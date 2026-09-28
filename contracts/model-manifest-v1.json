@@ -1,0 +1,406 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://labsafe.local/contracts/ModelManifest.json",
+  "$ref": "#/$defs/ModelManifest",
+  "$defs": {
+    "ModelManifest": {
+      "type": "object",
+      "properties": {
+        "bundle_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version_label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "pipeline_version": {
+          "type": "string",
+          "enum": [
+            "vision-v1"
+          ]
+        },
+        "dictionary_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dictionary_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "git_commit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "dataset_version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "device_profiles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "cpu",
+              "cuda"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ModelArtifact"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "thresholds": {
+          "$ref": "#/$defs/Thresholds"
+        },
+        "input_max_side": {
+          "type": "integer",
+          "const": 640
+        },
+        "detector_backend": {
+          "type": "string",
+          "enum": [
+            "onnxruntime",
+            "mock"
+          ]
+        },
+        "ocr_backend": {
+          "type": "string",
+          "enum": [
+            "paddleocr",
+            "mock"
+          ]
+        },
+        "evaluation_report_key": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evaluation_passed": {
+          "type": "boolean"
+        },
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "development",
+            "evaluation",
+            "production"
+          ]
+        },
+        "adapter_id": {
+          "type": "string",
+          "enum": [
+            "dfine-n4-rgb-stretch-v1",
+            "fixture-v1"
+          ]
+        },
+        "model_family": {
+          "type": "string",
+          "enum": [
+            "dfine_n",
+            "mock_fixture"
+          ]
+        },
+        "source_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "source_commit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "runtime_profile": {
+          "type": "string",
+          "enum": [
+            "dfine-cpu-fp32-ocrv4cpu-v1",
+            "dfine-cuda-fp32-ocrv4cpu-v1",
+            "fixture-v1"
+          ]
+        },
+        "runtime": {
+          "$ref": "#/$defs/InferenceRuntime"
+        },
+        "content_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "calibration": {
+          "$ref": "#/$defs/Calibration"
+        },
+        "evaluation_policy_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evaluation_policy_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evaluation_report_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "bundle_id",
+        "version_label",
+        "pipeline_version",
+        "dictionary_version_id",
+        "dictionary_sha256",
+        "git_commit",
+        "dataset_version",
+        "device_profiles",
+        "artifacts",
+        "thresholds",
+        "input_max_side",
+        "detector_backend",
+        "ocr_backend",
+        "evaluation_report_key",
+        "evaluation_passed",
+        "purpose",
+        "adapter_id",
+        "model_family",
+        "source_ref",
+        "source_commit",
+        "runtime_profile",
+        "runtime",
+        "content_sha256",
+        "calibration",
+        "evaluation_policy_id",
+        "evaluation_policy_sha256",
+        "evaluation_report_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "ModelArtifact": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "detector",
+            "ocr",
+            "quality",
+            "dictionary"
+          ]
+        },
+        "object_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "runtime": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "role",
+        "object_key",
+        "sha256",
+        "license",
+        "runtime"
+      ],
+      "additionalProperties": false
+    },
+    "Thresholds": {
+      "type": "object",
+      "properties": {
+        "detection_min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "ocr_min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "entity_min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "blur_min": {
+          "type": "number",
+          "minimum": 0
+        },
+        "dark_min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "glare_max": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "adjacent_gap_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        }
+      },
+      "required": [
+        "detection_min",
+        "ocr_min",
+        "entity_min",
+        "blur_min",
+        "dark_min",
+        "glare_max",
+        "adjacent_gap_ratio"
+      ],
+      "additionalProperties": false
+    },
+    "Calibration": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "uncalibrated",
+            "calibrated",
+            "failed"
+          ]
+        },
+        "validation_split_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "report_sha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "validation_split_sha256",
+        "report_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "InferenceRuntime": {
+      "type": "object",
+      "properties": {
+        "detector_device": {
+          "type": "string",
+          "enum": [
+            "cpu",
+            "cuda",
+            "mock"
+          ]
+        },
+        "ocr_device": {
+          "type": "string",
+          "enum": [
+            "cpu",
+            "mock"
+          ]
+        },
+        "detector_precision": {
+          "type": "string",
+          "enum": [
+            "fp32",
+            "mock"
+          ]
+        },
+        "preprocess_id": {
+          "type": "string",
+          "enum": [
+            "dfine-rgb-stretch640-v1",
+            "fixture-v1"
+          ]
+        },
+        "postprocess_id": {
+          "type": "string",
+          "enum": [
+            "dfine-qmax-v1",
+            "fixture-v1"
+          ]
+        },
+        "onnx_opset": {
+          "type": "integer",
+          "enum": [
+            16,
+            0
+          ]
+        },
+        "runtime_lock_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "detector_device",
+        "ocr_device",
+        "detector_precision",
+        "preprocess_id",
+        "postprocess_id",
+        "onnx_opset",
+        "runtime_lock_sha256"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

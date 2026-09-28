@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "model_bundle_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dictionary_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "device_profile": {
+            "type": "string",
+            "enum": [
+              "cpu",
+              "cuda"
+            ]
+          },
+          "endpoint": {
+            "type": "string",
+            "format": "uri",
+            "pattern": "^https?://[a-zA-Z0-9][a-zA-Z0-9.:-]*/internal/inference/v1$"
+          },
+          "token_file": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          }
+        },
+        "required": [
+          "tenant_id",
+          "model_bundle_id",
+          "dictionary_version_id",
+          "device_profile",
+          "endpoint",
+          "token_file"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "routes"
+  ],
+  "additionalProperties": false
+}
