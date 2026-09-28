@@ -25,7 +25,7 @@ python -m venv .venv-design
 .\.venv-design\Scripts\python tools/design/validate_specs.py --report
 ~~~
 
-建议Python3.11/3.12独立环境。CI先安装依赖，再运行--check和validate；不要先自动生成再检查，否则掩盖未提交生成物漂移。虚拟环境、__pycache__和运行缓存不得提交。所有fixtures均模拟，无真实实验室图像或个人信息。
+使用Python3.11独立工具环境；应用与AI也统一3.11，但不与设计工具共用依赖环境。CI先安装依赖，再运行--check和validate；不要先自动生成再检查，否则掩盖未提交生成物漂移。虚拟环境、__pycache__和运行缓存不得提交。所有fixtures均模拟，无真实实验室图像或个人信息。
 
 ## 验证范围
 

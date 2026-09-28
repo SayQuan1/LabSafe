@@ -10,7 +10,9 @@ AI 是单 Uvicorn worker supervisor + 一个 multiprocessing spawn 计算子进�
 
 AI 只能读授权 analysis/ 对象和只读模型目录，无 MySQL/Redis/业务 ORM/规则依赖。Worker 根据裁剪配方写证据对象。AI 不返回可写 URL、不持有写权限。
 
-模型和数据路线以[固定模型方案](../04-ai-rules/02-model-data-plan.md)为准：AI运行时Python3.11、D-FINE-N四类ONNX，业务仍Python3.12；RGB直接resize640并除255，qmax/无NMS，不套用其他模型的letterbox。建议生产检测CUDA FP32；OCR保持PP-OCRv4 CPU。APP_ENV/AI_MODE在启动校验；production禁止fixture和未批准bundle，dev/test可用同协议mock进程。/version除purpose/is_simulated外回显adapter_id、runtime_profile、runtime_lock_sha256、detector_device和ocr_device；这些值取实际通过启动校验的加载状态，Worker与受控manifest逐项核对。
+模型和数据路线以[固定模型方案](../04-ai-rules/02-model-data-plan.md)为准：AI运行时Python3.11、D-FINE-N四类ONNX，业务同为Python3.11但保留独立依赖环境；RGB直接resize640并除255，qmax/无NMS，不套用其他模型的letterbox。建议生产检测CUDA FP32；OCR保持PP-OCRv4 CPU。APP_ENV/AI_MODE在启动校验；production禁止fixture和未批准bundle，dev/test可用同协议mock进程。/version除purpose/is_simulated外回显adapter_id、runtime_profile、runtime_lock_sha256、detector_device和ocr_device；这些值取实际通过启动校验的加载状态，Worker与受控manifest逐项核对。
+
+I-01A只交付同协议开发fixture和HTTP进程入口；下面的真实spawn计算子进程、模型加载与故障恢复仍按I-03/I-ML实施，不能将fixture冒充完整supervisor。运行和验收入口见[开发指南](../../DEVELOPMENT.md)。
 
 ## 2. 生命周期
 

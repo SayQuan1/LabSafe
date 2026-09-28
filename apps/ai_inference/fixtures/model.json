@@ -1,0 +1,7 @@
+{
+  "purpose": "development",
+  "adapter_id": "fixture-v1",
+  "model_family": "mock_fixture",
+  "model_bundle_id": "22222222-2222-4222-8222-222222222222",
+  "description": "Synthetic no-target fixture. This is not a trained model."
+}

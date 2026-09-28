@@ -4,14 +4,14 @@
 
 ## 1. 固定路线与变更边界
 
-| 能力 | 本期决定 | 不允许的替代 |
-|---|---|---|
-| 检测 | D-FINE-N，四类微调，640×640，300 queries | 把COCO权重直接当四类模型；未经确认换S或扩大输入 |
-| 适配器 | dfine-n4-rgb-stretch-v1；RGB、直接resize、qmax、无NMS | 旧BGR/0–255/letterbox适配器；混用上游两个推理示例 |
-| 生产建议 | ONNX Runtime CUDA、FP32、batch=1、并发1 | 默认TensorRT/FP16、跨主机GPU调度或静默CPU fallback |
-| OCR | 保留PaddleOCR2.10.0、PP-OCRv4及CPU | 本次不隐含批准PP-OCRv6、OCR上GPU或大模型 |
-| 开发 | fixture-v1联调；真实CPU profile做功能/导出检查 | 把mock、CPU结果当CUDA生产性能证明 |
-| 业务 | AI只出事实；Worker写证据并执行确定性规则；仍需人工复核 | 用模型置信度代替安全判断 |
+| 能力   | 本期决定                                           | 不允许的替代                                  |
+| ---- | ---------------------------------------------- | --------------------------------------- |
+| 检测   | D-FINE-N，四类微调，640×640，300 queries              | 把COCO权重直接当四类模型；未经确认换S或扩大输入              |
+| 适配器  | dfine-n4-rgb-stretch-v1；RGB、直接resize、qmax、无NMS | 旧BGR/0–255/letterbox适配器；混用上游两个推理示例      |
+| 生产建议 | ONNX Runtime CUDA、FP32、batch=1、并发1             | 默认TensorRT/FP16、跨主机GPU调度或静默CPU fallback |
+| OCR  | 保留PaddleOCR2.10.0、PP-OCRv4及CPU                 | 本次不隐含批准PP-OCRv6、OCR上GPU或大模型             |
+| 开发   | fixture-v1联调；真实CPU profile做功能/导出检查             | 把mock、CPU结果当CUDA生产性能证明                  |
+| 业务   | AI只出事实；Worker写证据并执行确定性规则；仍需人工复核                | 用模型置信度代替安全判断                            |
 
 上游仓库为Peterande/D-FINE，固定提交956d1709314c2c6a4df6f34de232054578a7449f；模型结构从该提交configs/dfine/dfine_hgnetv2_n_coco.yml及其include展开。source_ref固定为https://github.com/Peterande/D-FINE，source_commit为上述40位提交；不在构建时追踪master。项目包装器和安全加载改动由项目git_commit及补丁摘要追踪，不伪装成上游原样实现。
 
@@ -19,7 +19,7 @@
 
 ## 2. 运行时和版本约束
 
-业务API/Worker保持Python3.12；AI和离线训练使用Python3.11、Linux x86_64。Windows开发通过相同Linux容器联调。训练框架不进入业务API，也不要求训练与推理安装在同一环境。
+依据[ADR-PY-01](../02-architecture/07-python-runtime.md)，业务API/Worker、AI和离线训练统一Python3.11；各服务依赖环境仍独立，真实训练/推理以Linux x86_64为目标。Windows开发通过相同Linux容器联调。训练框架不进入业务API，也不要求训练与推理安装在同一环境。
 
 | 环境 | 顶层约束 |
 |---|---|

@@ -11,9 +11,9 @@
 | 目录 | 实现职责 | 禁止事项 |
 |---|---|---|
 | apps/web | Vue 3、TypeScript、Vite、Element Plus、Vue Router、TanStack Query；Pinia 只管会话/UI | 复制状态机、长期对象凭据 |
-| apps/api | Python 3.12、FastAPI、Pydantic v2；路由调用命令/查询 | 加载模型，外部调用持有 DB 事务 |
+| apps/api | Python 3.11、FastAPI、Pydantic v2；路由调用命令/查询 | 加载模型，外部调用持有 DB 事务 |
 | apps/worker | Celery、Redis、持久任务、AI client、规则、裁剪、导出 | 覆盖历史结果 |
-| apps/ai_inference | Python3.11独立FastAPI supervisor + spawn计算子进程；D-FINE-N四类ONNX/PP-OCRv4 CPU；建议检测CUDA FP32，CPU功能保留；业务API/Worker仍Python3.12 | 业务ORM、数据库、Redis、最终风险 |
+| apps/ai_inference | Python3.11独立FastAPI supervisor + spawn计算子进程；D-FINE-N四类ONNX/PP-OCRv4 CPU；建议检测CUDA FP32，CPU功能保留；业务API/Worker同为Python3.11，依赖环境仍隔离 | 业务ORM、数据库、Redis、最终风险 |
 | packages/domain | 状态、guards、权限动作、不变事实类型 | 通用 status setter |
 | packages/application | 命令处理器、查询、unit_of_work；每命令唯一入口 | 路由另写业务逻辑 |
 | packages/persistence | SQLAlchemy 2、MySQL 8.0.16+、Alembic、Outbox repository | 省略租户条件 |
@@ -21,6 +21,8 @@
 | contracts / tests | 生成协议；contract/unit/integration/e2e/fault/evaluation 分层 | 模拟成绩冒充真实评测 |
 
 依赖：HTTP/任务入口 → application → domain；persistence 实现仓储接口。AI 只共享协议和图像变换包。应用依赖锁文件和镜像 digest 在实施环境验证后提交；没有完成依赖兼容性验证前不得宣称环境可复现。
+
+统一运行时依据见[ADR-PY-01](07-python-runtime.md)；I-01A开发入口与测试见[开发指南](../../DEVELOPMENT.md)。统一minor不合并AI与业务依赖，也不改变进程/权限边界。
 
 ## 3. 事务模板
 
@@ -36,7 +38,7 @@
 
 - 资源 ID 默认 UUID v4 小写；确定性检测/裁剪 ID 按 AI 文档使用 UUIDv5。时间为 UTC RFC3339 毫秒，DB DATETIME(3)。reference_date 在提交时按 tenant.timezone 生成并冻结。
 - 通用字符串 NFC 去首尾空白；密码和 OCR raw_text 不处理；账号 NFKC+casefold 后唯一。
-- JSON哈希：UTF-8、键字典序、无空格、禁止NaN、保留数组顺序；共享规范函数为json.dumps(sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False)。Python3.11/3.12生产者使用同一函数和黄金样本测试；不是任意语言默认JSON字符串。原图/制品哈希直接对字节计算。
+- JSON哈希：UTF-8、键字典序、无空格、禁止NaN、保留数组顺序；共享规范函数为json.dumps(sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False)。Python3.11生产者使用同一函数和黄金样本测试；不是任意语言默认JSON字符串。原图/制品哈希直接对字节计算。
 - trace_id 为 32 位小写十六进制；request_id/attempt_id 是 UUID。
 - 原图、分析图、裁剪图各自保留对象 key、version、SHA，禁止混用。
 - 终态结果、事实正文、发布规则/词典正文不可覆盖；元数据只能通过规定命令变化；activation 只影响新 run。
