@@ -16,3 +16,11 @@ coverage/
 *.egg-info/
 .local-secrets/
 test-results/
+
+# demo 运行时产物
+demo_web/uploads/
+demo_web/backend/models/*.pt
+demo_web/backend/models/*.onnx
+
+# 检测框验证图（可再生）
+picture/verify/
