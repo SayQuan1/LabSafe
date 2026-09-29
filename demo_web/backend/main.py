@@ -16,10 +16,11 @@ import cv2
 import numpy as np
 from datetime import datetime
 from typing import Dict, Optional, List
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from yolo_detector import get_detector, Detection
 
@@ -439,13 +440,13 @@ def merge_overlapping_boxes(boxes: list, iou_threshold: float = 0.3) -> list:
 
 # ==================== 主推理流水线 ====================
 
-def run_inference(image_path: str, filename: str) -> dict:
+def run_inference(image_path: str, filename: str, image_key: str = "") -> dict:
     """执行完整推理流水线（数据驱动，结果依赖实际图片内容）"""
 
     # 1. 质量检测（基于真实图像统计）
     quality_result = check_quality(image_path)
     if not quality_result["passed"]:
-        return build_quality_fail_result(quality_result)
+        return build_quality_fail_result(quality_result, image_key)
 
     # 2. 目标检测（YOLO + 轮廓分析回退）
     detections = detect_objects(image_path)
@@ -453,7 +454,7 @@ def run_inference(image_path: str, filename: str) -> dict:
 
     bottles = [d for d in detections if d.class_name == "bottle"]
 
-    # 3. 如果没检测到瓶子
+    # 3. 如果没检测到瓶子（零候选也进入待人工复核，由人工完成结论）
     if not bottles:
         return {
             "inference_run_id": str(uuid.uuid4()),
@@ -465,8 +466,9 @@ def run_inference(image_path: str, filename: str) -> dict:
                 "entity_table": "chem-2024-001",
                 "rule_set": "rules-v1.3"
             },
-            "status": "succeeded",
+            "status": "needs_review",
             "error_code": None,
+            "image_key": image_key,
             "quality": quality_result,
             "detections": det_dicts,
             "ocr_fields": [],
@@ -511,8 +513,9 @@ def run_inference(image_path: str, filename: str) -> dict:
             "entity_table": "chem-2024-001",
             "rule_set": "rules-v1.3"
         },
-        "status": "succeeded",
+        "status": "needs_review",
         "error_code": None,
+        "image_key": image_key,
         "quality": quality_result,
         "detections": det_dicts,
         "ocr_fields": ocr_fields,
@@ -524,7 +527,7 @@ def run_inference(image_path: str, filename: str) -> dict:
     }
 
 
-def build_quality_fail_result(quality: dict) -> dict:
+def build_quality_fail_result(quality: dict, image_key: str = "") -> dict:
     return {
         "inference_run_id": str(uuid.uuid4()),
         "pipeline_version": "1.0.0",
@@ -537,6 +540,7 @@ def build_quality_fail_result(quality: dict) -> dict:
         },
         "status": "needs_retake",
         "error_code": "QUALITY_CHECK_FAILED",
+        "image_key": image_key,
         "quality": quality,
         "detections": [],
         "ocr_fields": [],
@@ -545,6 +549,26 @@ def build_quality_fail_result(quality: dict) -> dict:
         "rule_hits": [],
         "severity_summary": None,
         "timing_ms": {"total": 1200}
+    }
+
+
+def build_failed_result(error: Exception, image_key: str = "") -> dict:
+    """技术失败：显示稳定 error_code 和可恢复动作，不能作为未发现风险"""
+    return {
+        "inference_run_id": str(uuid.uuid4()),
+        "pipeline_version": "1.0.0",
+        "status": "failed",
+        "error_code": "INTERNAL_ERROR",
+        "message": str(error),
+        "image_key": image_key,
+        "quality": None,
+        "detections": [],
+        "ocr_fields": [],
+        "entities": [],
+        "proximity_pairs": [],
+        "rule_hits": [],
+        "severity_summary": None,
+        "timing_ms": {"total": 0}
     }
 
 
@@ -576,7 +600,7 @@ async def root():
 
 
 @app.post("/api/v1/upload")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(file: UploadFile = File(...), idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key")):
     file_ext = os.path.splitext(file.filename)[1] if file.filename else ".jpg"
     image_key = f"{uuid.uuid4().hex}{file_ext}"
     file_path = os.path.join(UPLOAD_DIR, image_key)
@@ -590,22 +614,37 @@ async def upload_image(file: UploadFile = File(...)):
         "id": inspection_item_id,
         "image_key": image_key,
         "filename": file.filename,
-        "status": "processing",
+        "status": "queued",
+        "idempotency_key": idempotency_key,
         "created_at": datetime.utcnow().isoformat()
     }
 
     async def async_inference():
-        result = run_inference(file_path, file.filename or "unknown.jpg")
-        result["inspection_item_id"] = inspection_item_id
-        inference_results[inspection_item_id] = result
-        inspections_db[inspection_item_id]["status"] = result["status"]
+        try:
+            # 阶段化状态：queued -> quality_checking -> processing（前端展示对应文案）
+            inspections_db[inspection_item_id]["status"] = "queued"
+            await asyncio.sleep(0.4)
+            inspections_db[inspection_item_id]["status"] = "quality_checking"
+            await asyncio.sleep(0.4)
+            inspections_db[inspection_item_id]["status"] = "processing"
+
+            result = run_inference(file_path, file.filename or "unknown.jpg", image_key)
+            result["inspection_item_id"] = inspection_item_id
+            inference_results[inspection_item_id] = result
+            inspections_db[inspection_item_id]["status"] = result["status"]
+        except Exception as e:
+            result = build_failed_result(e, image_key)
+            result["inspection_item_id"] = inspection_item_id
+            inference_results[inspection_item_id] = result
+            inspections_db[inspection_item_id]["status"] = "failed"
 
     asyncio.create_task(async_inference())
 
     return {
         "inspection_item_id": inspection_item_id,
         "image_key": image_key,
-        "status": "processing",
+        "status": "queued",
+        "idempotency_key": idempotency_key,
         "message": "图片已上传，推理中..."
     }
 
@@ -617,14 +656,58 @@ async def get_inference(inspection_item_id: str):
 
     item = inspections_db[inspection_item_id]
 
-    if item["status"] == "processing":
-        return {"inspection_item_id": inspection_item_id, "status": "processing", "message": "推理进行中，请稍后..."}
+    # 处理中状态：返回阶段信息，前端禁重复提交和事实编辑
+    if item["status"] in ("queued", "quality_checking", "processing"):
+        return {"inspection_item_id": inspection_item_id, "status": item["status"], "message": "推理进行中，请稍候..."}
 
     result = inference_results.get(inspection_item_id)
     if not result:
         raise HTTPException(status_code=404, detail="推理结果不存在")
 
     return result
+
+
+class ReviewRequest(BaseModel):
+    decision: str  # confirmed | rejected | uncertain
+    reason_code: Optional[str] = None
+    reason: Optional[str] = None
+
+
+@app.post("/api/v1/review/{inspection_item_id}")
+async def submit_review(inspection_item_id: str, req: ReviewRequest):
+    """人工复核：确认、驳回、无法判断分开操作；无法判断必须 reason_code"""
+    if inspection_item_id not in inspections_db:
+        raise HTTPException(status_code=404, detail="巡检项不存在")
+
+    item = inspections_db[inspection_item_id]
+    if item["status"] in ("queued", "quality_checking", "processing"):
+        raise HTTPException(status_code=409, detail="推理尚未完成，不能复核")
+
+    result = inference_results.get(inspection_item_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="推理结果不存在")
+
+    if item["status"] == "completed":
+        raise HTTPException(status_code=409, detail="该巡检项已完成复核")
+    if item["status"] == "needs_retake":
+        raise HTTPException(status_code=409, detail="需补拍的巡检项不能复核，请重新上传")
+    if req.decision not in ("confirmed", "rejected", "uncertain"):
+        raise HTTPException(status_code=422, detail="decision 必须为 confirmed/rejected/uncertain")
+    if req.decision == "uncertain" and not req.reason_code:
+        raise HTTPException(status_code=422, detail="无法判断必须提供 reason_code")
+
+    outcome = {
+        "decision": req.decision,
+        "reason_code": req.reason_code,
+        "reason": req.reason,
+        "reviewer": "demo-user",
+        "reviewed_at": datetime.utcnow().isoformat()
+    }
+    result["status"] = "completed"
+    result["review_outcome"] = outcome
+    item["status"] = "completed"
+
+    return {"inspection_item_id": inspection_item_id, "status": "completed", "review_outcome": outcome}
 
 
 @app.get("/api/v1/image/{image_key}")
@@ -660,6 +743,9 @@ async def model_status():
         "model_loaded": model_exists,
         "model_path": model_path,
         "mode": "real" if model_exists else "mock",
+        # 环境由后端下发，前端固定展示，不可由浏览器参数关闭
+        "environment": "dev",
+        "is_simulated": not model_exists,
         "message": f"YOLO 真实模型已加载: {model_name}" if model_exists else "YOLO 模型未找到，使用模拟模式"
     }
 

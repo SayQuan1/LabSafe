@@ -34,6 +34,16 @@
             background: #52c41a;
         }
         .model-status.mock { background: #faad14; }
+        /* 环境提示横幅：由后端 environment 下发，全局固定展示，不可关闭 */
+        .env-banner {
+            background: #fffbe6;
+            border-bottom: 1px solid #ffe58f;
+            color: #ad6800;
+            padding: 8px 24px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+        }
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -75,11 +85,15 @@
             font-size: 13px;
             line-height: 1.8;
         }
-        .upload-hint code {
-            background: #f5f5f5;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 12px;
+        .privacy-hint {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 6px;
+            color: #1890ff;
+            font-size: 13px;
+            display: inline-block;
         }
         #fileInput { display: none; }
         .preview-container { display: none; margin-top: 24px; }
@@ -102,6 +116,16 @@
         }
         .btn:hover { background: #d63851; }
         .btn:disabled { background: #ccc; cursor: not-allowed; }
+        /* 复核按钮：三个操作分开，无默认选中 */
+        .review-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+        .btn-review { padding: 10px 24px; border-radius: 8px; font-size: 15px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-confirm { background: #ff4d4f; color: white; }
+        .btn-confirm:hover { background: #d9363e; }
+        .btn-reject { background: #1890ff; color: white; }
+        .btn-reject:hover { background: #096dd9; }
+        .btn-uncertain { background: #fafafa; color: #666; border: 1px solid #d9d9d9; }
+        .btn-uncertain:hover { border-color: #1890ff; color: #1890ff; }
+        .review-note { font-size: 13px; color: #999; margin-top: 12px; }
         .status-bar {
             display: none;
             padding: 16px;
@@ -111,8 +135,17 @@
         .status-bar.show { display: block; }
         .status-processing { background: #e6f7ff; border: 1px solid #91d5ff; color: #1890ff; }
         .status-success { background: #f6ffed; border: 1px solid #b7eb8f; color: #52c41a; }
-        .status-warning { background: #fffbe6; border: 1px solid #ffe58f; color: #faad14; }
+        .status-warning { background: #fffbe6; border: 1px solid #ffe58f; color: #ad6800; }
         .status-error { background: #fff2f0; border: 1px solid #ffccc7; color: #ff4d4f; }
+        .btn-link {
+            background: none;
+            border: none;
+            color: inherit;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: inherit;
+            padding: 0;
+        }
         .result-section { display: none; margin-top: 24px; }
         .result-section.show { display: block; }
         .result-grid {
@@ -143,9 +176,10 @@
             margin-bottom: 8px;
         }
         .tag-high { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffccc7; }
-        .tag-medium { background: #fffbe6; color: #faad14; border: 1px solid #ffe58f; }
-        .tag-low { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+        .tag-medium { background: #fffbe6; color: #ad6800; border: 1px solid #ffe58f; }
+        .tag-low { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
         .tag-info { background: #e6f7ff; color: #1890ff; border: 1px solid #91d5ff; }
+        .tag-neutral { background: #fafafa; color: #666; border: 1px solid #d9d9d9; }
         .entity-item {
             background: white;
             border: 1px solid #e8e8e8;
@@ -154,7 +188,7 @@
             margin-bottom: 12px;
         }
         .entity-name { font-weight: 600; font-size: 16px; margin-bottom: 4px; }
-        .entity-meta { color: #666; font-size: 13px; }
+        .entity-meta { color: #666; font-size: 13px; line-height: 1.8; }
         .rule-hit {
             background: white;
             border-left: 4px solid #ff4d4f;
@@ -165,6 +199,7 @@
         .rule-hit.medium { border-left-color: #faad14; }
         .rule-hit.low { border-left-color: #52c41a; }
         .rule-title { font-weight: 600; margin-bottom: 8px; }
+        .rule-basis { color: #999; font-size: 12px; font-family: Consolas, Monaco, monospace; margin-bottom: 8px; }
         .rule-explanation { color: #666; font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
         .rule-action { color: #1890ff; font-size: 13px; }
         .json-view {
@@ -208,6 +243,7 @@
         .history-item:hover { background: #fafafa; }
         .history-filename { font-weight: 500; }
         .history-status { font-size: 13px; }
+        .history-status.tag { margin: 0; }
         .empty-state { text-align: center; color: #999; padding: 48px; }
         .loading {
             display: inline-block;
@@ -221,10 +257,22 @@
             vertical-align: middle;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* 检测框叠加：坐标随图片实际渲染宽高换算，不用屏幕像素回写 */
+        .image-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            font-size: 0;
+        }
+        .image-container img {
+            max-width: 100%;
+            max-height: 480px;
+            border-radius: 8px;
+        }
         .detection-box {
             position: absolute;
             border: 2px solid #e94560;
-            border-radius: 4px;
+            pointer-events: none;
         }
         .detection-label {
             position: absolute;
@@ -233,14 +281,65 @@
             padding: 2px 6px;
             font-size: 11px;
             border-radius: 2px;
-            top: -20px;
-            left: 0;
+            top: -18px;
+            left: -2px;
+            white-space: nowrap;
+            font-size: 0;
         }
-        .image-container {
-            position: relative;
-            display: inline-block;
-            max-width: 100%;
+        .detection-label span { font-size: 11px; }
+        /* 模拟数据水印 */
+        .sim-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg);
+            font-size: 48px;
+            font-weight: 700;
+            color: rgba(250, 173, 20, 0.35);
+            pointer-events: none;
+            white-space: nowrap;
+            letter-spacing: 8px;
         }
+        /* 历史结果标记 */
+        .history-marker {
+            background: #fff7e6;
+            border: 1px solid #ffd591;
+            color: #ad6800;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        /* 复核结论 */
+        .review-outcome {
+            background: white;
+            border: 1px solid #b7eb8f;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .review-outcome .outcome-row { margin-bottom: 6px; font-size: 14px; color: #333; }
+        .review-outcome .outcome-row strong { color: #1a1a2e; }
+        .disclaimer { font-size: 12px; color: #999; margin-top: 10px; }
+        #uncertainBox {
+            margin-top: 16px;
+            padding: 16px;
+            background: #fafafa;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+        }
+        #uncertainBox label { display: block; font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 600; }
+        #uncertainBox select, #uncertainBox textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 12px;
+            font-family: inherit;
+        }
+        #uncertainBox textarea { min-height: 60px; resize: vertical; }
+        .field-error { color: #ff4d4f; font-size: 12px; margin-top: -8px; margin-bottom: 8px; display: none; }
+        .field-error.show { display: block; }
     </style>
 </head>
 <body>
@@ -251,6 +350,8 @@
         </div>
         <span class="badge">Demo v1.0</span>
     </div>
+    <!-- 环境横幅：内容由后端 environment 决定，浏览器参数不可关闭 -->
+    <div class="env-banner" id="envBanner" style="display:none;"></div>
 
     <div class="container">
         <!-- 上传卡片 -->
@@ -260,10 +361,11 @@
                 <div class="upload-icon">📷</div>
                 <div class="upload-text">点击或拖拽上传图片</div>
                 <div class="upload-hint">
-                    支持 JPG/PNG<br>
+                    支持 JPG/PNG，不超过 15MiB<br>
                     质量检测基于图像真实数据（亮度/清晰度/对比度/反光）<br>
                     化学品与规则根据 YOLO 实际检测结果动态生成
                 </div>
+                <div class="privacy-hint">拍摄提示：请仅拍摄试剂柜等巡检对象，避免摄入人员面部等隐私信息</div>
             </div>
             <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
 
@@ -282,10 +384,11 @@
         <!-- 结果卡片 -->
         <div class="result-section" id="resultSection">
             <div class="card">
-                <div class="card-title">推理结果</div>
+                <div class="card-title">推理结果 <span id="resultStatusTag"></span></div>
+                <div class="history-marker" id="historyMarker" style="display:none;">历史结果（非当前结果），仅供参考</div>
                 <div class="tabs">
-                    <div class="tab active" onclick="switchTab('visual')">可视化结果</div>
-                    <div class="tab" onclick="switchTab('json')">原始 JSON</div>
+                    <div class="tab active" onclick="switchTab(event, 'visual')">可视化结果</div>
+                    <div class="tab" onclick="switchTab(event, 'json')">原始 JSON</div>
                 </div>
 
                 <div id="visualTab" class="tab-content active">
@@ -309,15 +412,96 @@
 
     <script>
         const API_BASE = '';
-        let currentFile = null;
-        let currentItemId = null;
-        let pollTimer = null;
+        const TERMINAL_STATUSES = ['needs_review', 'needs_retake', 'completed', 'failed'];
+        const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MiB，本地预校验仅用于体验
 
-        // 初始化
+        // 后端状态 -> 页面文案（规范 §2：状态不只靠颜色，文字+颜色同时呈现）
+        const STATUS_LABELS = {
+            uploaded:          { text: '可提交',     cls: 'tag-info' },
+            queued:            { text: '排队中',     cls: 'tag-info' },
+            quality_checking:  { text: '质量检查中', cls: 'tag-info' },
+            processing:        { text: '处理中',     cls: 'tag-info' },
+            needs_retake:      { text: '需补拍',     cls: 'tag-high' },
+            needs_review:      { text: '待人工复核', cls: 'tag-medium' },
+            completed:         { text: '已完成复核', cls: 'tag-low' },
+            failed:            { text: '技术失败',   cls: 'tag-high' }
+        };
+
+        // 无法判断 reason_code -> 文案
+        const REASON_CODE_LABELS = {
+            image_unclear: '图片不清晰，无法判断',
+            label_unreadable: '标签无法识别',
+            coverage_insufficient: '拍摄范围不足以判断',
+            other: '其他原因'
+        };
+
+        // 复核决定 -> 文案
+        const DECISION_LABELS = {
+            confirmed: '确认存在问题',
+            rejected: '驳回（误报）',
+            uncertain: '无法判断'
+        };
+
+        let currentFile = null;
+        let currentItemId = null;      // 当前 run 的巡检项
+        let currentResult = null;
+        let idempotencyKey = null;     // 幂等键：复用直到终态，用户修改输入后换新
+        let pollTimer = null;
+        let pollStartTime = null;
+        let pollPaused = false;
+        let pollFailCount = 0;
+        let renderSeq = 0;             // 过期响应不能覆盖新 run 页面
+        let modelMode = 'mock';
+        let environment = null;
+
+        // ==================== 初始化 ====================
         checkModelStatus();
         loadHistory();
 
-        // 拖拽上传
+        document.addEventListener('visibilitychange', () => {
+            // 标签隐藏暂停轮询，恢复立即拉取（规范 §3.4）
+            if (!currentItemId || isTerminal(currentItemId)) return;
+            if (document.hidden) {
+                pollPaused = true;
+                if (pollTimer) clearTimeout(pollTimer);
+            } else {
+                pollPaused = false;
+                pollFailCount = 0;
+                pollLoop(currentItemId, renderSeq);
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (currentResult) drawDetectionBoxes();
+        });
+
+        // ==================== 模型/环境状态 ====================
+        async function checkModelStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/model/status`);
+                const data = await response.json();
+                modelMode = data.mode;
+                environment = data.environment;
+                const el = document.getElementById('modelStatus');
+                if (data.mode === 'real') {
+                    el.textContent = 'YOLO 真实模型';
+                    el.className = 'model-status';
+                } else {
+                    el.textContent = '模拟模式';
+                    el.className = 'model-status mock';
+                }
+                // 环境横幅：后端 environment 是唯一依据
+                const banner = document.getElementById('envBanner');
+                if (environment === 'dev') {
+                    banner.textContent = '开发环境，结果不用于安全判断';
+                    banner.style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('modelStatus').textContent = '状态未知';
+            }
+        }
+
+        // ==================== 上传 ====================
         const uploadArea = document.getElementById('uploadArea');
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -339,11 +523,18 @@
         }
 
         function handleFile(file) {
+            // 本地预校验 MIME/15MiB 仅用于体验
             if (!file.type.startsWith('image/')) {
-                alert('请选择图片文件');
+                showError('请选择图片文件（JPG/PNG）', 'file');
+                return;
+            }
+            if (file.size > MAX_FILE_SIZE) {
+                showError('文件超过 15MiB 限制，请压缩后上传', 'file');
                 return;
             }
             currentFile = file;
+            // 用户主动修改输入后新幂等键（规范 §3.5）
+            idempotencyKey = (crypto.randomUUID) ? crypto.randomUUID() : 'idem-' + Date.now() + '-' + Math.random().toString(36).slice(2);
             const reader = new FileReader();
             reader.onload = (e) => {
                 document.getElementById('imagePreview').src = e.target.result;
@@ -356,6 +547,8 @@
 
         async function uploadImage() {
             if (!currentFile) return;
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true; // 处理中禁重复提交
 
             const formData = new FormData();
             formData.append('file', currentFile);
@@ -363,40 +556,97 @@
             showStatus('processing', '<span class="loading"></span> 上传中...');
 
             try {
+                const headers = {};
+                if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
                 const response = await fetch(`${API_BASE}/api/v1/upload`, {
                     method: 'POST',
+                    headers: headers,
                     body: formData
                 });
                 const data = await response.json();
 
                 if (response.ok) {
                     currentItemId = data.inspection_item_id;
-                    showStatus('processing', '<span class="loading"></span> 推理中，请稍候...');
-                    pollResult(currentItemId);
+                    pollStartTime = Date.now();
+                    pollFailCount = 0;
+                    showStatus('processing', '<span class="loading"></span> 排队中...');
+                    pollLoop(currentItemId, ++renderSeq);
+                } else if (response.status === 413) {
+                    showStatus('error', '文件过大，请缩小文件后重试');
+                    uploadBtn.disabled = false;
                 } else {
                     showStatus('error', '上传失败: ' + (data.detail || '未知错误'));
+                    uploadBtn.disabled = false;
                 }
             } catch (error) {
-                showStatus('error', '网络错误: ' + error.message);
+                showStatus('error', '网络错误: ' + error.message + ' <button class="btn-link" onclick="retryUpload()">重试</button>');
+                uploadBtn.disabled = false;
             }
         }
 
-        async function pollResult(itemId) {
+        function retryUpload() {
+            if (currentFile) uploadImage();
+        }
+
+        // ==================== 轮询（规范 §3.4/3.5）====================
+        function isTerminal(itemId) {
+            return currentResult && currentResult.inspection_item_id === itemId &&
+                   TERMINAL_STATUSES.includes(currentResult.status);
+        }
+
+        async function pollLoop(itemId, seq) {
+            if (pollPaused || seq !== renderSeq) return;
             if (pollTimer) clearTimeout(pollTimer);
+
+            const elapsed = Date.now() - pollStartTime;
+
+            // 5分钟后停止自动轮询并提示"仍在处理，可刷新"，不推断失败
+            if (elapsed >= 300000) {
+                showStatus('warning', '仍在处理中，已停止自动轮询。<button class="btn-link" onclick="manualRefresh()">立即刷新</button>');
+                return;
+            }
 
             try {
                 const response = await fetch(`${API_BASE}/api/v1/inference/${itemId}`);
                 const data = await response.json();
+                if (seq !== renderSeq) return; // 过期响应丢弃
+                pollFailCount = 0;
 
-                if (data.status === 'processing') {
-                    pollTimer = setTimeout(() => pollResult(itemId), 1000);
-                } else {
-                    showResult(data);
+                if (TERMINAL_STATUSES.includes(data.status)) {
+                    showResult(data, seq);
                     loadHistory();
+                } else {
+                    // 轮询间隔：2秒 -> 30秒后5秒 -> 2分钟后10秒
+                    const interval = elapsed < 30000 ? 2000 : elapsed < 120000 ? 5000 : 10000;
+                    const stageText = STATUS_LABELS[data.status] ? STATUS_LABELS[data.status].text : '处理中';
+                    const secs = Math.round(elapsed / 1000);
+                    showStatus('processing', `<span class="loading"></span> ${stageText}...（已等待 ${secs} 秒）`);
+                    pollTimer = setTimeout(() => pollLoop(itemId, seq), interval);
                 }
             } catch (error) {
-                showStatus('error', '获取结果失败: ' + error.message);
+                // 网络 GET 失败指数退避 2/4/8 秒后提示重连
+                if (pollFailCount < 3) {
+                    const delay = [2000, 4000, 8000][pollFailCount++];
+                    showStatus('warning', `网络异常，${delay / 1000} 秒后自动重试...`);
+                    pollTimer = setTimeout(() => pollLoop(itemId, seq), delay);
+                } else {
+                    showStatus('error', '网络连接失败，请检查网络后 <button class="btn-link" onclick="manualRefresh()">重新连接</button>');
+                }
             }
+        }
+
+        function manualRefresh() {
+            if (!currentItemId) return;
+            pollFailCount = 0;
+            showStatus('processing', '<span class="loading"></span> 正在刷新...');
+            pollLoop(currentItemId, renderSeq);
+        }
+
+        // ==================== 状态展示 ====================
+        function statusTag(status) {
+            const s = STATUS_LABELS[status];
+            if (!s) return `<span class="tag tag-neutral">${status}</span>`;
+            return `<span class="tag ${s.cls}">${s.text}</span>`;
         }
 
         function showStatus(type, message) {
@@ -413,39 +663,96 @@
             document.getElementById('resultSection').classList.remove('show');
         }
 
-        function showResult(data) {
+        function showError(message) {
+            showStatus('error', message);
+        }
+
+        // ==================== 结果渲染 ====================
+        function showResult(data, seq) {
+            if (seq !== undefined && seq !== renderSeq) return; // 过期响应不覆盖新页面
             hideStatus();
+            document.getElementById('uploadBtn').disabled = false;
+            currentResult = data;
 
             const section = document.getElementById('resultSection');
             section.classList.add('show');
+
+            // 状态标签（不只靠颜色）
+            document.getElementById('resultStatusTag').innerHTML = statusTag(data.status);
+
+            // 历史结果标记：非当前 run 显示"历史结果（非当前结果）"
+            const marker = document.getElementById('historyMarker');
+            marker.style.display = (currentItemId && data.inspection_item_id && data.inspection_item_id !== currentItemId) ? 'block' : 'none';
 
             const grid = document.getElementById('resultGrid');
             grid.innerHTML = buildVisualResult(data);
 
             document.getElementById('jsonView').innerHTML = syntaxHighlight(JSON.stringify(data, null, 2));
 
+            // 图片加载后绘制检测框（按渲染尺寸换算）
+            const img = document.getElementById('resultImage');
+            if (img) {
+                if (img.complete) drawDetectionBoxes();
+                else img.onload = drawDetectionBoxes;
+            }
+
             section.scrollIntoView({ behavior: 'smooth' });
         }
 
         function buildVisualResult(data) {
+            // 技术失败：显示稳定 error_code 和可恢复动作，不能作为未发现风险
+            if (data.status === 'failed') {
+                return `
+                    <div class="result-card" style="grid-column: 1/-1;">
+                        <h4>技术失败</h4>
+                        <div style="margin-bottom: 12px;">
+                            <span class="tag tag-high">错误码: ${data.error_code || 'UNKNOWN'}</span>
+                        </div>
+                        ${data.message ? `<p style="color: #666; font-size: 13px; margin-bottom: 12px;">${data.message}</p>` : ''}
+                        <p style="color: #666;">可恢复动作：请重新上传图片重试。技术失败不代表未发现风险，请勿据此得出安全结论。</p>
+                    </div>
+                `;
+            }
+
+            // 需补拍：逐项原因 + 补拍建议
             if (data.status === 'needs_retake') {
                 return `
                     <div class="result-card" style="grid-column: 1/-1;">
-                        <h4>质量检测未通过</h4>
+                        <h4>需补拍（质量检测未通过）</h4>
                         <div style="margin-bottom: 16px;">
-                            ${data.quality.issues.map(i => `<span class="tag tag-high">${i}</span>`).join('')}
+                            ${(data.quality.issues || []).map(i => `<span class="tag tag-high">${i}</span>`).join('')}
                         </div>
                         ${data.quality.brightness !== undefined ? `
                         <div style="background: white; padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; color: #666;">
                             亮度: ${data.quality.brightness} | 清晰度: ${data.quality.sharpness} | 对比度: ${data.quality.contrast} | 反光率: ${(data.quality.highlight_ratio * 100).toFixed(1)}%
                         </div>` : ''}
                         <p style="color: #666; margin-bottom: 8px;"><strong>补拍建议：</strong></p>
-                        <p style="color: #1890ff; font-size: 15px;">${data.quality.retake_hint}</p>
+                        <p style="color: #1890ff; font-size: 15px; margin-bottom: 16px;">${data.quality.retake_hint || '请重新拍摄'}</p>
+                        <button class="btn" onclick="retakePhoto()">重新上传图片</button>
                     </div>
                 `;
             }
 
             let html = '';
+
+            // 分析图 + 检测框叠加
+            if (data.image_key) {
+                html += `
+                    <div class="result-card" style="grid-column: 1/-1;">
+                        <h4>分析图（检测框为 AI 识别结果，坐标已按渲染尺寸换算）</h4>
+                        <div style="background: #f0f0f0; padding: 16px; border-radius: 8px; text-align: center;">
+                            <div class="image-container" id="resultImageContainer">
+                                <img id="resultImage" src="${API_BASE}/api/v1/image/${data.image_key}" alt="分析图">
+                                ${modelMode === 'mock' ? '<div class="sim-watermark">模拟数据</div>' : ''}
+                            </div>
+                        </div>
+                        ${(data.detections || []).length > 0 ? `
+                        <div style="margin-top: 12px; font-size: 13px; color: #666;">
+                            ${data.detections.map((d, i) => `#${i + 1} ${d.class_name} (${(d.confidence * 100).toFixed(0)}%)`).join(' | ')}
+                        </div>` : '<div style="margin-top: 12px; font-size: 13px; color: #999;">未检测到目标</div>'}
+                    </div>
+                `;
+            }
 
             // 质量检测指标
             if (data.quality && data.quality.brightness !== undefined) {
@@ -470,7 +777,7 @@
                                 <div style="font-size: 12px; color: #666;">反光率</div>
                             </div>
                             <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
-                                <div style="font-size: 20px; font-weight: 600; color: ${data.quality.score > 0.7 ? '#52c41a' : '#faad14'};">${(data.quality.score * 100).toFixed(0)}%</div>
+                                <div style="font-size: 20px; font-weight: 600; color: #1a1a2e;">${(data.quality.score * 100).toFixed(0)}%</div>
                                 <div style="font-size: 12px; color: #666;">质量评分</div>
                             </div>
                         </div>
@@ -478,42 +785,7 @@
                 `;
             }
 
-            // 检测框可视化
-            if (data.detections && data.detections.length > 0) {
-                html += `
-                    <div class="result-card" style="grid-column: 1/-1;">
-                        <h4>目标检测 (${data.detections.length} 个目标)</h4>
-                        <div style="background: #f0f0f0; padding: 16px; border-radius: 8px; text-align: center;">
-                            ${data.detections.map((d, i) => `
-                                <div style="display: inline-block; margin: 8px; padding: 12px; background: white; border-radius: 8px; border: 2px solid ${d.class_name === 'bottle' ? '#e94560' : d.class_name === 'label' ? '#1890ff' : '#52c41a'};">
-                                    <div style="font-weight: 600;">${d.class_name}</div>
-                                    <div style="font-size: 12px; color: #666;">置信度: ${(d.confidence * 100).toFixed(0)}%</div>
-                                    <div style="font-size: 11px; color: #999;">[${d.bbox.map(v => v.toFixed(0)).join(', ')}]</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            // 严重度卡片
-            if (data.severity_summary) {
-                const sev = data.severity_summary;
-                const sevClass = sev.overall === 'high' ? 'tag-high' : sev.overall === 'medium' ? 'tag-medium' : 'tag-low';
-                const sevText = sev.overall === 'high' ? '高风险' : sev.overall === 'medium' ? '中风险' : '低风险';
-                html += `
-                    <div class="result-card">
-                        <h4>严重度评估</h4>
-                        <div style="text-align: center; padding: 24px;">
-                            <span class="tag ${sevClass}" style="font-size: 18px; padding: 8px 24px;">${sevText}</span>
-                            <p style="margin-top: 16px; color: #666;">置信度加权得分: ${(sev.confidence_weighted_score * 100).toFixed(0)}%</p>
-                            ${sev.uncertainty_factors.length > 0 ? `<p style="color: #faad14; font-size: 13px;">不确定因素: ${sev.uncertainty_factors.join(', ')}</p>` : ''}
-                        </div>
-                    </div>
-                `;
-            }
-
-            // 实体卡片
+            // 实体卡片：OCR 原文 + 置信度 + 词典候选
             if (data.entities && data.entities.length > 0) {
                 html += `
                     <div class="result-card">
@@ -522,8 +794,8 @@
                             <div class="entity-item">
                                 <div class="entity-name">${e.standard_name}</div>
                                 <div class="entity-meta">
-                                    CAS: ${e.cas_no || 'N/A'} | 危险类别: <span class="tag tag-${e.hazard_class.includes('易燃') ? 'high' : e.hazard_class.includes('腐蚀') ? 'medium' : 'info'}">${e.hazard_class}</span><br>
-                                    匹配方式: ${e.match_type} | 置信度: ${(e.confidence * 100).toFixed(0)}%
+                                    OCR 原文: ${e.raw_text}（置信度 ${(e.confidence * 100).toFixed(0)}%，匹配方式: ${e.match_type}）<br>
+                                    CAS: ${e.cas_no || 'N/A'} | 危险类别: <span class="tag ${hazardTagClass(e.hazard_class)}">${e.hazard_class}</span>
                                 </div>
                             </div>
                         `).join('')}
@@ -542,8 +814,8 @@
                                     ${p.entity_a_name} ↔ ${p.entity_b_name}
                                 </div>
                                 <div class="entity-meta">
-                                    距离: ${p.distance_px}px | 同柜: ${p.same_shelf ? '是' : '否'} | 
-                                    <span class="tag tag-${p.visible_adjacent ? 'high' : 'info'}">${p.visible_adjacent ? '可见相邻' : '不相邻'}</span>
+                                    距离: ${p.distance_px}px | 同柜: ${p.same_shelf ? '是' : '否'} |
+                                    <span class="tag ${p.visible_adjacent ? 'tag-high' : 'tag-neutral'}">${p.visible_adjacent ? '可见相邻' : '不相邻'}</span>
                                 </div>
                             </div>
                         `).join('')}
@@ -551,41 +823,211 @@
                 `;
             }
 
-            // 规则命中卡片
+            // 规则命中卡片：rule_id / 版本 / 依据同屏展示
             if (data.rule_hits && data.rule_hits.length > 0) {
                 html += `
                     <div class="result-card" style="grid-column: 1/-1;">
-                        <h4>规则命中 (${data.rule_hits.length})</h4>
+                        <h4>规则命中 (${data.rule_hits.length}) — AI 建议，需人工确认</h4>
                         ${data.rule_hits.map(r => `
                             <div class="rule-hit ${r.severity_suggestion}">
                                 <div class="rule-title">
-                                    <span class="tag tag-${r.severity_suggestion === 'high' ? 'high' : r.severity_suggestion === 'medium' ? 'medium' : 'low'}">${r.severity_suggestion.toUpperCase()}</span>
-                                    ${r.rule_id}
+                                    <span class="tag ${severityTagClass(r.severity_suggestion)}">${severityText(r.severity_suggestion)}</span>
                                     ${r.requires_review ? '<span class="tag tag-info">需人工复核</span>' : ''}
                                 </div>
+                                <div class="rule-basis">依据: ${r.rule_id} (规则版本 ${r.rule_version}) | 触发条件: ${r.trigger_condition}</div>
                                 <div class="rule-explanation">${r.explanation}</div>
                                 <div class="rule-action">建议: ${r.suggested_action}</div>
                             </div>
                         `).join('')}
                     </div>
                 `;
-            } else if (data.status === 'succeeded') {
+            }
+
+            // 严重度卡片
+            if (data.severity_summary) {
+                const sev = data.severity_summary;
                 html += `
-                    <div class="result-card" style="grid-column: 1/-1;">
-                        <h4>规则检查</h4>
-                        <div style="text-align: center; padding: 24px; color: #52c41a;">
-                            <div style="font-size: 48px; margin-bottom: 16px;">✓</div>
-                            <p>在本次图片和规则范围内未发现违规</p>
-                            <p style="font-size: 13px; color: #999; margin-top: 8px;">注意：这不是绝对安全结论，仅代表当前规则未命中</p>
+                    <div class="result-card">
+                        <h4>严重度评估（AI 建议）</h4>
+                        <div style="text-align: center; padding: 24px;">
+                            <span class="tag ${severityTagClass(sev.overall)}" style="font-size: 18px; padding: 8px 24px;">${severityText(sev.overall)}</span>
+                            <p style="margin-top: 16px; color: #666;">置信度加权得分: ${(sev.confidence_weighted_score * 100).toFixed(0)}%</p>
+                            ${sev.uncertainty_factors && sev.uncertainty_factors.length > 0 ? `<p style="color: #ad6800; font-size: 13px;">不确定因素: ${sev.uncertainty_factors.join(', ')}</p>` : ''}
                         </div>
                     </div>
                 `;
             }
 
+            // 零候选提示（needs_review 且无规则命中）：仍要求人工完成
+            if (data.status === 'needs_review' && (!data.rule_hits || data.rule_hits.length === 0)) {
+                html += `
+                    <div class="result-card" style="grid-column: 1/-1;">
+                        <h4>规则检查</h4>
+                        <div style="text-align: center; padding: 24px;">
+                            <div style="font-size: 48px; margin-bottom: 16px;">○</div>
+                            <p style="font-size: 15px; color: #333; margin-bottom: 8px;">在本次图片和规则范围内未发现</p>
+                            <p style="font-size: 13px; color: #999;">AI 未发现问题不代表可以跳过复核，请人工完成下方复核操作</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 复核区域（needs_review 显示操作，completed 显示结论）
+            html += buildReviewSection(data);
+
             return html;
         }
 
-        function switchTab(tab) {
+        function buildReviewSection(data) {
+            // 已完成复核：展示 review_outcome，不显示"绝对安全"
+            if (data.status === 'completed' && data.review_outcome) {
+                const o = data.review_outcome;
+                return `
+                    <div class="result-card" style="grid-column: 1/-1;">
+                        <h4>人工复核结论</h4>
+                        <div class="review-outcome">
+                            <div class="outcome-row"><strong>复核决定：</strong><span class="tag ${o.decision === 'confirmed' ? 'tag-high' : o.decision === 'rejected' ? 'tag-info' : 'tag-neutral'}">${DECISION_LABELS[o.decision] || o.decision}</span></div>
+                            ${o.reason_code ? `<div class="outcome-row"><strong>无法判断原因：</strong>${REASON_CODE_LABELS[o.reason_code] || o.reason_code}</div>` : ''}
+                            ${o.reason ? `<div class="outcome-row"><strong>补充说明：</strong>${o.reason}</div>` : ''}
+                            <div class="outcome-row"><strong>复核人：</strong>${o.reviewer}</div>
+                            <div class="outcome-row"><strong>复核时间：</strong>${o.reviewed_at}</div>
+                            <div class="disclaimer">复核已完成并计入记录。任何结论仅代表当前图片和规则范围内的判断，不构成绝对安全保证。</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 待人工复核：三个分开按钮，不能默认选确认
+            if (data.status === 'needs_review') {
+                return `
+                    <div class="result-card" style="grid-column: 1/-1;">
+                        <h4>人工复核（AI 结论仅供参考，由人工完成确认）</h4>
+                        <div class="review-buttons">
+                            <button class="btn-review btn-confirm" onclick="submitReview('confirmed')">确认存在问题</button>
+                            <button class="btn-review btn-reject" onclick="submitReview('rejected')">驳回（误报）</button>
+                            <button class="btn-review btn-uncertain" onclick="toggleUncertain()">无法判断</button>
+                        </div>
+                        <div id="uncertainBox" style="display:none;">
+                            <label>无法判断原因（必填）</label>
+                            <select id="reasonCode">
+                                <option value="">请选择原因</option>
+                                <option value="image_unclear">图片不清晰，无法判断</option>
+                                <option value="label_unreadable">标签无法识别</option>
+                                <option value="coverage_insufficient">拍摄范围不足以判断</option>
+                                <option value="other">其他原因</option>
+                            </select>
+                            <div class="field-error" id="reasonCodeError">无法判断必须选择原因（reason_code）</div>
+                            <label>补充说明（可选）</label>
+                            <textarea id="reviewReason" placeholder="补充说明本次判断的依据或疑问"></textarea>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn-review btn-uncertain" onclick="submitReview('uncertain')">提交无法判断</button>
+                                <button class="btn-review btn-uncertain" onclick="document.getElementById('uncertainBox').style.display='none'">取消</button>
+                            </div>
+                        </div>
+                        <div class="review-note">确认后将派发整改；驳回表示该发现为误报；无法判断需说明原因并重新拍摄补充证据。</div>
+                    </div>
+                `;
+            }
+
+            return '';
+        }
+
+        function hazardTagClass(hazard) {
+            if (hazard.includes('易燃')) return 'tag-high';
+            if (hazard.includes('腐蚀') || hazard.includes('氧化')) return 'tag-medium';
+            return 'tag-info';
+        }
+
+        function severityTagClass(sev) {
+            return sev === 'high' ? 'tag-high' : sev === 'medium' ? 'tag-medium' : 'tag-low';
+        }
+
+        function severityText(sev) {
+            return sev === 'high' ? '高风险' : sev === 'medium' ? '中风险' : '低风险';
+        }
+
+        // ==================== 检测框绘制（按渲染尺寸换算）====================
+        function drawDetectionBoxes() {
+            const container = document.getElementById('resultImageContainer');
+            const img = document.getElementById('resultImage');
+            if (!container || !img || !currentResult || !currentResult.detections) return;
+
+            container.querySelectorAll('.detection-box').forEach(el => el.remove());
+
+            if (!img.naturalWidth || !img.clientWidth) return;
+            const scaleX = img.clientWidth / img.naturalWidth;
+            const scaleY = img.clientHeight / img.naturalHeight;
+
+            currentResult.detections.forEach((d, i) => {
+                const [x1, y1, x2, y2] = d.bbox;
+                const box = document.createElement('div');
+                box.className = 'detection-box';
+                box.style.left = (x1 * scaleX) + 'px';
+                box.style.top = (y1 * scaleY) + 'px';
+                box.style.width = ((x2 - x1) * scaleX) + 'px';
+                box.style.height = ((y2 - y1) * scaleY) + 'px';
+                box.style.borderColor = d.class_name === 'bottle' ? '#e94560' : '#1890ff';
+
+                const label = document.createElement('div');
+                label.className = 'detection-label';
+                label.style.background = d.class_name === 'bottle' ? '#e94560' : '#1890ff';
+                label.innerHTML = `<span>#${i + 1} ${d.class_name} ${(d.confidence * 100).toFixed(0)}%</span>`;
+                box.appendChild(label);
+                container.appendChild(box);
+            });
+        }
+
+        function retakePhoto() {
+            hideResult();
+            document.getElementById('uploadArea').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ==================== 复核操作 ====================
+        function toggleUncertain() {
+            const box = document.getElementById('uncertainBox');
+            box.style.display = box.style.display === 'none' ? 'block' : 'none';
+            document.getElementById('reasonCodeError').classList.remove('show');
+        }
+
+        async function submitReview(decision) {
+            if (!currentResult || !currentResult.inspection_item_id) return;
+
+            let reason_code = null;
+            let reason = null;
+
+            if (decision === 'uncertain') {
+                reason_code = document.getElementById('reasonCode').value;
+                if (!reason_code) {
+                    // 无法判断必须 reason_code：字段级错误提示
+                    document.getElementById('reasonCodeError').classList.add('show');
+                    return;
+                }
+                reason = document.getElementById('reviewReason').value || null;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/review/${currentResult.inspection_item_id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ decision, reason_code, reason })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    // 更新本地结果并重渲染
+                    currentResult.status = 'completed';
+                    currentResult.review_outcome = data.review_outcome;
+                    showResult(currentResult, renderSeq);
+                    loadHistory();
+                } else {
+                    showError('复核提交失败: ' + (data.detail || '未知错误'));
+                }
+            } catch (error) {
+                showError('网络错误: ' + error.message);
+            }
+        }
+
+        // ==================== Tab / JSON ====================
+        function switchTab(event, tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
@@ -604,6 +1046,7 @@
             });
         }
 
+        // ==================== 历史记录 ====================
         async function loadHistory() {
             try {
                 const response = await fetch(`${API_BASE}/api/v1/history`);
@@ -615,10 +1058,10 @@
                     return;
                 }
 
-                list.innerHTML = data.items.map(item => `
+                list.innerHTML = data.items.slice().reverse().map(item => `
                     <div class="history-item" onclick="loadResult('${item.inspection_item_id}')">
-                        <span class="history-filename">${item.filename}</span>
-                        <span class="history-status tag tag-${item.status === 'succeeded' ? 'low' : item.status === 'needs_retake' ? 'high' : 'info'}">${item.status}</span>
+                        <span class="history-filename">${item.filename || '未命名'}</span>
+                        <span class="history-status tag ${statusTagClass(item.status)}">${statusText(item.status)}</span>
                     </div>
                 `).join('');
             } catch (error) {
@@ -626,32 +1069,35 @@
             }
         }
 
+        function statusText(status) {
+            const s = STATUS_LABELS[status];
+            return s ? s.text : status;
+        }
+
+        function statusTagClass(status) {
+            const s = STATUS_LABELS[status];
+            return s ? s.cls : 'tag-neutral';
+        }
+
         async function loadResult(itemId) {
+            // 历史点击加载：递增 seq 防止过期响应覆盖
+            const seq = ++renderSeq;
             try {
                 const response = await fetch(`${API_BASE}/api/v1/inference/${itemId}`);
                 const data = await response.json();
-                if (data.status !== 'processing') {
-                    showResult(data);
+                if (seq !== renderSeq) return;
+                if (TERMINAL_STATUSES.includes(data.status)) {
+                    showResult(data, seq);
+                } else if (data.status === 'processing' || data.status === 'queued' || data.status === 'quality_checking') {
+                    currentItemId = itemId;
+                    currentResult = null;
+                    pollStartTime = Date.now();
+                    pollFailCount = 0;
+                    showStatus('processing', `<span class="loading"></span> ${statusText(data.status)}...`);
+                    pollLoop(itemId, seq);
                 }
             } catch (error) {
-                alert('加载结果失败: ' + error.message);
-            }
-        }
-
-        async function checkModelStatus() {
-            try {
-                const response = await fetch(`${API_BASE}/api/v1/model/status`);
-                const data = await response.json();
-                const el = document.getElementById('modelStatus');
-                if (data.mode === 'real') {
-                    el.textContent = 'YOLO 真实模型';
-                    el.className = 'model-status';
-                } else {
-                    el.textContent = '模拟模式 (无ONNX模型)';
-                    el.className = 'model-status mock';
-                }
-            } catch (error) {
-                document.getElementById('modelStatus').textContent = '状态未知';
+                showError('加载结果失败: ' + error.message);
             }
         }
     </script>
