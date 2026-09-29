@@ -1,0 +1,1730 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LabSafe 独立 AI 事实 API",
+    "version": "1.1.0",
+    "description": "设计修订版，由 tools/design/build_specs.py 生成；未声明已部署。"
+  },
+  "servers": [
+    {
+      "url": "/internal/inference/v1"
+    }
+  ],
+  "security": [
+    {
+      "serviceToken": []
+    }
+  ],
+  "paths": {
+    "/quality": {
+      "post": {
+        "operationId": "aiQuality",
+        "responses": {
+          "200": {
+            "description": "结构化事实或健康状态",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InferenceResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InferenceRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs": {
+      "post": {
+        "operationId": "aiRuns",
+        "responses": {
+          "200": {
+            "description": "结构化事实或健康状态",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InferenceResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InferenceRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "aiHealth",
+        "responses": {
+          "200": {
+            "description": "结构化事实或健康状态",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "operationId": "aiReady",
+        "responses": {
+          "200": {
+            "description": "结构化事实或健康状态",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "operationId": "aiVersion",
+        "responses": {
+          "200": {
+            "description": "结构化事实或健康状态",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Version"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "统一错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "serviceToken": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "VALIDATION_ERROR",
+                  "UNAUTHENTICATED",
+                  "FORBIDDEN",
+                  "NOT_FOUND",
+                  "STATE_CONFLICT",
+                  "VERSION_CONFLICT",
+                  "IDEMPOTENCY_CONFLICT",
+                  "REQUEST_IN_PROGRESS",
+                  "RATE_LIMITED",
+                  "IMAGE_TOO_LARGE",
+                  "UNSUPPORTED_MEDIA_TYPE",
+                  "IMAGE_INVALID",
+                  "UNAUTHORIZED_REF",
+                  "OBJECT_NOT_FOUND",
+                  "HASH_MISMATCH",
+                  "MODEL_NOT_READY",
+                  "MODEL_VERSION_UNAVAILABLE",
+                  "AI_BUSY",
+                  "RUN_IN_PROGRESS",
+                  "AI_TIMEOUT",
+                  "STAGE_TIMEOUT",
+                  "MODEL_OOM",
+                  "DEPENDENCY_UNAVAILABLE",
+                  "MODEL_ERROR",
+                  "INTERNAL_ERROR",
+                  "SCHEMA_MISMATCH",
+                  "RULESET_INVALID",
+                  "LEASE_LOST"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "retryable": {
+                "type": "boolean"
+              },
+              "details": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                },
+                "minItems": 0,
+                "maxItems": 30
+              }
+            },
+            "required": [
+              "code",
+              "message",
+              "retryable",
+              "details"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "request_id",
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "ErrorDetail": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "field",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "ImageRef": {
+        "type": "object",
+        "properties": {
+          "image_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "object_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "mime_type": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "overview",
+              "detail"
+            ]
+          },
+          "location_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "parent_image_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "image_id",
+          "object_key",
+          "sha256",
+          "mime_type",
+          "role",
+          "location_id",
+          "parent_image_id"
+        ],
+        "additionalProperties": false
+      },
+      "InferenceRequest": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attempt_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fencing_token": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "laboratory_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submission_revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "model_bundle_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "model_checksum": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "dictionary_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dictionary_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "pipeline_version": {
+            "type": "string",
+            "enum": [
+              "vision-v1"
+            ]
+          },
+          "device_profile": {
+            "type": "string",
+            "enum": [
+              "cpu",
+              "cuda"
+            ]
+          },
+          "deadline_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "image_refs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImageRef"
+            },
+            "minItems": 1,
+            "maxItems": 3
+          }
+        },
+        "required": [
+          "run_id",
+          "attempt_id",
+          "fencing_token",
+          "tenant_id",
+          "laboratory_id",
+          "item_id",
+          "submission_revision",
+          "model_bundle_id",
+          "model_checksum",
+          "dictionary_version_id",
+          "dictionary_sha256",
+          "pipeline_version",
+          "device_profile",
+          "deadline_at",
+          "request_hash",
+          "image_refs"
+        ],
+        "additionalProperties": false
+      },
+      "Point": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ],
+        "additionalProperties": false
+      },
+      "Quality": {
+        "type": "object",
+        "properties": {
+          "image_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "needs_retake"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "blur",
+                "dark",
+                "glare",
+                "occluded",
+                "unreadable"
+              ]
+            },
+            "minItems": 0,
+            "maxItems": 5
+          },
+          "blur_score": {
+            "type": "number",
+            "minimum": 0
+          },
+          "brightness": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "glare_ratio": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "image_id",
+          "status",
+          "reasons",
+          "blur_score",
+          "brightness",
+          "glare_ratio"
+        ],
+        "additionalProperties": false
+      },
+      "Detection": {
+        "type": "object",
+        "properties": {
+          "detection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "image_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "parent_detection_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "bottle",
+              "label",
+              "shelf",
+              "cabinet"
+            ]
+          },
+          "bbox": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "detection_id",
+          "image_id",
+          "parent_detection_id",
+          "type",
+          "bbox",
+          "confidence"
+        ],
+        "additionalProperties": false
+      },
+      "CropRecipe": {
+        "type": "object",
+        "properties": {
+          "crop_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "image_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "detection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quad": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Point"
+            },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "output_width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2048
+          },
+          "output_height": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2048
+          },
+          "transform_version": {
+            "type": "string",
+            "enum": [
+              "perspective-rgb-v1"
+            ]
+          }
+        },
+        "required": [
+          "crop_id",
+          "image_id",
+          "detection_id",
+          "quad",
+          "output_width",
+          "output_height",
+          "transform_version"
+        ],
+        "additionalProperties": false
+      },
+      "OCRField": {
+        "type": "object",
+        "properties": {
+          "image_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "detection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "crop_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "name",
+              "expiry",
+              "production",
+              "opened",
+              "date_unknown",
+              "concentration",
+              "hazard_mark"
+            ]
+          },
+          "raw_text": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 2000
+          },
+          "normalized_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "image_id",
+          "detection_id",
+          "crop_id",
+          "field",
+          "raw_text",
+          "normalized_text",
+          "confidence"
+        ],
+        "additionalProperties": false
+      },
+      "Candidate": {
+        "type": "object",
+        "properties": {
+          "entity_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "canonical_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "match_method": {
+            "type": "string",
+            "enum": [
+              "cas_exact",
+              "alias_exact",
+              "fuzzy"
+            ]
+          }
+        },
+        "required": [
+          "entity_id",
+          "canonical_name",
+          "confidence",
+          "match_method"
+        ],
+        "additionalProperties": false
+      },
+      "EntityCandidates": {
+        "type": "object",
+        "properties": {
+          "image_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "detection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Candidate"
+            },
+            "minItems": 0,
+            "maxItems": 5
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "resolved",
+              "candidate",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "image_id",
+          "detection_id",
+          "candidates",
+          "resolution"
+        ],
+        "additionalProperties": false
+      },
+      "Relation": {
+        "type": "object",
+        "properties": {
+          "image_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_detection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "target_detection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "adjacent",
+              "not_adjacent",
+              "unknown"
+            ]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "image_id",
+          "source_detection_id",
+          "target_detection_id",
+          "relation",
+          "confidence"
+        ],
+        "additionalProperties": false
+      },
+      "Timing": {
+        "type": "object",
+        "properties": {
+          "download_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "quality_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "detection_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "ocr_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "normalization_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "total_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "download_ms",
+          "quality_ms",
+          "detection_ms",
+          "ocr_ms",
+          "normalization_ms",
+          "total_ms"
+        ],
+        "additionalProperties": false
+      },
+      "InferenceResult": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attempt_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fencing_token": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "input_hashes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "image_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "image_id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "model_bundle_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "model_checksum": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "dictionary_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dictionary_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "pipeline_version": {
+            "type": "string",
+            "enum": [
+              "vision-v1"
+            ]
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "facts_ready",
+              "needs_retake",
+              "needs_review"
+            ]
+          },
+          "quality": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Quality"
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "detections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Detection"
+            },
+            "minItems": 0,
+            "maxItems": 100
+          },
+          "crops": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CropRecipe"
+            },
+            "minItems": 0,
+            "maxItems": 100
+          },
+          "ocr_fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OCRField"
+            },
+            "minItems": 0,
+            "maxItems": 500
+          },
+          "entities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntityCandidates"
+            },
+            "minItems": 0,
+            "maxItems": 100
+          },
+          "relations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Relation"
+            },
+            "minItems": 0,
+            "maxItems": 200
+          },
+          "timing_ms": {
+            "$ref": "#/components/schemas/Timing"
+          }
+        },
+        "required": [
+          "run_id",
+          "attempt_id",
+          "fencing_token",
+          "tenant_id",
+          "request_hash",
+          "input_hashes",
+          "model_bundle_id",
+          "model_checksum",
+          "dictionary_version_id",
+          "dictionary_sha256",
+          "pipeline_version",
+          "outcome",
+          "quality",
+          "detections",
+          "crops",
+          "ocr_fields",
+          "entities",
+          "relations",
+          "timing_ms"
+        ],
+        "additionalProperties": false
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "alive",
+              "ready",
+              "not_ready"
+            ]
+          },
+          "model_bundle_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "active_attempt_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "model_bundle_id",
+          "active_attempt_id"
+        ],
+        "additionalProperties": false
+      },
+      "Version": {
+        "type": "object",
+        "properties": {
+          "service_commit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "pipeline_version": {
+            "type": "string",
+            "enum": [
+              "vision-v1"
+            ]
+          },
+          "model_bundle_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dictionary_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "device_profile": {
+            "type": "string",
+            "enum": [
+              "cpu",
+              "cuda"
+            ]
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "development",
+              "evaluation",
+              "production"
+            ]
+          },
+          "is_simulated": {
+            "type": "boolean"
+          },
+          "adapter_id": {
+            "type": "string",
+            "enum": [
+              "dfine-n4-rgb-stretch-v1",
+              "fixture-v1"
+            ]
+          },
+          "runtime_profile": {
+            "type": "string",
+            "enum": [
+              "dfine-cpu-fp32-ocrv4cpu-v1",
+              "dfine-cuda-fp32-ocrv4cpu-v1",
+              "fixture-v1"
+            ]
+          },
+          "runtime_lock_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "detector_device": {
+            "type": "string",
+            "enum": [
+              "cpu",
+              "cuda",
+              "mock"
+            ]
+          },
+          "ocr_device": {
+            "type": "string",
+            "enum": [
+              "cpu",
+              "mock"
+            ]
+          }
+        },
+        "required": [
+          "service_commit",
+          "pipeline_version",
+          "model_bundle_id",
+          "dictionary_version_id",
+          "device_profile",
+          "purpose",
+          "is_simulated",
+          "adapter_id",
+          "runtime_profile",
+          "runtime_lock_sha256",
+          "detector_device",
+          "ocr_device"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "x-error-codes": {
+    "VALIDATION_ERROR": {
+      "http_status": 422,
+      "retryable": false
+    },
+    "UNAUTHENTICATED": {
+      "http_status": 401,
+      "retryable": false
+    },
+    "FORBIDDEN": {
+      "http_status": 403,
+      "retryable": false
+    },
+    "NOT_FOUND": {
+      "http_status": 404,
+      "retryable": false
+    },
+    "STATE_CONFLICT": {
+      "http_status": 409,
+      "retryable": false
+    },
+    "VERSION_CONFLICT": {
+      "http_status": 409,
+      "retryable": false
+    },
+    "IDEMPOTENCY_CONFLICT": {
+      "http_status": 409,
+      "retryable": false
+    },
+    "REQUEST_IN_PROGRESS": {
+      "http_status": 409,
+      "retryable": true
+    },
+    "RATE_LIMITED": {
+      "http_status": 429,
+      "retryable": true
+    },
+    "IMAGE_TOO_LARGE": {
+      "http_status": 413,
+      "retryable": false
+    },
+    "UNSUPPORTED_MEDIA_TYPE": {
+      "http_status": 415,
+      "retryable": false
+    },
+    "IMAGE_INVALID": {
+      "http_status": 422,
+      "retryable": false
+    },
+    "UNAUTHORIZED_REF": {
+      "http_status": 403,
+      "retryable": false
+    },
+    "OBJECT_NOT_FOUND": {
+      "http_status": 404,
+      "retryable": false
+    },
+    "HASH_MISMATCH": {
+      "http_status": 422,
+      "retryable": false
+    },
+    "MODEL_NOT_READY": {
+      "http_status": 503,
+      "retryable": true
+    },
+    "MODEL_VERSION_UNAVAILABLE": {
+      "http_status": 409,
+      "retryable": false
+    },
+    "AI_BUSY": {
+      "http_status": 429,
+      "retryable": true
+    },
+    "RUN_IN_PROGRESS": {
+      "http_status": 409,
+      "retryable": true
+    },
+    "AI_TIMEOUT": {
+      "http_status": 504,
+      "retryable": true
+    },
+    "STAGE_TIMEOUT": {
+      "http_status": 504,
+      "retryable": true
+    },
+    "MODEL_OOM": {
+      "http_status": 503,
+      "retryable": true
+    },
+    "DEPENDENCY_UNAVAILABLE": {
+      "http_status": 503,
+      "retryable": true
+    },
+    "MODEL_ERROR": {
+      "http_status": 500,
+      "retryable": false
+    },
+    "INTERNAL_ERROR": {
+      "http_status": 500,
+      "retryable": false
+    },
+    "SCHEMA_MISMATCH": {
+      "http_status": 502,
+      "retryable": false
+    },
+    "RULESET_INVALID": {
+      "http_status": 422,
+      "retryable": false
+    },
+    "LEASE_LOST": {
+      "http_status": 409,
+      "retryable": false
+    }
+  }
+}

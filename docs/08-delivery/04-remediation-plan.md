@@ -8,7 +8,7 @@
 
 - ML-BASE-02选择D-FINE-N四类微调+PP-OCRv4 CPU，固定上游提交、初始化来源、数据/类别双向映射/微调/导出路线，不能拿COCO类别权重冒充项目模型。
 - adapter明确640、RGB/0–1、PIL直接resize、orig_target_sizes=[W,H]、labels/boxes/scores、qmax/无NMS；全请求100结果上限与原图裁剪规则保持，源实现/参考语义/测试同步。
-- 独立AI/训练Python3.11，业务Python3.12，通过既有HTTP边界隔离；顶层版本基线已选择，实际lock和硬件证明由I-ML-01生成。
+- 依据ADR-PY-01，业务、独立AI/训练统一Python3.11，通过独立依赖环境与既有HTTP边界隔离；顶层版本基线已选择，实际lock和硬件证明由I-ML-01生成。
 - CUDA FP32为建议生产profile，CPU功能仍保留；两者独立bundle/lock/报告。OCR不暗换模型或GPU化。先用同协议fixture和初始化checkpoint开发，production拒绝mock/未校准/未批准bundle。
 - 清单新增来源提交和runtime；16字段内容摘要绑定代码/环境，/version回显实际设备/适配器。生成器与门禁不再仅接受旧模型，新负例覆盖错设备、精度和报告复用。
 - 数据不足和目标不达标有继续采集/微调与ADR替换路径，不让开发者自行猜模型、输出字段或错误行为。

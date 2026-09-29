@@ -1,0 +1,7 @@
+# API, worker and persistence constraints. All services use Python 3.11.
+-r common.txt
+celery==5.4.0
+redis==5.2.1
+alembic==1.14.1
+sqlalchemy==2.0.37
+pymysql==1.1.1

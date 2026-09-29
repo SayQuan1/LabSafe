@@ -42,6 +42,8 @@ AI_DEVICE、路由device_profile、manifest.runtime_profile/runtime设备和/ver
 
 单卡无双份显存余量时，停止领取新CUDA任务→排空在途任务→not_ready→卸载旧子进程→加载新bundle/lock→smoke→激活新route。新版本失败则恢复旧镜像/bundle/route并smoke，不改旧run。记录GPU已用/峰值显存、显存余量、重载耗时、CUDA EP失败次数及现有分阶段/队列指标；高基数GPU标识留环境快照，不按run生成监控标签。
 
+I-01A统一Python3.11，服务依赖环境仍隔离；开发骨架尚不实现本节生产拓扑，生产启动被明确拒绝。见[运行时决策](../02-architecture/07-python-runtime.md)。
+
 ## 2. 配置表
 
 | 变量/secret | 默认/要求 | 使用者 |

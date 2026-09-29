@@ -9,3 +9,10 @@ node_modules/
 dist/
 build/
 coverage/
+.venv/
+.venv-*/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+.local-secrets/
+test-results/

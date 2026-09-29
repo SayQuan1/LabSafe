@@ -1,0 +1,2 @@
+# Isolated Python 3.11 AI service; no Celery, Redis or business ORM.
+-r common.txt

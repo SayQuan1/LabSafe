@@ -1,0 +1,7 @@
+# Direct development constraints, not a production transitive runtime lock.
+fastapi==0.115.6
+pydantic==2.10.5
+uvicorn[standard]==0.34.0
+PyYAML==6.0.2
+jsonschema==4.23.0
+rfc3339-validator==0.1.4

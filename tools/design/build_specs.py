@@ -208,6 +208,11 @@ extend(globals())
 OUT['contracts/public-api-v1.yaml']=document('LabSafe 公共 API',PATHS,S,'/api/v1','cookieAuth')
 OUT['contracts/operation-catalog.json']={'version':'1.1.0','operations':OPS}
 OUT['contracts/error-codes.json']={k:{'http_status':v[0],'retryable':v[1]} for k,v in ERRORS.items()}
+
+# Package the exact inference contract for runtime validation, without runtime YAML/paths.
+runtime_contract=copy.deepcopy(OUT['contracts/inference-v1.yaml'])
+runtime_contract['x-error-codes']=copy.deepcopy(OUT['contracts/error-codes.json'])
+OUT['packages/inference_protocol/contract.json']=runtime_contract
 def serialize(path,value):
     return yaml.safe_dump(value,allow_unicode=True,sort_keys=False,width=110) if path.endswith('.yaml') else json.dumps(value,ensure_ascii=False,indent=2)+'\n'
 def main():
