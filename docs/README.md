@@ -4,6 +4,9 @@
 
 ## 阅读顺序
 
+实现进度：I-01A 工程骨架与 I-01B 数据库基础已在特性分支实现；审批状态与本机测试不能互相替代。
+运行入口见 [开发指南](../DEVELOPMENT.md)，本轮证据见 [I-01B 验收](08-delivery/08-i01b-acceptance.md)。
+
 1. [文档控制](00-document-control.md)：规范边界和变更要求。
 2. [产品](01-requirements/01-product-requirements.md)与[范围](01-requirements/01-scope-and-acceptance.md)。
 3. [编码入口](02-architecture/04-coding-baseline.md)→[状态机](02-architecture/02-domain-model.md)→[AI进程](02-architecture/03-ai-inference-process.md)→[持久任务](02-architecture/05-durable-jobs.md)→[数据库](02-architecture/06-data-persistence.md)。

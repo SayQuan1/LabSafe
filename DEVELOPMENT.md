@@ -1,12 +1,12 @@
-# LabSafe 开发指南（I-01A）
+# LabSafe 开发指南（I-01A / I-01B）
 
 ## 1. 本阶段边界
 
 所有 Python 服务统一使用 Python 3.11.x；业务与 AI 使用独立虚拟环境和独立进程。
 依据见 [运行时决策](docs/02-architecture/07-python-runtime.md)。前端 CI 使用 Node.js 20。
 
-本阶段提供真实 FastAPI/Celery 入口、同协议开发 fixture、配置保护和 CI。
-不包含数据库迁移、用户会话、业务 API、持久任务、真实图像处理、训练权重或生产部署。
+已提供真实 FastAPI/Celery 入口、同协议开发 fixture、配置保护，以及 I-01B 初始数据库迁移、租户初始化和真实 MySQL 测试。
+不包含用户会话、RBAC/仓储、业务 API、持久任务、真实图像处理、训练权重或生产部署。
 API 的 /ready 只检查 I-01A 进程配置，不代表数据库或完整系统已就绪。
 所有后端进程和前端构建均拒绝 production；AI_MODE 只接受 mock。
 
@@ -112,6 +112,53 @@ npm run dev
 两个环境变量必须相等且为 dev/test。开发页面始终显示“开发环境，结果不用于安全判断”。
 构建命令是 npm run build；production 或不一致环境必须失败。
 
+### 3.5 数据库迁移与初始化（I-01B）
+
+先在独立的开发 MySQL 8.0.16+ 实例创建专用空库 labsafe_dev_local。
+由数据库管理员提供仅对该库具有 SELECT/INSERT/UPDATE/DELETE/CREATE/ALTER/DROP/INDEX/REFERENCES 权限的迁移/初始化账户；不要给 API/Worker 或 AI 使用该管理账户。
+本阶段只允许本机回环连接；远端 TLS、应用最小权限账户和生产发布不在 I-01B 范围内。
+
+将管理员提供的 mysql+pymysql 连接 URL 保存到 .local-secrets/database-url，包含用户名、URL 编码后的密码、回环地址、端口和准确的库名。
+URL 不允许 query 参数；程序只读取 DATABASE_URL_FILE，不读取明文 DATABASE_URL，也不自动加载 .env。
+该文件必须仅当前用户可读；不要把真实连接串放在命令行、终端历史、日志、PR 或文档中。
+
+~~~powershell
+$env:APP_ENV = 'dev'
+$env:DATABASE_SCHEMA = 'labsafe_dev_local'
+$env:DATABASE_URL_FILE = (Resolve-Path .local-secrets/database-url).Path
+.\.venv-business\Scripts\python.exe -m packages.persistence.cli upgrade
+.\.venv-business\Scripts\python.exe -m packages.persistence.cli verify
+.\.venv-business\Scripts\python.exe -m packages.persistence.cli bootstrap-tenant --code my_org --name '机构名称' --timezone Asia/Shanghai --username admin --display-name '初始管理员' --reason '首次初始化'
+~~~
+
+最后一步交互式输入并确认 12–128 字符密码，不提供项目默认密码。
+非交互环境使用 --password-file 指向一次性 UTF-8 秘密文件：内容就是密码，不要额外添加 BOM 或结尾换行，程序不会 trim/规范化密码；成功后由提供该文件的操作者安全移除。
+用户名执行 NFKC+casefold；租户、六角色、租户级 safety_admin 授权与脱敏审计在一个事务中提交。
+重复初始化同一租户返回错误，绝不重置已有密码；本命令不是登录接口，也不是管理员重置工具。
+upgrade 成功不等于结构正确，必须继续 verify；JSON 中 errors 应为空，退出码为 0。
+CLI 退出码：0=成功，2=输入/保护检查失败，1=数据库/迁移/结构检查失败；错误不输出连接串或密码。
+
+初始迁移仅允许空库（可以已有 Alembic 版本表）；不使用 stamp 绕过保护。
+MySQL DDL 非整体事务：中途失败可能遗留部分表，不能承诺自动回滚。
+此时保留失败证据，并由操作者确认后丢弃整个专用测试库重建；不要对已有业务库执行重建。
+降级会删除全部 43 张业务表，只能在 APP_ENV=test 且 DATABASE_SCHEMA 为 labsafe_test_ 前缀的可丢弃库执行：
+
+~~~powershell
+# 仅在已确认的专用测试库配置中执行，绝不能指向业务/开发数据库。
+$env:LABSAFE_ALLOW_DESTRUCTIVE_DOWNGRADE = $env:DATABASE_SCHEMA
+.\.venv-business\Scripts\python.exe -m packages.persistence.cli downgrade
+Remove-Item Env:LABSAFE_ALLOW_DESTRUCTIVE_DOWNGRADE
+~~~
+
+本机自动验证不需要配置或连接已有库：
+
+~~~powershell
+.\.venv-business\Scripts\python.exe tools/database/run_mysql_tests.py --mysqld 'D:/SQL/MySQL/MySQL Server 8.0/bin/mysqld.exe'
+~~~
+
+把路径替换为实际 mysqld 可执行文件。脚本创建临时 data directory、随机回环端口和随机凭据，核对实例身份后才建库；结束后只关闭本次子进程并清理临时数据。
+不注册或修改 Windows 服务。Linux 本机模式需已安装 mysqld，并以允许运行 mysqld 的非 root 用户执行；CI 使用隔离 MySQL 容器模式，不依赖本机服务。
+
 ## 4. 验证
 
 根目录、业务环境执行：
@@ -119,8 +166,9 @@ npm run dev
 ~~~powershell
 .\.venv-business\Scripts\python.exe -m unittest discover -s tests/business -t . -v
 .\.venv-business\Scripts\python.exe -m unittest discover -s tests/protocol -t . -v
-.\.venv-business\Scripts\python.exe -m ruff check apps packages tests
-.\.venv-business\Scripts\python.exe -m ruff format --check apps packages tests
+.\.venv-business\Scripts\python.exe -m pytest tests/persistence/test_unit.py --tb=short
+.\.venv-business\Scripts\python.exe -m ruff check apps packages tests tools/database
+.\.venv-business\Scripts\python.exe -m ruff format --check apps packages tests tools/database
 ~~~
 
 AI 环境执行：
@@ -130,8 +178,9 @@ AI 环境执行：
 .\.venv-ai\Scripts\python.exe -m unittest discover -s tests/protocol -t . -v
 ~~~
 
-测试自行在临时目录生成令牌和合成请求，不要求预设 APP_ENV，也不连接 Redis/MySQL/对象存储。
+I-01A 的业务/AI/协议测试自行在临时目录生成令牌和合成请求，不要求预设 APP_ENV，也不连接 Redis/MySQL/对象存储。
 包含实际 API/AI 子进程 HTTP smoke，不只是 import 非空检查。
+I-01B 的真实数据库测试必须运行 3.5 的隔离启动器；直接 pytest tests/persistence 会跳过未配置的 MySQL 用例，不能把跳过算作数据库通过。
 
 设计校验使用独立工具环境，安装 tools/design/requirements.txt 后执行：
 
@@ -148,4 +197,7 @@ CI 必须先 --check，不能先生成来掩盖漂移。设计校验不是应用
 
 遵循 [Git 协作规范](CONTRIBUTING.md)。提交特性分支、创建 PR；不直接推送 main，不自行合并或代替独立审查。
 不提交虚拟环境、.local-secrets、真实图片、权重或 .env。
-下一阶段从 I-01B 专用空库迁移开始；真实模型主线可按 I-ML-01 并行，但不扩大本 PR 验收范围。
+I-01B 的实际结果与后续边界见 [验收记录](docs/08-delivery/08-i01b-acceptance.md)。
+本地 I-01B 分支继承尚未评审的 PR #5，属于依赖分支，不代表前置代码已获批准；未自动创建新 PR 或推送。
+后续提交时按 CONTRIBUTING 独立评审，先完成 I-01A 合并，再基于最新 origin/main 整理仅 I-01B 的提交，重新跑 CI；不直接推送 main。
+下一阶段 I-01C 是仓储、会话/RBAC、幂等与租户事务；真实模型主线可按 I-ML-01 推进，但不以数据库通过替代模型或生产验收。

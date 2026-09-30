@@ -60,3 +60,7 @@ IRR-04：completeUpload用API内部HEAD取得准确versionId/大小/MIME，HEAD�
 ## 6. 初始化和迁移门禁
 
 先 tenants/roles/users，再组织/模板/词典/模型/规则/activation；循环current pointers初始NULL。角色固定六种；bootstrap管理员由一次性CLI输入密码，不将演示账号写进DDL。数据库管理账户只用于migration；API/worker按表权限分配，AI无账户。DDL脚本不能直接在非空生产schema执行；迁移必须可备份、演练且有前向修复方案。
+
+2026-09-29 实现说明：I-01B 已提供 packages/persistence 的 Alembic 0001_initial、只读结构核对和原子租户/角色/管理员初始化。操作与失败恢复见 [开发指南](../../DEVELOPMENT.md)，真实 MySQL 证据见 [I-01B 验收](../08-delivery/08-i01b-acceptance.md)。本阶段迁移/初始化凭据只供离线管理 CLI；不代表 API/Worker 已获得业务数据库访问能力。
+
+真实库核对发现 DDL 生成器遗漏了 user_roles.scope_key 的 NOT NULL；生成源与未发布的初始迁移快照已补齐，以保持原数据字典定义，不改变角色 scope 规则。迁移发布后不得修改历史快照；后续设计变更必须新增 revision，并更新当前 head 的核对基准。
