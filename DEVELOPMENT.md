@@ -1,12 +1,16 @@
+
 # LabSafe 开发指南（I-01A / I-01B）
+
 
 ## 1. 本阶段边界
 
 所有 Python 服务统一使用 Python 3.11.x；业务与 AI 使用独立虚拟环境和独立进程。
 依据见 [运行时决策](docs/02-architecture/07-python-runtime.md)。前端 CI 使用 Node.js 20。
 
+
 已提供真实 FastAPI/Celery 入口、同协议开发 fixture、配置保护，以及 I-01B 初始数据库迁移、租户初始化和真实 MySQL 测试。
 不包含用户会话、RBAC/仓储、业务 API、持久任务、真实图像处理、训练权重或生产部署。
+
 API 的 /ready 只检查 I-01A 进程配置，不代表数据库或完整系统已就绪。
 所有后端进程和前端构建均拒绝 production；AI_MODE 只接受 mock。
 
@@ -112,6 +116,7 @@ npm run dev
 两个环境变量必须相等且为 dev/test。开发页面始终显示“开发环境，结果不用于安全判断”。
 构建命令是 npm run build；production 或不一致环境必须失败。
 
+
 ### 3.5 数据库迁移与初始化（I-01B）
 
 先在独立的开发 MySQL 8.0.16+ 实例创建专用空库 labsafe_dev_local。
@@ -166,9 +171,11 @@ Remove-Item Env:LABSAFE_ALLOW_DESTRUCTIVE_DOWNGRADE
 ~~~powershell
 .\.venv-business\Scripts\python.exe -m unittest discover -s tests/business -t . -v
 .\.venv-business\Scripts\python.exe -m unittest discover -s tests/protocol -t . -v
+
 .\.venv-business\Scripts\python.exe -m pytest tests/persistence/test_unit.py --tb=short
 .\.venv-business\Scripts\python.exe -m ruff check apps packages tests tools/database
 .\.venv-business\Scripts\python.exe -m ruff format --check apps packages tests tools/database
+
 ~~~
 
 AI 环境执行：
@@ -178,9 +185,11 @@ AI 环境执行：
 .\.venv-ai\Scripts\python.exe -m unittest discover -s tests/protocol -t . -v
 ~~~
 
+
 I-01A 的业务/AI/协议测试自行在临时目录生成令牌和合成请求，不要求预设 APP_ENV，也不连接 Redis/MySQL/对象存储。
 包含实际 API/AI 子进程 HTTP smoke，不只是 import 非空检查。
 I-01B 的真实数据库测试必须运行 3.5 的隔离启动器；直接 pytest tests/persistence 会跳过未配置的 MySQL 用例，不能把跳过算作数据库通过。
+
 
 设计校验使用独立工具环境，安装 tools/design/requirements.txt 后执行：
 
@@ -197,7 +206,9 @@ CI 必须先 --check，不能先生成来掩盖漂移。设计校验不是应用
 
 遵循 [Git 协作规范](CONTRIBUTING.md)。提交特性分支、创建 PR；不直接推送 main，不自行合并或代替独立审查。
 不提交虚拟环境、.local-secrets、真实图片、权重或 .env。
+
 I-01B 的实际结果与后续边界见 [验收记录](docs/08-delivery/08-i01b-acceptance.md)。
 I-01A PR #5 已合并；I-01B 在 wsq/i-01b-database-foundation 上通过 PR #7 提交，目标为最新 main。数据库/安全变更仍需按 CONTRIBUTING 独立评审；不直接推送 main。
 PR #7 的远程 CI 必须运行其自身的 persistence-mysql、业务、AI、设计和 Web 检查，不能用 PR #5 的成绩代替。
 下一阶段 I-01C 是仓储、会话/RBAC、幂等与租户事务；真实模型主线可按 I-ML-01 推进，但不以数据库通过替代模型或生产验收。
+
