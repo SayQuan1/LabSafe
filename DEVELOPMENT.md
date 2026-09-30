@@ -207,7 +207,8 @@ CI 必须先 --check，不能先生成来掩盖漂移。设计校验不是应用
 遵循 [Git 协作规范](CONTRIBUTING.md)。提交特性分支、创建 PR；不直接推送 main，不自行合并或代替独立审查。
 不提交虚拟环境、.local-secrets、真实图片、权重或 .env。
 
-I-01B 的实际结果与后续边界见 [验收记录](docs/08-delivery/08-i01b-acceptance.md)。
+I-01B 的实际结果与后续边界见 [验收记录](docs/08-delivery/08-i01b-acceptance.md)。I-01C 会话、RBAC、幂等与租户事务实现及验收范围见 [I-01C 验收记录](docs/08-delivery/09-i01c-acceptance.md)。
+
 I-01A PR #5 已合并；I-01B 在 wsq/i-01b-database-foundation 上通过 PR #7 提交，目标为最新 main。数据库/安全变更仍需按 CONTRIBUTING 独立评审；不直接推送 main。
 PR #7 的远程 CI 必须运行其自身的 persistence-mysql、业务、AI、设计和 Web 检查，不能用 PR #5 的成绩代替。
 下一阶段 I-01C 是仓储、会话/RBAC、幂等与租户事务；真实模型主线可按 I-ML-01 推进，但不以数据库通过替代模型或生产验收。
