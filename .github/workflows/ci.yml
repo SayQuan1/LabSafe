@@ -30,8 +30,10 @@ jobs:
       - run: python -m pip check
       - run: python -m unittest discover -s tests/business -t . -v
       - run: python -m unittest discover -s tests/protocol -t . -v
+
       - run: ruff check apps packages tests tools/database
       - run: ruff format --check apps packages tests tools/database
+
 
   ai-python311:
     runs-on: ubuntu-latest
@@ -46,7 +48,9 @@ jobs:
       - run: python -m pip check
       - name: AI environment must not install business or model dependencies
         run: |
+
           python -c "import importlib.util; names=['celery','redis','sqlalchemy','alembic','pymysql','argon2','torch','paddle','onnxruntime']; assert all(importlib.util.find_spec(n) is None for n in names)"
+
       - run: python -m unittest discover -s tests/ai -t . -v
       - run: python -m unittest discover -s tests/protocol -t . -v
 
@@ -62,6 +66,7 @@ jobs:
       - run: python -B tools/design/test_readiness_design.py
       - run: python -B tools/design/validate_specs.py
       - run: git diff --exit-code
+
 
   persistence-mysql:
     runs-on: ubuntu-latest
@@ -91,6 +96,7 @@ jobs:
       - run: python tools/database/run_mysql_tests.py --ci
         env:
           LABSAFE_CI_MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
+
 
   web:
     runs-on: ubuntu-latest
