@@ -5,10 +5,9 @@
 
 ## 1. 分支与前置依赖
 
-本地分支 wsq/i-01b-database-foundation，继承 PR #5 的 I-01A 提交 e112680。
-PR #5 尚未完成评审时只进行依赖开发，不自动合并、推送 main 或修改该 PR。
-本次没有提交/推送 I-01B，也未创建新的 PR；远程 CI 尚未验证本次增量。
-后续按 CONTRIBUTING 整理仅 I-01B 的提交、重跑 CI、说明数据库/安全风险，并由两名协作者共同确认。
+本地分支 wsq/i-01b-database-foundation，基于已合并的 I-01A PR #5（main 提交 3a92e09）。
+I-01B PR #7 已推送并以 main 为目标；本页保留分支依赖关系，数据库/安全变更仍需两名协作者共同确认。
+远程 CI 已运行并通过 business-python311、ai-python311、design-contracts、persistence-mysql 和 web 检查；通过 CI 不替代代码评审。
 
 ## 2. 已交付
 
@@ -46,7 +45,7 @@ Windows、Python 3.11.4、MySQL Community Server 8.0.33。数据库测试使用�
 | 环境与静态检查 | 两环境 pip check 通过；AI 无 SQLAlchemy/Alembic/PyMySQL/Argon2/Celery/Redis/模型依赖；Ruff check/format 通过（50 个 Python 文件） |
 | 发布包 | 使用声明的隔离构建依赖构建 wheel，安装到新临时目录后可找到两份快照和 Alembic head，不依赖源码目录 |
 | 设计检查 | build_specs --check、148 项 IRR 合成检查、validate_specs（含 41 发布/39 D-FINE 合成检查）通过 |
-| CI 配置 | YAML 结构校验通过；新 MySQL job 待本次分支提交远程后执行，不能复用 PR #5 的成绩 |
+| CI 配置 | YAML 结构校验通过；PR #7 的新 MySQL job 已在远程运行并通过，未复用 PR #5 的成绩 |
 
 MySQL 8.0.33 只是本次本机/CI 兼容性测试基线，不是生产镜像或安全补丁选型结论。
 设计工具仍声明未运行应用/数据库测试，是该工具自身的证据范围；本页单独记录真实数据库结果，二者不能互相替代。
@@ -54,7 +53,7 @@ MySQL 8.0.33 只是本次本机/CI 兼容性测试基线，不是生产镜像或
 ## 4. 本轮发现并关闭的差异
 
 真实 introspection 发现设计字典要求 user_roles.scope_key 非空，但 DDL 生成器遗漏 NOT NULL。
-已修复 tools/design/data_model.py、重新生成 contracts/database-design.sql，并同步尚未发布的 0001_initial 快照；数据字典和角色规则没有变更。
+已修复 tools/design/data_model.py、重新生成 contracts/database-design.sql，并同步 0001_initial 快照；数据字典和角色规则没有变更。
 MySQL 8 的默认认证所需 RSA 依赖通过 PyMySQL[rsa] 补齐；Argon2id 和时区依赖仅加入业务侧。
 
 ## 5. 操作、回滚与后续边界
