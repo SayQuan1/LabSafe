@@ -30,8 +30,10 @@ jobs:
       - run: python -m pip check
       - run: python -m unittest discover -s tests/business -t . -v
       - run: python -m unittest discover -s tests/protocol -t . -v
-      - run: ruff check apps packages tests
-      - run: ruff format --check apps packages tests
+
+      - run: ruff check apps packages tests tools/database
+      - run: ruff format --check apps packages tests tools/database
+
 
   ai-python311:
     runs-on: ubuntu-latest
@@ -46,7 +48,9 @@ jobs:
       - run: python -m pip check
       - name: AI environment must not install business or model dependencies
         run: |
-          python -c "import importlib.util; names=['celery','redis','sqlalchemy','torch','paddle','onnxruntime']; assert all(importlib.util.find_spec(n) is None for n in names)"
+
+          python -c "import importlib.util; names=['celery','redis','sqlalchemy','alembic','pymysql','argon2','torch','paddle','onnxruntime']; assert all(importlib.util.find_spec(n) is None for n in names)"
+
       - run: python -m unittest discover -s tests/ai -t . -v
       - run: python -m unittest discover -s tests/protocol -t . -v
 
@@ -62,6 +66,37 @@ jobs:
       - run: python -B tools/design/test_readiness_design.py
       - run: python -B tools/design/validate_specs.py
       - run: git diff --exit-code
+
+
+  persistence-mysql:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0.33
+        env:
+          # Disposable CI instance only; never use this test credential for deployments.
+          MYSQL_ROOT_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-mysql-test-only
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306/tcp
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+    env:
+      APP_ENV: test
+      CI: 'true'
+      LABSAFE_MYSQL_INTEGRATION: '1'
+      LABSAFE_CI_MYSQL_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-mysql-test-only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements/dev.txt
+      - run: python tools/database/run_mysql_tests.py --ci
+        env:
+          LABSAFE_CI_MYSQL_PORT: ${{ job.services.mysql.ports[3306] }}
+
 
   web:
     runs-on: ubuntu-latest

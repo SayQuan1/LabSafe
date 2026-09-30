@@ -75,7 +75,9 @@ def build_database():
         lines=[]
         for col,v in t['columns'].items():
             z=q(col)+' '+v['type']
-            if v['generated_sql']:z+=' GENERATED ALWAYS AS ('+v['generated_sql']+') STORED'
+            if v['generated_sql']:
+                z+=' GENERATED ALWAYS AS ('+v['generated_sql']+') STORED'
+                z+=' NULL' if v['nullable'] else ' NOT NULL'
             else:
                 z+=' NULL' if v['nullable'] else ' NOT NULL'
                 if v['default_sql'] is not None:z+=' DEFAULT '+v['default_sql']

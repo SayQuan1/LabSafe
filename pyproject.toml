@@ -31,7 +31,11 @@ worker = [
 persistence = [
   "alembic==1.14.1",
   "sqlalchemy==2.0.37",
-  "pymysql==1.1.1",
+
+  "pymysql[rsa]==1.1.1",
+  "argon2-cffi==23.1.0",
+  "tzdata==2026.4",
+
 ]
 dev = [
   "pytest==8.3.4",
@@ -47,6 +51,9 @@ namespaces = false
 [tool.setuptools.package-data]
 "packages.inference_protocol" = ["contract.json"]
 "apps.ai_inference" = ["fixtures/*.json"]
+
+"packages.persistence.migrations" = ["snapshots/*.json", "snapshots/*.sql"]
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
