@@ -1,1 +1,1 @@
-"""Domain package placeholder for immutable facts, guards and state transitions."""
+"""Pure authorization and workflow guards; no HTTP, SQL or model dependencies."""

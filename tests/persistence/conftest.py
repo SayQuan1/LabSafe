@@ -1,13 +1,25 @@
 import json
 import os
+import secrets
+import shutil
+import socket
+import subprocess
+import time
 
 import pytest
 from alembic import command
+from redis import Redis
+from redis.exceptions import ConnectionError
 from sqlalchemy import inspect, text
 
+from apps.api.app.main import create_app
+from packages.application.identity import IdentityApplication
+from packages.application.rate_limit import RateLimits
 from packages.persistence.cli import migration_config
 from packages.persistence.database import database_engine
 from packages.persistence.schema import verify_schema
+from packages.persistence.security import SessionService
+from tests.persistence.test_security_mysql import create_tenant
 
 
 @pytest.fixture(scope="session")
@@ -59,3 +71,67 @@ def transaction(database):
             yield connection
         finally:
             transaction.rollback()
+
+
+@pytest.fixture(scope="module")
+def isolated_redis(tmp_path_factory):
+    if os.getenv("CI") == "true" and os.getenv("LABSAFE_CI_REDIS_PORT"):
+        client = Redis(
+            host="127.0.0.1", port=int(os.environ["LABSAFE_CI_REDIS_PORT"]), socket_timeout=2
+        )
+        assert client.ping()
+        yield client
+        client.close()
+        return
+    executable = os.getenv("LABSAFE_TEST_REDIS_SERVER") or shutil.which("redis-server")
+    if not executable:
+        pytest.fail("Set LABSAFE_TEST_REDIS_SERVER to start a disposable Redis child")
+    folder = tmp_path_factory.mktemp("redis")
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+    child = subprocess.Popen(
+        [
+            executable,
+            "--port",
+            str(port),
+            "--bind",
+            "127.0.0.1",
+            "--save",
+            "",
+            "--appendonly",
+            "no",
+            "--dir",
+            str(folder),
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    )
+    client = Redis(host="127.0.0.1", port=port, socket_timeout=2)
+    try:
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            if child.poll() is not None:
+                raise RuntimeError("Disposable Redis failed to start")
+            try:
+                if client.ping():
+                    break
+            except ConnectionError:
+                time.sleep(0.05)
+        assert client.info("server")["process_id"] == child.pid
+        yield client
+    finally:
+        client.close()
+        child.terminate()  # Only the child this fixture created; never a discovered service.
+        child.wait(timeout=10)
+
+
+@pytest.fixture
+def identity(database, isolated_redis):
+    tenant = create_tenant(database, "identity")
+    service = IdentityApplication(
+        database, SessionService(secrets.token_bytes(32)), RateLimits(isolated_redis), "test"
+    )
+    app = create_app(identity=service, public_origin="https://labsafe.test")
+    return tenant, service, app

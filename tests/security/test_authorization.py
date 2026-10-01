@@ -1,6 +1,13 @@
 import pytest
 
-from packages.domain.security import Permission, Principal, ServiceError, authorize, require_version
+from packages.domain.security import (
+    Permission,
+    Principal,
+    ServiceError,
+    authorize,
+    permission_projection,
+    require_version,
+)
 from packages.persistence.security import SESSION_ABSOLUTE, SESSION_IDLE, utc_now
 
 
@@ -59,3 +66,13 @@ def test_time_contract_is_millisecond_utc_and_expiry_windows_are_fixed():
     assert now.microsecond % 1000 == 0
     assert SESSION_ABSOLUTE.total_seconds() == 8 * 3600
     assert SESSION_IDLE.total_seconds() == 30 * 60
+
+
+def test_permission_projection_deduplicates_and_rejects_over_capacity():
+    roles = tuple(("viewer", "laboratory", f"lab-{i:03}") for i in range(200))
+    projected = permission_projection(principal(*roles, roles[0]))
+    assert len(projected) == 200
+    assert projected == sorted(projected, key=lambda p: (p["action"], p["laboratory_id"]))
+    with pytest.raises(ServiceError) as failure:
+        permission_projection(principal(*roles, ("viewer", "laboratory", "lab-200")))
+    assert failure.value.code == "STATE_CONFLICT"

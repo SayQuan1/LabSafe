@@ -12,6 +12,7 @@ def main() -> None:
         host=os.getenv("API_HOST", "127.0.0.1"),
         port=int(os.getenv("API_PORT", "8000")),
         workers=1,
+        proxy_headers=False,  # Do not trust arbitrary X-Forwarded-For for login limits.
     )
 
 

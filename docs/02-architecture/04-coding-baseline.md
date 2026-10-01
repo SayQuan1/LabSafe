@@ -17,6 +17,7 @@
 | packages/domain | 状态、guards、权限动作、不变事实类型 | 通用 status setter |
 | packages/application | 命令处理器、查询、unit_of_work；每命令唯一入口 | 路由另写业务逻辑 |
 | packages/persistence | SQLAlchemy 2、MySQL 8.0.16+、Alembic、Outbox repository | 省略租户条件 |
+| packages/storage | 业务环境的 S3 SDK 适配；同源本地签名、内网固定版本读取 | 默认凭据链、事务内网络操作、将摘要匹配当成图像 ready |
 | packages/rules | evaluate(facts,bundle,reference_date) 纯函数 | 网络、系统时间、动态 eval |
 | contracts / tests | 生成协议；contract/unit/integration/e2e/fault/evaluation 分层 | 模拟成绩冒充真实评测 |
 
@@ -33,6 +34,18 @@
 5. 原子提交后返回。对象/AI/Redis 调用在事务外；失败回滚所有业务写入。
 
 统一锁序：幂等 → inspection → item → run → finding → remediation_task → task_run；同类多行按 ID 排序。数据库死锁最多重跑事务 3 次，重新检查守卫；不能重复执行外部副作用。
+
+I-02B 身份事务补充：短事务认证预检结束后再调用 Redis，提交事务内必须重新认证、授权和校验 CSRF，预检结果不作为提交凭据。用户列表在显式 REPEATABLE READ 事务中完成 COUNT 与分页。禁用用户先定位 session 的租户范围（不是授权），取得 tenant 排他锁，再 claim 幂等记录、重验会话并锁目标 user；这是认证排他锁前置，不改变上述业务聚合锁顺序。原因是幂等 INSERT 的租户/用户外键会隐式取得共享锁，之后升级 tenant 排他锁会引起并发禁用死锁。最后管理员保护采用当前锁定读，不能依赖等待前的旧快照。实现与故障证据见 [I-02B 验收](../08-delivery/11-i02b-identity-api.md)。
+
+I-02C 的 grantRole/revokeRole 复用上述身份排他锁顺序：tenant → 幂等 → 重新认证 → 目标 user/role assignment → 撤会话与审计/幂等响应。User.version 与 session_epoch 在同一事务递增，不能仅修改 user_roles 而保留旧会话。角色列表同样使用一致性快照与租户范围校验；授权后的权限投影容量在提交前检查。见 [I-02C 验收](../08-delivery/12-i02c-role-api.md)。
+
+I-02D 组织/模板/巡检草稿沿用事务模板，新增事务内白名单资源投影与父对象共享锁；clone 按 family 根→源模板锁定，再当前读分配下一 revision，同 family 不同源版本也必须串行。重放先重验会话/动作/结果可见性，再返回原响应，不重复版本/状态前置。会话认证保持 user/roles/epoch 共享当前读，仅 session 行 FOR UPDATE；禁止以 sessions JOIN users FOR UPDATE 将已有用户共享锁隐式升级，避免同用户多会话死锁。见 [I-02D 验收](../08-delivery/13-i02d-foundation-api.md)。
+
+I-02E 巡检项查询：预检结束后进行事务外读限流，再于 RR 事务内重新认证；先授权父巡检/资源及可选实验室，再 COUNT/分页。业务投影使用同一快照，不混用业务锁定读。GET 不改业务状态/版本/审计/任务（既有会话 idle touch 除外）。allowed_actions 只复用原命令守卫，当前写命令未实现所以能力集为空；后续必须同批接通真实命令和完整可信上下文加载。见 [I-02E 验收](../08-delivery/14-i02e-item-query-api.md)。
+
+I-02F1 上传授权补充：预检结束后执行普通写限流与独立上传限流，提交事务锁序为 tenant 共享锁 → 当前 user 排他锁（用户配额 mutex）→ 幂等 claim → 重新认证/CSRF → owner → uploads 配额/插入 → 审计/幂等响应。user 排他锁必须早于认证或幂等外键的 user 共享锁，避免同用户多会话 S→X 升级死锁；其他命令不得照搬排他认证。Item owner 按 inspection→item 锁定，Task owner 锁 remediation_task。配额用当前锁定读，避免等待 mutex 后沿用旧 RR 快照。SDK presigning 使用显式静态凭据，仅本地密码学、无网络/凭据刷新，因此可随响应在事务内保存；HEAD/GET/PUT 等对象网络操作仍必须在事务外。重放重验当前权限/owner，返回原 URL/expiry/request_id，不能重签或续期。见 [I-02F1 验收](../08-delivery/15-i02f1-upload-grant-api.md)。
+
+I-02F2 上传完成：准备阶段按与 F1 相同的 tenant 共享锁→当前 user 排他锁→幂等→重新认证/CSRF 顺序，定位 upload 后先锁 owner，再锁 upload/image。首次未完成时抛内部准备信号使整个事务回滚（包括 pending 幂等行），退出所有数据库锁后执行 HEAD；提交阶段重新执行相同授权/锁序并检查 grant 未过期、准备快照未变化、HEAD 匹配。只在最终短事务原子写入 image/任务/TaskDispatch/upload/审计/幂等，不在网络等待期间持有事务。并发胜者已登记图像时复用胜者记录，不能用迟到 HEAD 覆盖固定版本。getImage 使用 RR 快照、当前 owner.read 和白名单元数据，不做对象 I/O。详见 [I-02F2 验收](../08-delivery/16-i02f2-upload-completion-api.md)。
 
 ## 4. 类型与不变量
 
