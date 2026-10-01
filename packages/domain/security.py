@@ -75,6 +75,20 @@ def valid_grant(role: str, scope: str, lab: str | None) -> bool:
     )
 
 
+def permission_projection(principal: Principal) -> list[dict[str, str | None]]:
+    permissions = sorted(
+        {
+            (str(permission), lab or "")
+            for role, scope, lab in principal.roles
+            if valid_grant(role, scope, lab)
+            for permission in ROLE_PERMISSIONS[role]
+        }
+    )
+    if len(permissions) > 200:
+        raise ServiceError("STATE_CONFLICT", 409, "Permission projection exceeds capacity")
+    return [{"action": action, "laboratory_id": lab or None} for action, lab in permissions]
+
+
 def visible_laboratories(principal: Principal) -> frozenset[str] | None:
     """None means all labs in this tenant, never all tenants."""
     labs = set()

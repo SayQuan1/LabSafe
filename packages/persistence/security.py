@@ -1,4 +1,4 @@
-"""Transaction-bound sessions and append-only audit; no public auth routes yet.
+"""Transaction-bound sessions and append-only audit for the identity application.
 
 The API adapter must also enforce Origin/JSON, rate limiting and cookie options.
 Application commands own commit/rollback. SQL never trusts a client tenant ID.
@@ -107,6 +107,10 @@ class SessionService:
         self._csrf_key = csrf_key
         self._dummy_hash = PASSWORD_HASHER.hash(secrets.token_urlsafe(32))
 
+    def request_digest(self, body: Any) -> str:
+        """Keyed canonical hash: password-bearing requests cannot be guessed offline."""
+        return hmac.new(self._csrf_key, canonical_json(body).encode(), hashlib.sha256).hexdigest()
+
     def _csrf(self, token: str) -> str:
         digest = hmac.new(self._csrf_key, token.encode("ascii"), hashlib.sha256).digest()
         return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
@@ -201,13 +205,20 @@ class SessionService:
         tenant, user = self.locate(connection, token)
         lock_tenant(connection, tenant, exclusive=exclusive)
         principal = load_principal(connection, tenant, user)
+        # The principal read already holds the user/role shared locks. A locking
+        # join below would also upgrade users to X for each independent session,
+        # deadlocking concurrent sessions of the same actor (S -> X). Read the
+        # epoch under S and lock only the session being touched.
+        current_epoch = connection.scalar(
+            text("SELECT session_epoch FROM users WHERE tenant_id=:tenant AND id=:user FOR SHARE"),
+            {"tenant": tenant, "user": user},
+        )
         # Tenant -> user/roles -> session, also for login and administrative revocation.
         row = (
             connection.execute(
                 text(
                     "SELECT s.id,s.csrf_hash,s.expires_at,s.idle_expires_at,s.revoked_at,"
-                    "s.session_epoch,u.session_epoch AS current_epoch FROM sessions s JOIN users u "
-                    "ON u.tenant_id=s.tenant_id AND u.id=s.user_id "
+                    "s.session_epoch FROM sessions s "
                     "WHERE s.tenant_id=:tenant AND s.user_id=:user "
                     "AND s.token_hash=:hash FOR UPDATE"
                 ),
@@ -220,7 +231,7 @@ class SessionService:
         if (
             not row
             or row["revoked_at"] is not None
-            or row["session_epoch"] != row["current_epoch"]
+            or row["session_epoch"] != current_epoch
             or row["expires_at"] <= now
             or row["idle_expires_at"] <= now
         ):
@@ -351,8 +362,11 @@ def begin_idempotency(
     lease_owner: str,
 ) -> IdempotencyClaim:
     require_transaction(connection)
-    key = safe_text(key, 128)
-    if len(key) < 8 or not re.fullmatch(r"[0-9a-f]{64}", request_hash):
+    if (
+        not isinstance(key, str)
+        or not re.fullmatch(r"[!-~]{8,128}", key)
+        or not re.fullmatch(r"[0-9a-f]{64}", request_hash)
+    ):
         raise ServiceError("VALIDATION_ERROR", 422, "Invalid idempotency input")
     method = safe_text(method, 10).upper()
     path_hash = hashlib.sha256(safe_text(path, 512).encode()).hexdigest()
@@ -385,13 +399,14 @@ def begin_idempotency(
         errno = getattr(getattr(error, "orig", None), "args", [None])[0]
         if errno not in (1062, "1062"):
             raise
+    now = utc_now()  # A competing insert may have waited before yielding the current row.
     row = (
         connection.execute(
             text(
                 "SELECT id,state,request_hash,response_status,response,lease_owner,lease_until "
                 "FROM api_idempotency WHERE tenant_id=:tenant AND actor_id=:actor "
                 "AND method=:method "
-                "AND path_hash=:path AND key_hash=:key AND expires_at>:now"
+                "AND path_hash=:path AND key_hash=:key AND expires_at>:now FOR UPDATE NOWAIT"
             ),
             {
                 "tenant": tenant_id,
@@ -432,7 +447,9 @@ def begin_idempotency(
             ).rowcount
             if updated == 1:
                 return IdempotencyClaim(row["id"], "pending", lease_owner=lease_owner)
-        return IdempotencyClaim(row["id"], "pending", lease_owner=row["lease_owner"])
+        raise ServiceError(
+            "REQUEST_IN_PROGRESS", 409, "Request is still in progress", retry_after=2
+        )
     return IdempotencyClaim(row["id"], row["state"], row["response_status"], response)
 
 
@@ -452,13 +469,15 @@ def complete_idempotency(
         text(
             "UPDATE api_idempotency SET state='completed',response_status=:status,"
             "response=:response,lease_owner=NULL,lease_until=NULL "
-            "WHERE id=:id AND state='pending' AND lease_owner=:owner"
+            "WHERE id=:id AND state='pending' AND lease_owner=:owner "
+            "AND lease_until>:now AND expires_at>:now"
         ),
         {
             "status": status,
             "response": json.dumps(response, ensure_ascii=False, separators=(",", ":")),
             "id": claim.record_id,
             "owner": owner,
+            "now": utc_now(),
         },
     )
     if result.rowcount != 1:
@@ -472,7 +491,10 @@ class UserSecurityService:
     def _lock_user(connection: Connection, tenant_id: str, user_id: str) -> dict[str, Any]:
         row = (
             connection.execute(
-                text("SELECT id,status FROM users WHERE tenant_id=:tenant AND id=:user FOR UPDATE"),
+                text(
+                    "SELECT id,status,version FROM users "
+                    "WHERE tenant_id=:tenant AND id=:user FOR UPDATE"
+                ),
                 {"tenant": tenant_id, "user": user_id},
             )
             .mappings()
@@ -484,23 +506,28 @@ class UserSecurityService:
 
     @staticmethod
     def _last_admin_guard(connection: Connection, tenant_id: str, user_id: str) -> None:
-        active = connection.scalar(
-            text(
-                "SELECT COUNT(*) FROM users u JOIN user_roles ur ON ur.tenant_id=u.tenant_id "
-                "AND ur.user_id=u.id JOIN roles r ON r.id=ur.role_id WHERE u.tenant_id=:tenant "
-                "AND u.status='active' AND r.code='safety_admin' AND ur.scope_kind='tenant'"
-            ),
-            {"tenant": tenant_id},
+        active = (
+            connection.execute(
+                text(
+                    "SELECT u.id FROM users u JOIN user_roles ur ON ur.tenant_id=u.tenant_id "
+                    "AND ur.user_id=u.id JOIN roles r ON r.id=ur.role_id WHERE u.tenant_id=:tenant "
+                    "AND u.status='active' AND r.code='safety_admin' AND ur.scope_kind='tenant' "
+                    "ORDER BY u.id FOR UPDATE"
+                ),
+                {"tenant": tenant_id},
+            )
+            .scalars()
+            .all()
         )
         mine = connection.scalar(
             text(
-                "SELECT COUNT(*) FROM user_roles ur JOIN roles r ON r.id=ur.role_id "
+                "SELECT ur.id FROM user_roles ur JOIN roles r ON r.id=ur.role_id "
                 "WHERE ur.tenant_id=:tenant AND ur.user_id=:user AND r.code='safety_admin' "
-                "AND ur.scope_kind='tenant'"
+                "AND ur.scope_kind='tenant' FOR UPDATE"
             ),
             {"tenant": tenant_id, "user": user_id},
         )
-        if mine and active <= 1:
+        if mine and len(active) <= 1:
             raise ServiceError("LAST_ADMIN", 409, "Cannot remove the last safety_admin")
 
     def disable_user(
@@ -518,6 +545,8 @@ class UserSecurityService:
             raise ServiceError("NOT_FOUND", 404, "Not found")
         authorize(actor, Permission.ADMIN)
         lock_tenant(connection, tenant_id, exclusive=True)
+        actor = load_principal(connection, tenant_id, actor.user_id)
+        authorize(actor, Permission.ADMIN)
         user = self._lock_user(connection, tenant_id, user_id)
         if user["status"] == "active":
             self._last_admin_guard(connection, tenant_id, user_id)
@@ -557,6 +586,8 @@ class UserSecurityService:
             raise ServiceError("NOT_FOUND", 404, "Not found")
         authorize(actor, Permission.ADMIN)
         lock_tenant(connection, tenant_id, exclusive=True)
+        actor = load_principal(connection, tenant_id, actor.user_id)
+        authorize(actor, Permission.ADMIN)
         self._lock_user(connection, tenant_id, user_id)
         self._last_admin_guard(connection, tenant_id, user_id)
         deleted = connection.execute(

@@ -8,4 +8,5 @@ sqlalchemy==2.0.37
 pymysql[rsa]==1.1.1
 argon2-cffi==23.1.0
 tzdata==2026.4
+boto3==1.43.106
 

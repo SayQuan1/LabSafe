@@ -1,11 +1,11 @@
 # LabSafe 文档入口
 
-状态：2026-09-27 设计修订候选1.1.0。先读 [最新审计](08-delivery/03-design-audit.md)，不要把结构检查通过当作全系统可上线。
+状态：设计版本 1.1.0；实现进度更新于 2026-10-01。设计结论见 [最新审计](08-delivery/03-design-audit.md)，不要把结构检查或局部实现通过当作全系统可上线。
 
 ## 阅读顺序
 
-实现进度：I-01A 工程骨架与 I-01B 数据库基础已在特性分支实现；审批状态与本机测试不能互相替代。
-运行入口见 [开发指南](../DEVELOPMENT.md)，本轮证据见 [I-01B 验收](08-delivery/08-i01b-acceptance.md)。
+实现进度：I-01A/B/C 已合并；I-02A/B/C/D/E/F1/F2 通过本地相应验证，本次提交特性分支 PR，完整 I-02 仍未完成。审批状态、远程 CI 与本机测试分别记录。
+运行入口见 [开发指南](../DEVELOPMENT.md)，本轮证据见 [I-02F2 上传完成受理验收](08-delivery/16-i02f2-upload-completion-api.md)，完整阶段状态见下方实施计划。
 
 1. [文档控制](00-document-control.md)：规范边界和变更要求。
 2. [产品](01-requirements/01-product-requirements.md)与[范围](01-requirements/01-scope-and-acceptance.md)。

@@ -11,6 +11,7 @@ readme = "DEVELOPMENT.md"
 dependencies = []
 
 [project.optional-dependencies]
+storage = ["boto3==1.43.106"]
 ai = [
   "fastapi==0.115.6",
   "pydantic==2.10.5",

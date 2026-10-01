@@ -1,1 +1,1 @@
-"""Application command/query package placeholder."""
+"""Transaction-owning application services; HTTP adapters never issue SQL."""
