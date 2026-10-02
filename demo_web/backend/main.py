@@ -199,42 +199,96 @@ def check_quality(image_path: str) -> dict:
     }
 
 
-# ==================== 实体识别（基于检测结果动态分配）====================
+# ==================== 实体识别（基于 YOLO 真实检测结果）====================
 
-def assign_chemicals(bottles: List[Detection]) -> List[dict]:
-    """为检测到的每个瓶子分配化学品（按 x 坐标从左到右循环分配）"""
-    # 按 x 坐标排序
-    sorted_bottles = sorted(bottles, key=lambda b: b.bbox[0])
+# COCO 类别中文名（仅用于展示翻译，不影响 YOLO 检测本身）
+COCO_CLASS_ZH = {
+    "person": "人", "bicycle": "自行车", "car": "汽车", "motorcycle": "摩托车",
+    "airplane": "飞机", "bus": "公交车", "train": "火车", "truck": "卡车",
+    "boat": "船", "bird": "鸟", "cat": "猫", "dog": "狗", "horse": "马",
+    "bottle": "瓶子", "wine glass": "酒杯", "cup": "杯子", "fork": "叉子",
+    "knife": "刀", "spoon": "勺子", "bowl": "碗", "banana": "香蕉",
+    "apple": "苹果", "sandwich": "三明治", "orange": "橙子", "broccoli": "西兰花",
+    "carrot": "胡萝卜", "pizza": "披萨", "donut": "甜甜圈", "cake": "蛋糕",
+    "chair": "椅子", "couch": "沙发", "potted plant": "盆栽", "bed": "床",
+    "dining table": "餐桌", "toilet": "马桶", "tv": "电视", "laptop": "笔记本电脑",
+    "mouse": "鼠标", "remote": "遥控器", "keyboard": "键盘",
+    "cell phone": "手机", "book": "书", "clock": "时钟", "vase": "花瓶",
+    "scissors": "剪刀", "backpack": "背包", "umbrella": "雨伞",
+}
 
+# YOLO 识别为这些类别的物体视为"化学品容器"，进入（模拟）OCR 环节识别试剂
+CONTAINER_CLASSES = {"bottle", "wine glass", "cup", "vase"}
+
+
+def assign_chemicals_from_detections(detections: List[Detection]) -> List[dict]:
+    """根据 YOLO 真实检测结果生成实体列表。
+
+    - 容器类（bottle 等）：进入模拟 OCR，从化学品库候选（演示数据，明确标注 ocr_simulated）
+    - 其他类别（person/cup/...）：按 YOLO 实际类别生成"非化学品物品"实体，不参与规则
+    """
+    sorted_dets = sorted(detections, key=lambda d: d.bbox[0])
     entities = []
-    for i, bottle in enumerate(sorted_bottles):
-        chem = CHEMICAL_LIBRARY[i % len(CHEMICAL_LIBRARY)]
-        # 置信度基于检测置信度
-        ocr_conf = round(bottle.confidence * 0.98, 2)
-        entities.append({
-            "raw_text": chem["name"],
-            "entity_id": chem["entity_id"],
-            "standard_name": chem["name"],
-            "aliases": chem["aliases"],
-            "cas_no": chem["cas_no"],
-            "hazard_class": chem["hazard_class"],
-            "confidence": ocr_conf,
-            "match_type": "exact",
-            "bbox": bottle.bbox
-        })
+    chem_idx = 0  # 仅对容器类滚动取用化学品候选
+
+    for i, det in enumerate(sorted_dets):
+        cls = det.class_name
+        zh_name = COCO_CLASS_ZH.get(cls, cls)
+
+        if cls in CONTAINER_CLASSES:
+            # 容器类：模拟 OCR 识别标签（真实系统中由 OCR + 词典标准化完成）
+            chem = CHEMICAL_LIBRARY[chem_idx % len(CHEMICAL_LIBRARY)]
+            chem_idx += 1
+            entities.append({
+                "raw_text": chem["name"],
+                "entity_id": chem["entity_id"],
+                "standard_name": chem["name"],
+                "aliases": chem["aliases"],
+                "cas_no": chem["cas_no"],
+                "hazard_class": chem["hazard_class"],
+                "confidence": det.confidence,
+                "match_type": "ocr_simulated",
+                "is_chemical": True,
+                "bbox": det.bbox,
+                "detected_class": cls,
+                "detected_class_zh": zh_name,
+            })
+        else:
+            # 非化学品物品：名称、类别、置信度全部来自 YOLO 真实输出
+            entities.append({
+                "raw_text": zh_name,
+                "entity_id": f"obj-{cls}-{i:03d}",
+                "standard_name": zh_name,
+                "aliases": [cls],
+                "cas_no": None,
+                "hazard_class": "非化学品",
+                "confidence": det.confidence,
+                "match_type": "yolo_detected",
+                "is_chemical": False,
+                "bbox": det.bbox,
+                "detected_class": cls,
+                "detected_class_zh": zh_name,
+            })
 
     return entities
+
+
+def assign_chemicals(bottles: List[Detection]) -> List[dict]:
+    """兼容旧调用"""
+    return assign_chemicals_from_detections(bottles)
 
 
 # ==================== 相邻关系（基于真实 bbox 计算）====================
 
 def calc_proximity(entities: List[dict]) -> List[dict]:
-    """基于实体 bbox 计算相邻关系"""
+    """基于实体 bbox 计算相邻关系（仅化学品实体参与，非化学品物品不参与规则）"""
+    # 只保留化学品（YOLO 识别为容器 + OCR 识别出试剂的实体）
+    chem_entities = [e for e in entities if e.get("is_chemical")]
     pairs = []
-    for i in range(len(entities)):
-        for j in range(i + 1, len(entities)):
-            a = entities[i]
-            b = entities[j]
+    for i in range(len(chem_entities)):
+        for j in range(i + 1, len(chem_entities)):
+            a = chem_entities[i]
+            b = chem_entities[j]
 
             # 计算中心点距离
             ax = (a["bbox"][0] + a["bbox"][2]) / 2
@@ -324,88 +378,244 @@ def calc_severity(rule_hits: List[dict], entity_count: int) -> dict:
 # ==================== 目标检测（YOLO + 轮廓分析回退）====================
 
 def detect_objects(image_path: str) -> list:
-    """目标检测：优先 YOLO，若无结果则用轮廓分析回退"""
+    """目标检测：100% YOLO 真实推理结果，不做任何写死补充"""
     detector = get_detector(get_model_path())
     detections = detector.detect(image_path)
 
-    bottles = [d for d in detections if d.class_name == "bottle"]
+    # 仅过滤无效输出（类别名缺失或占位符 "0"），保留 YOLO 识别出的全部真实类别与置信度
+    result = [d for d in detections
+              if d.confidence >= 0.25 and d.class_name and d.class_name != "0"]
 
-    # 如果 YOLO 没检测到瓶子，用图像轮廓分析回退
+    return result
+
+
+def postprocess_bottles(bottles: list, image_path: str) -> list:
+    """后处理 YOLO 瓶子检测结果：合并窄框 + 扩展宽度"""
     if not bottles:
-        bottles = contour_bottle_detection(image_path)
-        detections = bottles
+        return bottles
 
-    return detections
+    img = cv2_imread_unicode(image_path)
+    if img is not None:
+        h, w = img.shape[:2]
+    else:
+        h, w = 480, 640
+
+    processed = []
+    for b in bottles:
+        x1, y1, x2, y2 = b.bbox
+        bw = x2 - x1
+        bh = y2 - y1
+
+        # 如果框太窄（宽 < 高的 0.3），按高度扩展到合理宽度
+        if bw < bh * 0.3 and bh > 50:
+            target_w = min(bh * 0.45, 100)  # 瓶子宽高比约 0.4-0.5
+            cx = (x1 + x2) / 2
+            x1_new = max(0, cx - target_w / 2)
+            x2_new = min(w, cx + target_w / 2)
+            b.bbox = [x1_new, y1, x2_new, y2]
+
+        processed.append(b)
+
+    # 合并高度重叠的相近框
+    merged = merge_nearby_boxes(processed)
+    return merged
 
 
-def contour_bottle_detection(image_path: str) -> list:
-    """基于轮廓分析的瓶子检测（用于合成图片等 YOLO 无法识别的场景）"""
+def merge_nearby_boxes(boxes: list, max_gap: int = 25, iou_threshold: float = 0.2) -> list:
+    """合并水平距离近且高度重叠的框"""
+    if not boxes:
+        return boxes
+
+    # 按 x 坐标排序
+    boxes = sorted(boxes, key=lambda b: b.bbox[0])
+    merged = []
+
+    for box in boxes:
+        bx1, by1, bx2, by2 = box.bbox
+        bw = bx2 - bx1
+
+        should_merge = False
+        for m in merged:
+            mx1, my1, mx2, my2 = m.bbox
+
+            # 水平距离
+            gap = bx1 - mx2
+            if gap < 0:  # 有重叠
+                # 计算 IoU
+                ix1 = max(bx1, mx1)
+                iy1 = max(by1, my1)
+                ix2 = min(bx2, mx2)
+                iy2 = min(by2, my2)
+                inter = max(0, ix2 - ix1) * max(0, iy2 - iy1)
+                area1 = (bx2 - bx1) * (by2 - by1)
+                area2 = (mx2 - mx1) * (my2 - my1)
+                iou = inter / min(area1, area2) if min(area1, area2) > 0 else 0
+                if iou > iou_threshold:
+                    should_merge = True
+                    # 合并
+                    m.bbox = [min(mx1, bx1), min(my1, by1), max(mx2, bx2), max(my2, by2)]
+                    m.confidence = max(m.confidence, box.confidence)
+                    break
+            elif gap < max_gap:
+                # 水平距离近，检查垂直重叠
+                v_overlap = min(by2, my2) - max(by1, my1)
+                min_h = min(by2 - by1, my2 - my1)
+                if min_h > 0 and v_overlap / min_h > 0.4:
+                    should_merge = True
+                    m.bbox = [min(mx1, bx1), min(my1, by1), max(mx2, bx2), max(my2, by2)]
+                    m.confidence = max(m.confidence, box.confidence)
+                    break
+
+        if not should_merge:
+            merged.append(box)
+
+    return merged
+
+
+def color_cap_detection(image_path: str) -> list:
+    """颜色+轮廓检测：优先检测红色瓶盖，从瓶盖向下扩展瓶身"""
     from yolo_detector import Detection
 
     img = cv2_imread_unicode(image_path)
     if img is None:
         return []
 
+    h, w = img.shape[:2]
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    h, w = gray.shape
+
+    # 策略1：检测红色瓶盖（HSV 红色范围）
+    red_mask1 = cv2.inRange(hsv, np.array([0, 80, 80]), np.array([10, 255, 255]))
+    red_mask2 = cv2.inRange(hsv, np.array([160, 80, 80]), np.array([180, 255, 255]))
+    red_mask = cv2.bitwise_or(red_mask1, red_mask2)
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel, iterations=1)
+
+    red_contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     bottles = []
-
-    # 策略：检测瓶子/标签的边框颜色（灰度 130-165 的灰色边框）
-    border_mask = cv2.inRange(gray, 130, 165)
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    border_closed = cv2.morphologyEx(border_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
-
-    contours, _ = cv2.findContours(border_closed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    for cnt in contours:
-        area = cv2.contourArea(cnt)
-        if area < (h * w * 0.003):
+    cap_centers = []
+    for c in red_contours:
+        area = cv2.contourArea(c)
+        if area < 100:
             continue
+        x, y, cw, ch = cv2.boundingRect(c)
+        ratio = ch / cw if cw > 0 else 0
+        if 0.3 < ratio < 3.0:
+            cap_centers.append((x + cw // 2, y + ch // 2, cw, ch, area))
 
-        x, y, bw, bh = cv2.boundingRect(cnt)
-        aspect_ratio = bh / bw if bw > 0 else 0
-        # 瓶子高大于宽
-        if aspect_ratio < 1.2 or aspect_ratio > 10.0:
-            continue
-        if bw > w * 0.8 or bh > h * 0.8:
-            continue
+    # 从瓶盖向下扫描，动态确定瓶身左右和上下边界
+    for cx, cy, cap_w, cap_h, cap_area in cap_centers:
+        body_w_est = int(cap_w * 2.8)  # 预估瓶身宽度
+        x1_est = max(0, cx - body_w_est // 2)
+        x2_est = min(w, cx + body_w_est // 2)
+        y_start = cy + cap_h // 2  # 从瓶盖下沿开始
 
-        confidence = min(0.5 + area / (h * w) * 15, 0.85)
-        bottles.append(Detection(
-            bbox=[float(x), float(y), float(x + bw), float(y + bh)],
-            class_name="bottle",
-            confidence=round(confidence, 2)
-        ))
+        # 货架背景参考色（取瓶盖上方区域的中位数 BGR）
+        bg_y1 = max(0, cy - cap_h - 30)
+        bg_y2 = max(1, cy - cap_h - 5)
+        bg_strip = img[bg_y1:bg_y2, x1_est:x2_est]
+        if bg_strip.size > 0:
+            bg_color = np.median(bg_strip.reshape(-1, 3), axis=0)
+        else:
+            bg_color = np.array([45, 85, 130], dtype=np.float32)  # 默认棕色货架 BGR
 
-    # 策略2：如果没找到，尝试检测整体矩形物体（边缘检测 + 霍夫变换思路）
-    if not bottles:
-        blurred = cv2.GaussianBlur(gray, (3, 3), 0)
-        edges = cv2.Canny(blurred, 30, 100)
-        # 找垂直和水平直线
-        contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-        for cnt in contours:
-            area = cv2.contourArea(cnt)
-            if area < (h * w * 0.01):
-                continue
-            x, y, bw, bh = cv2.boundingRect(cnt)
-            aspect_ratio = bh / bw if bw > 0 else 0
-            if aspect_ratio < 1.3 or aspect_ratio > 8.0:
-                continue
-            if bw > w * 0.5 or bh > h * 0.7:
-                continue
-            confidence = min(0.4 + area / (h * w) * 10, 0.7)
+        # 逐行向下扫描：瓶身像素与背景色差异明显
+        strip_half = max(8, body_w_est // 3)
+        last_body_row = y_start
+        bg_gap = 0
+        for row in range(y_start, min(h, y_start + int(h * 0.6))):
+            rx1 = max(0, cx - strip_half)
+            rx2 = min(w, cx + strip_half)
+            row_pixels = img[row, rx1:rx2].astype(np.float32)
+            # 与背景色的距离
+            dist = np.sqrt(((row_pixels - bg_color) ** 2).sum(axis=1))
+            body_ratio = float((dist > 45).mean())
+            if body_ratio > 0.35:
+                last_body_row = row
+                bg_gap = 0
+            else:
+                bg_gap += 1
+                # 连续 25 行都是背景，认为瓶身结束
+                if bg_gap > 25 and last_body_row > y_start:
+                    break
+
+        # 左右边界：在瓶身中段扫描，找到与背景不同的连续区域
+        mid_y = (y_start + last_body_row) // 2
+        col_pixels = img[mid_y, x1_est:x2_est].astype(np.float32)
+        col_dist = np.sqrt(((col_pixels - bg_color) ** 2).sum(axis=1))
+        body_cols = np.where(col_dist > 40)[0]
+        if len(body_cols) > 5:
+            bx1 = float(x1_est + int(body_cols[0]) - 3)
+            bx2 = float(x1_est + int(body_cols[-1]) + 3)
+        else:
+            bx1, bx2 = float(x1_est), float(x2_est)
+
+        by1 = float(max(0, cy - cap_h // 2 - 2))   # 框顶部包含瓶盖
+        by2 = float(min(h, last_body_row + 4))      # 框底部到瓶身下沿
+
+        # 验证：高度合理（至少瓶盖高的 6 倍）
+        if by2 - by1 > cap_h * 6:
             bottles.append(Detection(
-                bbox=[float(x), float(y), float(x + bw), float(y + bh)],
+                bbox=[bx1, by1, bx2, by2],
                 class_name="bottle",
-                confidence=round(confidence, 2)
+                confidence=0.78
             ))
 
-    # 去重和合并重叠框
-    bottles = merge_overlapping_boxes(bottles)
+    # 策略2：如果没有瓶盖，用浅色矩形检测（瓶身/标签）
+    if not bottles:
+        # 检测浅色区域（标签/瓶身）
+        light_mask = cv2.inRange(gray, 170, 255)
+        light_mask = cv2.morphologyEx(light_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+        contours, _ = cv2.findContours(light_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        candidates = []
+        for c in contours:
+            area = cv2.contourArea(c)
+            if area < 1000:
+                continue
+            x, y, bw, bh = cv2.boundingRect(c)
+            aspect = bh / bw if bw > 0 else 0
+            if 1.0 < aspect < 6.0 and bw > 25 and bh > 60:
+                candidates.append(Detection(
+                    bbox=[float(x), float(y), float(x + bw), float(y + bh)],
+                    class_name="bottle",
+                    confidence=0.68
+                ))
+        bottles = candidates
 
-    # 按 x 坐标排序
+    # 策略3：如果仍无结果，用边缘检测
+    if not bottles:
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blurred, 30, 100)
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        candidates = []
+        for c in contours:
+            area = cv2.contourArea(c)
+            if area < 500:
+                continue
+            x, y, bw, bh = cv2.boundingRect(c)
+            aspect = bh / bw if bw > 0 else 0
+            if 1.2 < aspect < 8 and bw > 25 and ch > 50:
+                candidates.append(Detection(
+                    bbox=[float(x), float(y), float(x + bw), float(y + bh)],
+                    class_name="bottle",
+                    confidence=0.60
+                ))
+        bottles = candidates
+
+    # 去重
+    bottles = merge_overlapping_boxes(bottles)
     bottles.sort(key=lambda b: b.bbox[0])
+
+    print(f"[颜色检测] 检测到 {len(bottles)} 个瓶子, 瓶盖数: {len(cap_centers)}")
     return bottles
+
+
+def contour_bottle_detection(image_path: str) -> list:
+    """旧版轮廓检测（保留作为兼容接口）"""
+    return color_cap_detection(image_path)
 
 
 def merge_overlapping_boxes(boxes: list, iou_threshold: float = 0.3) -> list:
@@ -448,14 +658,18 @@ def run_inference(image_path: str, filename: str, image_key: str = "") -> dict:
     if not quality_result["passed"]:
         return build_quality_fail_result(quality_result, image_key)
 
-    # 2. 目标检测（YOLO + 轮廓分析回退）
+    # 2. 目标检测（100% YOLO 真实推理结果）
     detections = detect_objects(image_path)
-    det_dicts = [{"bbox": d.bbox, "class_name": d.class_name, "confidence": d.confidence} for d in detections]
+    det_dicts = [{
+        "bbox": d.bbox,
+        "class_name": d.class_name,
+        "class_zh": COCO_CLASS_ZH.get(d.class_name, d.class_name),
+        "confidence": d.confidence
+    } for d in detections]
 
-    bottles = [d for d in detections if d.class_name == "bottle"]
-
-    # 3. 如果没检测到瓶子（零候选也进入待人工复核，由人工完成结论）
-    if not bottles:
+    # 3. 根据检测到的类别分配化学品（所有检测到的物体都参与）
+    #    YOLO 真实识别的物体类别和置信度直接显示在检测框中
+    if not detections:
         return {
             "inference_run_id": str(uuid.uuid4()),
             "pipeline_version": "1.0.0",
@@ -470,17 +684,17 @@ def run_inference(image_path: str, filename: str, image_key: str = "") -> dict:
             "error_code": None,
             "image_key": image_key,
             "quality": quality_result,
-            "detections": det_dicts,
+            "detections": [],
             "ocr_fields": [],
             "entities": [],
             "proximity_pairs": [],
             "rule_hits": [],
-            "severity_summary": {"overall": "low", "confidence_weighted_score": 0.5, "uncertainty_factors": ["no_bottle_detected"]},
+            "severity_summary": {"overall": "low", "confidence_weighted_score": 0.5, "uncertainty_factors": ["no_detection"]},
             "timing_ms": {"total": 1500}
         }
 
-    # 4. 实体识别（按瓶子位置动态分配化学品）
-    entities = assign_chemicals(bottles)
+    # 4. 实体识别（按检测框位置动态分配化学品，类别名映射到化学品库）
+    entities = assign_chemicals_from_detections(detections)
 
     # 5. 相邻关系（基于真实 bbox 距离）
     proximity_pairs = calc_proximity(entities)
@@ -491,9 +705,11 @@ def run_inference(image_path: str, filename: str, image_key: str = "") -> dict:
     # 7. 严重度评估
     severity = calc_severity(rule_hits, len(entities))
 
-    # 8. 构造 OCR 字段（基于分配的化学品）
+    # 8. 构造 OCR 字段（仅化学品容器有模拟 OCR 文本，非化学品物品无 OCR）
     ocr_fields = []
     for e in entities:
+        if not e.get("is_chemical"):
+            continue
         cx = int((e["bbox"][0] + e["bbox"][2]) / 2)
         cy = int((e["bbox"][1] + e["bbox"][3]) / 2)
         ocr_fields.append({

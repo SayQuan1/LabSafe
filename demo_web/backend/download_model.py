@@ -9,26 +9,33 @@ MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
 
 
 def download_yolov5s_pt():
-    """使用 torch.hub 下载 YOLOv5s .pt 模型"""
-    try:
-        import torch
-        print("正在通过 torch.hub 下载 YOLOv5s...")
+    """直接下载官方 YOLOv5s checkpoint（与 attempt_load 兼容，勿用裸 state_dict）"""
+    import urllib.request
 
-        # 这会下载模型到 torch hub 缓存目录
-        model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True, trust_repo=True)
+    os.makedirs(MODEL_DIR, exist_ok=True)
+    model_path = os.path.join(MODEL_DIR, "yolov5s.pt")
 
-        # 保存到我们的 models 目录
-        os.makedirs(MODEL_DIR, exist_ok=True)
-        model_path = os.path.join(MODEL_DIR, "yolov5s.pt")
-
-        # 获取模型状态字典
-        torch.save(model.model.state_dict(), model_path)
-        print(f"模型已保存: {model_path}")
+    if os.path.exists(model_path) and os.path.getsize(model_path) > 14_000_000:
+        print(f"模型已存在: {model_path}")
         return model_path
 
-    except Exception as e:
-        print(f"torch.hub 下载失败: {e}")
-        return None
+    urls = [
+        "https://github.com/ultralytics/yolov5/releases/download/v7.0/yolov5s.pt",
+        "https://github.com/ultralytics/yolov5/releases/download/v6.2/yolov5s.pt",
+    ]
+    for url in urls:
+        try:
+            print(f"正在下载官方 YOLOv5s: {url}")
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                data = resp.read()
+            with open(model_path, 'wb') as f:
+                f.write(data)
+            print(f"下载成功: {model_path}（{len(data) / 1024 / 1024:.1f} MB）")
+            return model_path
+        except Exception as e:
+            print(f"  失败: {e}")
+    return None
 
 
 def download_yolov8n_onnx():

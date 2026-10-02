@@ -785,20 +785,37 @@
                 `;
             }
 
-            // 实体卡片：OCR 原文 + 置信度 + 词典候选
+            // 实体卡片：YOLO 真实检测结果，化学品容器附模拟 OCR 结果
             if (data.entities && data.entities.length > 0) {
                 html += `
                     <div class="result-card">
-                        <h4>识别到的化学品 (${data.entities.length})</h4>
-                        ${data.entities.map(e => `
-                            <div class="entity-item">
-                                <div class="entity-name">${e.standard_name}</div>
-                                <div class="entity-meta">
-                                    OCR 原文: ${e.raw_text}（置信度 ${(e.confidence * 100).toFixed(0)}%，匹配方式: ${e.match_type}）<br>
-                                    CAS: ${e.cas_no || 'N/A'} | 危险类别: <span class="tag ${hazardTagClass(e.hazard_class)}">${e.hazard_class}</span>
-                                </div>
-                            </div>
-                        `).join('')}
+                        <h4>识别到的物体 (${data.entities.length})</h4>
+                        ${data.entities.map(e => {
+                            const clsZh = e.detected_class_zh || e.detected_class || '';
+                            if (e.is_chemical) {
+                                return `
+                                <div class="entity-item" style="border-left: 4px solid #e94560;">
+                                    <div class="entity-name">${e.standard_name}
+                                        <span class="tag" style="background:#fff1f0;color:#e94560;">化学品</span>
+                                    </div>
+                                    <div class="entity-meta">
+                                        YOLO 检测: <strong>${clsZh}（${e.detected_class}）</strong>，置信度 ${(e.confidence * 100).toFixed(0)}%<br>
+                                        模拟 OCR: ${e.raw_text} | CAS: ${e.cas_no || 'N/A'} |
+                                        危险类别: <span class="tag ${hazardTagClass(e.hazard_class)}">${e.hazard_class}</span>
+                                    </div>
+                                </div>`;
+                            }
+                            return `
+                                <div class="entity-item" style="border-left: 4px solid #8c8c8c;">
+                                    <div class="entity-name">${e.standard_name}
+                                        <span class="tag" style="background:#f5f5f5;color:#595959;">非化学品</span>
+                                    </div>
+                                    <div class="entity-meta">
+                                        YOLO 检测: <strong>${clsZh}（${e.detected_class}）</strong>，置信度 ${(e.confidence * 100).toFixed(0)}%<br>
+                                        该物品不参与化学品存放规则判定
+                                    </div>
+                                </div>`;
+                        }).join('')}
                     </div>
                 `;
             }
@@ -969,9 +986,20 @@
                 box.style.borderColor = d.class_name === 'bottle' ? '#e94560' : '#1890ff';
 
                 const label = document.createElement('div');
+                // 检测框颜色按类别区分
+                const colors = {
+                    bottle: '#e94560', cup: '#1890ff', person: '#52c41a',
+                    book: '#722ed1', scissors: '#fa8c16', 'cell phone': '#13c2c2',
+                    keyboard: '#a0d911', laptop: '#2f54eb', tv: '#f5222d'
+                };
+                const color = colors[d.class_name] || '#666';
+                box.style.borderColor = color;
+
                 label.className = 'detection-label';
-                label.style.background = d.class_name === 'bottle' ? '#e94560' : '#1890ff';
-                label.innerHTML = `<span>#${i + 1} ${d.class_name} ${(d.confidence * 100).toFixed(0)}%</span>`;
+                label.style.background = color;
+                // 检测框显示 YOLO 实际识别类别（中文+英文）与真实置信度
+                const zh = d.class_zh || d.class_name;
+                label.innerHTML = `<span>#${i + 1} ${zh} ${(d.confidence * 100).toFixed(0)}%</span>`;
                 box.appendChild(label);
                 container.appendChild(box);
             });
