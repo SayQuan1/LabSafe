@@ -50,14 +50,25 @@ def lab_filter(actor, column, params, laboratory_id=None):
     return f" AND {column} IN ({','.join(names)})"
 
 
-def page_query(connection, table, columns, where, params, page, page_size, *, project_row=project):
+def page_query(
+    connection,
+    table,
+    columns,
+    where,
+    params,
+    page,
+    page_size,
+    *,
+    project_row=project,
+    order_by="created_at DESC,id DESC",
+):
     # SQL fragments are fixed by repositories, never supplied by the request.
     total = connection.scalar(text(f"SELECT COUNT(*) FROM {table} WHERE {where}"), params)
     rows = (
         connection.execute(
             text(
                 f"SELECT {columns} FROM {table} WHERE {where} "
-                "ORDER BY created_at DESC,id DESC LIMIT :limit OFFSET :offset"
+                f"ORDER BY {order_by} LIMIT :limit OFFSET :offset"
             ),
             {**params, "limit": page_size, "offset": (page - 1) * page_size},
         )

@@ -1,4 +1,4 @@
-"""Development-only business API with opt-in upload validation acceptance."""
+"""Development-only business API with image-job queries and opt-in storage replay."""
 
 import os
 from contextlib import asynccontextmanager
@@ -7,7 +7,11 @@ from fastapi import FastAPI
 
 from apps.api.app.foundations import mount_foundations
 from apps.api.app.identity import configured_identity, mount_identity
+from apps.api.app.inference_runs import mount_inference_runs
 from apps.api.app.item_queries import mount_item_queries
+from apps.api.app.jobs import mount_jobs
+from apps.api.app.review import mount_review
+from apps.api.app.rules import mount_rules
 from apps.api.app.uploads import mount_uploads
 from packages.shared.environment import development_environment
 
@@ -54,7 +58,11 @@ def create_app(*, identity=None, public_origin=None, storage=None) -> FastAPI:
     mount_identity(app, identity, public_origin)
     mount_foundations(app, identity)
     mount_item_queries(app, identity)
+    mount_inference_runs(app, identity)
     mount_uploads(app, identity, storage)
+    mount_jobs(app, identity, storage)
+    mount_rules(app, identity)
+    mount_review(app, identity)
 
     @app.get("/health")
     def health() -> dict[str, str | bool]:
@@ -69,9 +77,12 @@ def create_app(*, identity=None, public_origin=None, storage=None) -> FastAPI:
                 "environment": environment,
                 "is_simulated": True,
                 "scope": (
-                    "I-02B/C identity, I-02D foundations, I-02E item queries "
-                    "and optional I-02F1/F2 upload signing and validation acceptance only; "
-                    "storage, workflow and real-model readiness not implemented"
+                    "I-02B/C identity, I-02D foundations, I-02E item queries, "
+                    "I-03A3 image-job queries and optional replay, I-02G1 submit enqueue, "
+                    "optional I-02F1/F2 upload signing and validation acceptance only, "
+                    "optional I-02F4 image download signing, and development rule "
+                    "configuration lifecycle; "
+                    "storage, inference execution and real-model readiness not implemented"
                 ),
             }
         return {

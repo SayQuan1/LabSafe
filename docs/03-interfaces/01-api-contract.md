@@ -86,18 +86,18 @@ CSV列固定：inspection_id,item_id,laboratory_id,location_id,run_id,fact_revis
 ### 5.4 巡检项查询与阶段能力（I-02E）
 
 - listInspectionItems 接受 page/page_size/laboratory_id，先授权父巡检再计数；getInspectionItem 不接受 query。父巡检不存在/不可见为 404；可见且无子项为 200 空页。筛选 lab 不存在/不可见为 404，同时可见但不匹配父巡检 lab 为 200 空页。
-- I-02E 接通这两个 GET 时累计 28 个公共业务 API；I-02F1/F2 新增上传授权/完成/图像查询后为 31 个。尚无 submit/retry/complete 巡检项写命令，因此 allowed_actions 固定为空能力集的投影，不能按状态补出前端按钮。
-- 领域动作探测直接复用 submit_item/retry_item/complete_item 守卫；未加载上下文与已核验空集合不同。启用动作必须同时具备真实命令事务、服务器完整可信上下文及同源回归；不是仅修改 capability。
+- I-02E 接通这两个 GET 时累计 28 个公共业务 API；I-02F1/F2 新增上传授权/完成/图像查询后为 31 个；I-02G1 新增 `submitInspectionItem` 后为 32 个。submit 已有真实事务入口，但查询端仍不推断默认图片选择，因此 `allowed_actions` 暂固定为空能力集的投影，不能按状态补出前端按钮。
+- 领域动作探测直接复用 submit_item/retry_item/complete_item 守卫；submit 的真实命令已由 I-02G1 接通，retry/complete 仍未接通。未加载上下文与已核验空集合不同。启用动作必须同时具备真实命令事务、服务器完整可信上下文及同源回归；不是仅修改 capability。
 - 精确字段白名单、快照/权限和后续关闭条件见 [I-02E 验收](../08-delivery/14-i02e-item-query-api.md)。不修改公共 Schema、operationId 或生成源。
 
 ### 5.5 上传授权与阶段能力（I-02F1）
 
-- I-02F1 接通 POST /api/v1/uploads（createUpload，201）；API_UPLOADS_ENABLED 默认 0，依赖真实身份配置。未配置为 503，仅 dev/test。I-02F2 的 completeUpload/getImage 见 5.6；图片下载及解码/Worker 尚未接通，不能在获得 grant 或完成 PUT 后展示 image ready。
+- I-02F1 接通 POST /api/v1/uploads（createUpload，201）；API_UPLOADS_ENABLED 默认 0，依赖真实身份配置。未配置为 503，仅 dev/test。I-02F2 的 completeUpload/getImage 见 5.6；F3 的验证结果与 F4 下载见 5.7，不能在获得 grant 或完成 PUT 后展示 image ready。
 - 请求严格为 owner_type、owner_id、filename、mime_type、size_bytes、sha256、captured_at，无 tenant_id/object_key/query；大小 1–15 MiB，JPEG/PNG/WebP，SHA 为 64 位小写十六进制。captured_at 为带时区 RFC3339，落库为 UTC 毫秒；不擅自添加新鲜度/未来窗口，不将客户端时间当可信证据。
 - Item：当前 capture 权限及原创建者/admin，父巡检 draft/in_progress，子项 draft/uploaded/needs_retake/needs_review/failed。Task：当前受派人及 assignee 权限，in_progress/rejected；admin 不自动代替受派人，父巡检完成不阻断合法整改证据。
 - 独立 10 次/分钟上传授权限流叠加普通写限流；每用户同时至多 10 个尚未过期的 granted，使用数据库锁保护。过期 grant 即使尚未被 sweeper 改状态也不占额度；Redis 不可用时拒绝而非绕过限流。
 - grant 的 staging key 由服务端生成；PUT URL 同源 HTTPS:443、有效期 600 秒并签入 Content-Type/Host。相同 key/正文重放返回原响应/原到期时间，仍重验当前权限；过期 URL 不通过重放续签，新意图用新 key。
-- HEAD 已在 I-02F2 接到完成受理；固定版本 GET/SHA helper 仍未接到 Worker。真实桶版本化、IAM、反代大小限制和 MinIO 签名拒绝需另行实测，不能用 SDK/Stubber 成绩替代。授权实现、锁序、配置与历史证据见 [I-02F1 验收](../08-delivery/15-i02f1-upload-grant-api.md)。
+- HEAD 已在 I-02F2 接到完成受理；固定版本 GET/SHA 已由 F3 Worker 使用。真实桶版本化、IAM、反代大小限制和 MinIO 签名拒绝需另行实测，不能用 SDK/Stubber 成绩替代。授权实现、锁序、配置与历史证据见 [I-02F1 验收](../08-delivery/15-i02f1-upload-grant-api.md)。
 
 ### 5.6 上传完成受理和图像元数据（I-02F2）
 
@@ -106,7 +106,22 @@ CSV列固定：inspection_id,item_id,laboratory_id,location_id,run_id,fact_revis
 - 同事务写入 image=validating、upload=validating、validate_image task_runs=ready、TaskDispatch Outbox=pending、审计和幂等响应。无上传完成领域事件新枚举，不提前发 ImageValidated，不直接发 Redis。original_sha256 在 validating 阶段仍是待验证声明值。
 - 同 key/正文重放返回原 202/原响应/request_id；新 key 命中已完成 upload 返回同一 image 当前投影，不新建/不再 HEAD。两者都重验当前 capture/assignee 权限和声明 hash，不因原 grant 过期或 owner 状态已推进而重复创建；已删除 image 的完成请求 404，不复活资源。
 - getImage 只要求 owner.read，读权限不等于采集/受派权限；已删除图像可返回契约中的 deleted 元数据墓碑，但这不授予任何下载能力。内部 key/version、upload_id、tenant_id、legal_hold 和 task payload 均不公开。
-- 本批没有发布/领取/消费/图像 ready 提交；真实字节 SHA、解码、O/A 生成和固定版本缺失处理仍属于后续 Worker。实现、故障证据和依赖关闭清单见 [I-02F2 验收](../08-delivery/16-i02f2-upload-completion-api.md)。
+- F2 自身只受理；A1/A2 已接持久调度/执行，F3 已本地接真实字节 SHA、解码、O/A 生成和 ready/rejected 事务。历史实现与故障证据见 [I-02F2 验收](../08-delivery/16-i02f2-upload-completion-api.md)，F3 现行边界见下节。
+
+### 5.7 图像验证结果与受控下载（I-02F3/F4）
+
+- F3 的 opt-in general Worker 只消费 validate_image；准确 GET、实算 SHA、真实 Pillow 解码、一次 EXIF 旋转、去元数据 RGB PNG 后登记 O/A 和 ready。内容拒绝登记 image/upload=rejected、task=succeeded；技术故障保留 validating、自动重试/技术终态。ImageValidated 只在成功时写 Outbox，下游发布/inbox 未接通。见 [F3 验收](../08-delivery/19-i02f3-image-validation.md)。
+- F4 接通 GET /api/v1/images/{id}/download（downloadImage），默认 variant=analysis，original 额外 Admin+原图读取审计。两者均按图像所属实验室 READ，只有 ready 且所选 O/A key/SHA/版本完整可签发，非 ready 返回 409。只允许单个 variant 参数，拒绝客户端对象 key/version/tenant 或额外 query。
+- DownloadGrant 仅 `{url,expires_at}`；同源 HTTPS SigV4 GET、固定数据库 VersionId、60 秒。签名原样使用，不跳到最新对象。API 返回 no-store/no-referrer，不重定向；原图审计与签发事务一起提交，审计失败不返回 grant。GET 不要求写命令头；每次原图签发独立审计，不做幂等缓存。
+- 当前身份/角色/session 和图片记录在事务内锁定，SDK 签名为本地操作，无 HEAD/GET 或凭据刷新。下载不改变 image/upload/task/event。签发不证明对象仍存在或真实 IAM/TLS 可用；对象 GET 失败不能据此更换 VersionId 或伪造成功。
+- 共用 120 次/分钟用户限流，Redis 故障不签发；不占写配额，不使用普通元数据读的降级。撤权后禁止新签发，既有 URL 到期前最长 60 秒仍可能有效。沿用 API_UPLOADS_ENABLED 和 API S3 secret；无新增迁移/配置。见 [F4 验收](../08-delivery/21-i02f4-image-download.md)。crop/报告下载与真实部署验收未完成。
+
+### 5.8 提交巡检项与推理入队（I-02G1）
+
+- `POST /api/v1/inspection-items/{id}/submit` 接收 `ItemSubmit`，返回 `InferenceRun` 和 202。客户端只传 `expected_version` 及 1–3 个有序图片选择；服务端加载 item、父巡检、完整当前 findings、图片 metadata 和 laboratory activation。
+- 事务锁定 item 与完整图片/当前 findings，复用 `submit_item` guard。旧 run/evaluation/findings 只标记 superseded；新 run 固定已发布 model/dictionary/rule、pipeline、device、UTC reference date、图片 SHA/顺序与 input hash，并原子写入 `run_images`、`inference_pipeline` task、TaskDispatch outbox、审计和幂等响应。
+- 请求不能携带 tenant、laboratory、model、rule、device、date、object key/version 或 finding 列表。跨租户/实验室、非 ready 图片、版本过期、确认/派发/关闭 finding、activation 未发布均拒绝；任何写步骤失败整事务回滚。
+- 本端点只登记持久任务，不声明 AI 已执行或产生结果。独立推理 worker 的 lease、D-FINE-N/GPU 执行、超时、fencing、retry/replay 和结果提交属于后续 I-03/AI 批次；`allowed_actions` 在查询端仍不凭状态推断默认图片顺序。
 
 ## 6. 命令实现映射和变更
 

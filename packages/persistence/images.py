@@ -24,6 +24,18 @@ PUBLIC_FIELDS = (
 
 
 class ImageRepository:
+    def download_row(self, connection, actor, image_id):
+        # Locking current read: a concurrent deletion/input update cannot race signing.
+        # User/role/session locks from authenticate are already held by the caller.
+        return (
+            connection.execute(
+                text("SELECT * FROM asset_images WHERE tenant_id=:tenant AND id=:id FOR SHARE"),
+                {"tenant": actor.tenant_id, "id": image_id},
+            )
+            .mappings()
+            .first()
+        )
+
     @staticmethod
     def project(row):
         data = project({name: row[name] for name in PUBLIC_FIELDS})

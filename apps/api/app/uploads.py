@@ -1,4 +1,4 @@
-"""Opt-in upload grants, validation acceptance, and read-only image metadata."""
+"""Opt-in upload grants, validation acceptance, image metadata and versioned downloads."""
 
 from typing import Annotated, Literal
 from uuid import UUID
@@ -8,6 +8,7 @@ from pydantic import Field
 
 from apps.api.app.foundations import Identifier
 from apps.api.app.identity import Body, CanonicalJSONResponse
+from packages.application.image_download import ImageDownloadApplication
 from packages.application.uploads import UploadGrantApplication
 from packages.domain.security import ServiceError
 from packages.domain.uploads import MAX_BYTES
@@ -30,6 +31,11 @@ class UploadComplete(Body):
 
 
 def mount_uploads(app, identity, storage):
+    app.state.image_downloads = (
+        ImageDownloadApplication(identity, storage)
+        if identity is not None and storage is not None
+        else None
+    )
     app.state.uploads = (
         UploadGrantApplication(identity, storage)
         if identity is not None and storage is not None
@@ -70,6 +76,27 @@ def mount_uploads(app, identity, storage):
     def image(image_id: UUID, request: Request):
         return service(request).get_image(
             request.cookies.get(SESSION_COOKIE), str(image_id), request.state.request_id
+        )
+
+    @router.get("/images/{image_id}/download", operation_id="downloadImage")
+    def download(
+        image_id: UUID, request: Request, variant: Literal["analysis", "original"] = "analysis"
+    ):
+        if any(
+            key != "variant" or len(request.query_params.getlist(key)) != 1
+            for key in request.query_params
+        ):
+            raise ServiceError("VALIDATION_ERROR", 422, "Unexpected or duplicate download query")
+        if app.state.image_downloads is None:
+            raise ServiceError("DEPENDENCY_UNAVAILABLE", 503, "Image downloads not configured")
+        return CanonicalJSONResponse(
+            app.state.image_downloads.download(
+                request.cookies.get(SESSION_COOKIE),
+                str(image_id),
+                variant,
+                request.state.request_id,
+            ),
+            headers={"Referrer-Policy": "no-referrer"},
         )
 
     app.include_router(router)

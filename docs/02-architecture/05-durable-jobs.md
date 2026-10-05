@@ -64,3 +64,13 @@ replayJob 仅 admin，expected_version 匹配且 state=dead_letter/failed。先�
 ## 6. 必测故障点
 
 提交前kill→无业务/无事件；提交后发布前kill→sweeper补发；发布后mark前kill→重复事件由inbox防重；AI完成后DB提交前kill→可重复计算但仅当前token提交；DB提交后ack前kill→重复消息无新增结果；lease过期后旧结果→拒绝；Redis清空→30秒扫描+发布恢复；超过4次→dead_letter；手工重放→新generation且完整历史。
+
+## 7. 当前实现边界
+
+I-03A1 接 validate_image TaskDispatch 的 publisher、发布租约回收与待执行任务补发，采用独立 READ COMMITTED 调度连接、逐条领取（每轮最多 100）和事务外有界发布；API 的 RR 快照不变。`last_dispatched_at` 为补发意图入库时间，不是 broker ack，见 [I-03A1 验收](../08-delivery/17-i03a1-durable-dispatch.md)。
+
+I-03A2 补 validate_image 执行租约、attempt、独立心跳、围栏提交和技术失败/过期回收。锁 tenant 共享→owner→upload→image→task；技术失败不伪造 rejected。精确接入契约见 [I-03A2 验收](../08-delivery/18-i03a2-image-execution.md)。I-02F3 已接 opt-in general 消费、120 秒有界图像处理子进程及完整结果事务；默认 solo/concurrency=1，10 秒续租不依赖解码线程。内容拒绝不发缺少 analysis SHA 的 ImageValidated，成功事件写 Outbox，见 [I-02F3 验收](../08-delivery/19-i02f3-image-validation.md)。
+
+I-03A3 接 getJob/listDeadLetters/replayJob 的 validate_image 分支。详情按图像实验室 READ；列表/重放仅 Admin，列表收 failed/dead_letter 两类技术终态。重放先短事务鉴权和加载固定输入，回滚临时幂等占位并释放锁，事务外 HEAD 原 staging VersionId，再短事务重验 Admin/归属/输入版本/task.version；generation、token、dispatch_sequence 增一，attempt 清零，原 payload/旧 attempts 保留，TaskDispatch/审计/202 幂等响应同事务。HEAD 只证明固定输入当时可读，SHA/解码仍交 F3；版本缺失 409，不回退最新版本。cached replay 也重验当前 Admin。精确故障证据见 [I-03A3 验收](../08-delivery/20-i03a3-image-job-replay.md)。其他领域事件发布/inbox、任务适配及其 replay 仍未接通；不能据此关闭整个 JOB-04 或业务闭环。
+
+I-02G1 已将 `inference_pipeline` 按既有 task-message-v1 分支写入持久任务和 TaskDispatch outbox。I-03A2 现已补齐 opt-in 推理消费者：按 item→run→task 专属锁序领取、独立心跳、attempt/fencing、quality/runs 协议校验、`facts_ready` 首个 fact revision 围栏提交、规则任务入队及过期回收；详见[推理执行验收](../08-delivery/23-i03a2-inference-execution.md)。`rule_evaluation` 再按 item→fact/evaluation→task 锁序三值求值，原子生成 evaluation/findings 并收敛到人工复核，详见[规则评估验收](../08-delivery/24-i03a2-rule-evaluation.md)。rules 管理 API、report 下游、D-FINE-N/CUDA 真实执行、任务类型管理员 replay 仍须后续批次实现，不能将 fixture 视为生产模型。
