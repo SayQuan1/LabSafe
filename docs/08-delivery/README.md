@@ -16,5 +16,15 @@
 14. [I-02E巡检项查询与动作投影基础验收](14-i02e-item-query-api.md)。
 15. [I-02F1上传授权与S3适配基础验收](15-i02f1-upload-grant-api.md)。
 16. [I-02F2上传完成受理与图像查询验收](16-i02f2-upload-completion-api.md)。
+17. [I-03A1上传验证任务持久调度](17-i03a1-durable-dispatch.md)。
+18. [I-03A2上传验证任务执行基础](18-i03a2-image-execution.md)。
+19. [I-02F3图像验证处理与原子结果](19-i02f3-image-validation.md)。
+20. [I-03A3图像任务查询与管理员重放](20-i03a3-image-job-replay.md)。
+21. [I-02F4受控图片下载与原图审计](21-i02f4-image-download.md)。
+22. [I-02G1提交巡检项与推理任务入队](22-i02g1-submit-inference-enqueue.md)。
+23. [I-03A2推理任务专属执行](23-i03a2-inference-execution.md)。
+24. [I-03A2规则评估任务执行](24-i03a2-rule-evaluation.md)。
+25. [I-02规则配置管理](25-i02-rule-management.md)。
+26. [I-02事实修订与人工复核](26-i02-review.md)。
 
 本页仅导航；现行设计状态见 [文档控制](../00-document-control.md)，不把候选设计视为已经批准。

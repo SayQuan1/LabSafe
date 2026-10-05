@@ -1,5 +1,5 @@
 
-# LabSafe 开发指南（I-01A–I-02F2）
+# LabSafe 开发指南（I-01A–I-02F4 / I-03A1–A3）
 
 
 ## 1. 本阶段边界
@@ -15,8 +15,11 @@ I-02C 接通角色列表、授予、撤销 3 个 API，覆盖 scope、用户版�
 I-02D 接通学院、实验室、位置、模板创建/发布/克隆及巡检草稿 16 个 API；可通过真实数据库完成组织→模板→草稿链路。
 I-02E 接通巡检项列表、详情 2 个 API；提供同源守卫探测基础，未实现的写动作不显示为可执行能力。
 I-02F1 新增可选 createUpload；实现上传授权、权限/额度守卫、真实 SDK 本地签名和固定版本读取/SHA 适配基础。
-I-02F2 新增 completeUpload/getImage，累计 31 个公共业务 API；上传完成只受理为 validating，并原子登记验证任务/TaskDispatch。图片下载、图像验证消费及 ready 提交仍未实现。
-尚不包含完整巡检业务仓储/API、持久任务闭环、真实图像处理、训练权重或生产部署。
+I-02F2 新增 completeUpload/getImage；上传完成受理为 validating，并原子登记验证任务/TaskDispatch。
+I-03A1/A2 接通上传验证任务持久调度、租约、围栏及恢复；I-02F3 接通可选 general Worker、真实 Pillow 图像处理与 ready/rejected 事务。
+I-03A3 新增 getJob/listDeadLetters/replayJob 的 validate_image 分支，累计注册 34 个公共业务 API；管理员重放保留固定输入和历史。
+I-02F4 新增 downloadImage，累计注册 35 个公共业务 API；ready 分析图按实验室 READ 下载，原图额外 Admin 与审计；签名固定版本、60 秒。
+尚不包含 crop/报告下载、完整巡检业务 API、其他任务类型/事件 inbox/AI 闭环、训练权重或生产部署；真实 MinIO/IAM/HTTPS 验收仍待完成。
 
 未开启身份 API 时，/ready 只检查 I-01A 进程配置；开启后还检查迁移版本和 Redis 连通性，但仍不是完整系统就绪。开启上传也不会使 /ready 检查真实桶、IAM、签名请求或图像验证。
 所有后端进程和前端构建均拒绝 production；AI_MODE 只接受 mock。
@@ -262,9 +265,86 @@ PUT 成功不等于图像有效或业务完成。后续完成/查询见 3.10，�
 
 首次完成要求 grant 未过期、owner 仍可采集、请求 hash 与 grant 声明一致、HEAD 大小/MIME 匹配。HEAD 元数据中的 SHA 不可信；validating 时的 original_sha256 仍为声明值，真实字节 SHA/解码由后续 Worker 验证。文件被重新 PUT 不会改写已固定的版本。
 
-本批没有 publisher/sweeper/验证 consumer，任务停留在数据库 ready、图像停留 validating，不应持续轮询期待本版本自行完成。staging 的 24 小时生命周期仍可能使未消费输入过期；启用真实验证消费前仅使用可丢弃合成测试对象，不能积压实际业务证据。关闭 API 开关不删除已登记任务；没有实现后台取消或清理功能。
+F2 自身只受理；I-03A1/A2 调度与恢复入口见 3.11，I-02F3 可选验证消费者见 3.12。消费者默认关闭，未启动时图像停留 validating。staging 的 24 小时生命周期可能使未消费输入过期；开发联调使用可丢弃合成图片，不能积压实际业务证据。关闭 API 开关不删除已登记任务；没有实现后台取消或清理功能。
 
 验收、精确重放语义及后续关闭清单见 [I-02F2 验收](docs/08-delivery/16-i02f2-upload-completion-api.md)。真实 IAM/MinIO/nginx/TLS 联调仍待完成，TestClient/Stubber 不替代这些证据。
+
+### 3.11 可选上传验证任务调度（I-03A1）
+
+本批接通 validate_image TaskDispatch 的 MySQL → Redis 发布和补发，不接图像验证消费。沿用业务依赖与数据库 secret、REDIS_URL，新增 `WORKER_DISPATCH_ENABLED=1` 显式启用；默认关闭且拒绝 production。仅使用专用 dev/test 数据库与可丢弃 Redis。
+
+~~~powershell
+$env:APP_ENV = 'dev'
+$env:WORKER_DISPATCH_ENABLED = '1'
+.\.venv-business\Scripts\python.exe -m apps.worker.dispatch publisher --once
+.\.venv-business\Scripts\python.exe -m apps.worker.dispatch sweeper --once
+~~~
+
+去掉 `--once` 可在两个终端分别运行循环。publisher 每轮最多处理 100 条（逐条领取），每轮等待 1 秒；sweeper 每轮回收/补发各最多 100 条，等待 15 秒。发布使用事务外独立子进程、20 秒预算和 10 秒续租。调度连接为 READ COMMITTED，不影响 API 查询快照。
+
+消息写入 `q.general`；默认 fixture Worker 不注册 `labsafe.tasks.dispatch`，只有按 3.12 显式启用消费者才处理图像。不要让默认 fixture Worker 手动订阅该队列。停止调度进程、恢复开关 0 可回退，保留数据库调度历史。精确范围、故障测试和后续关闭清单见 [I-03A1 验收](docs/08-delivery/17-i03a1-durable-dispatch.md)。
+
+I-03A2 继续沿用此入口：sweeper 先回收最多 100 个过期 validate_image 执行租约，再执行 A1 发布回收/补发；日志增加 execution_recovered。私有 `ImageExecution.execute(message, prepare, write_result)` 包含独立心跳与数据库围栏，现由 F3 服务端处理器调用；不要直接写脚本绕过结果事务。技术失败和内容拒绝的差异见 [执行基础验收](docs/08-delivery/18-i03a2-image-execution.md)。
+
+### 3.12 图像验证 general Worker（I-02F3）
+
+重新安装 `requirements/dev.txt`（业务环境增加 Pillow 11.3.0）。沿用数据库/Redis/S3 endpoint、PUBLIC_ORIGIN 配置，另用 `S3_WORKER_ACCESS_KEY_FILE` 与 `S3_WORKER_SECRET_KEY_FILE` 指向独立 general Worker secret 文件；缺失即失败，不读取 API secret 替代。凭据仅允许 S 的 GET/GetVersion、O/A 的 GET/GetVersion/PUT，CopyObject 使用准确源版本；不授予 Delete/ListBucket/管理权限。
+
+~~~powershell
+$env:APP_ENV = 'dev'
+$env:WORKER_IMAGE_VALIDATION_ENABLED = '1'
+$env:S3_WORKER_ACCESS_KEY_FILE = '.local-secrets/s3-worker-access-key'
+$env:S3_WORKER_SECRET_KEY_FILE = '.local-secrets/s3-worker-secret-key'
+.\.venv-business\Scripts\python.exe -m apps.worker.run --check
+.\.venv-business\Scripts\python.exe -m apps.worker.run
+~~~
+
+入口自动订阅 `q.general`，使用 solo/concurrency=1，以允许每任务 spawn 独立处理子进程；不要改成 Celery 的 daemon prefork pool。默认开关 0 仍只订阅 fixture 的 `celery` 队列。production 继续禁止，`--check` 检查配置不证明网络连通或 IAM 正确。另两个终端按 3.11 启动 publisher 与 sweeper；三者是不同进程，API 完成接口保持异步 202。
+
+GET 固定 staging 版本并实算 SHA 后，用真实 Pillow 解码 JPEG/PNG/WebP，拒绝动画/格式伪装/截断和超限尺寸；仅执行一次 EXIF 旋转，输出去元数据 RGB PNG，不缩放分析图。事务外写 O/A；既有对象必须实算相同 SHA 才复用其准确版本，冲突不会覆盖。子进程总预算 120 秒，租约每 10 秒独立续 60 秒，失去租约或超时 kill/join；提交前重验围栏与输入。允许重复计算，只有当前租约能登记结果。
+
+内容失败原子登记 image/upload=rejected、归属状态和审计；任务 succeeded 表示验证处理完成，不表示图片合格。仅成功 ready 产生 ImageValidated Outbox；技术失败保留 validating 并按持久任务重试/终止。事件发布/inbox 下游还未实现，ImageValidated 暂存 DB，不自动启动推理。
+
+停止领取并允许当前任务在预算内排空；强制终止后由 sweeper 回收。关闭消费者/publisher/sweeper 并恢复开关 0 可回退；不删任务、图片或审计。未登记 O/A 是孤儿，后续清理须逐个精确版本核查引用，不在本批授予删除权限。最大 40M 像素会产生较大的解码内存和 PNG，输入 15 MiB 限制不是内存上限；当前一次一个任务，生产资源限额另行验收。范围、测试和真实存储验收清单见 [I-02F3 验收](docs/08-delivery/19-i02f3-image-validation.md)。
+
+### 3.12.1 推理 pipeline Worker（I-03A2）
+
+推理消费者仍为 dev/test opt-in。先启动 AI fixture，再设置 `WORKER_INFERENCE_ENABLED=1`；它复用 q.general 的持久任务消息，调用 `/internal/inference/v1/quality` 和 `/runs`，结果由 MySQL 围栏事务接收。`facts_ready` 会原子创建 `fact_revisions` 和 `rule_evaluation` task；设置 `WORKER_RULE_EVALUATION_ENABLED=1` 后由同一 general Worker 执行规则快照评估。必须同时运行 publisher 和 sweeper。当前批次收敛质量重拍、事实修订、规则 findings 和待人工复核状态，rules 管理/report 任务仍未接通。详细范围见 [推理执行验收](docs/08-delivery/23-i03a2-inference-execution.md) 与 [规则评估验收](docs/08-delivery/24-i03a2-rule-evaluation.md)。
+
+~~~powershell
+$env:APP_ENV = 'dev'
+$env:WORKER_INFERENCE_ENABLED = '1'
+$env:AI_INFERENCE_URL = 'http://127.0.0.1:8001'
+\.\.venv-business\Scripts\python.exe -m apps.worker.run --check
+~~~
+
+### 3.13 图像任务查询与管理员重放（I-03A3）
+
+沿用 `API_IDENTITY_ENABLED=1` 的数据库、Redis、同源 session 配置。GET `/api/v1/jobs/{id}` 需要图像所属实验室的 READ 权限；GET `/api/v1/dead-letters` 仅 safety_admin，支持 page/page_size/laboratory_id，列出 validate_image 的 failed 和 dead_letter 技术终态。Job 使用白名单字段，不返回 payload、对象 key、租约或围栏。其他任务类型当前返回 404，不代表整个任务平台已接通。
+
+POST `/api/v1/dead-letters/{id}/replay` 仅 safety_admin，沿用 Origin、Content-Type=application/json、X-CSRF-Token 和 Idempotency-Key 请求头。先 GET Job，使用其 version（不是 Image.version）作为 expected_version；请求体如下：
+
+~~~json
+{"expected_version": 3, "reason": "对象存储访问已恢复，人工重新执行验证"}
+~~~
+
+成功返回 202 的 Job，其中 state=ready、attempt=0、replay_generation 增加。任务、dispatch、审计、幂等响应原子登记，旧 attempts 保留；由现有 publisher/general Worker/sweeper 异步执行，不直接把图像改成 ready。只允许重放仍处于 validating、归属仍允许采集的固定输入；内容拒绝任务为 succeeded，应重新上传图片。
+
+新重放还需要 `API_UPLOADS_ENABLED=1` 及 3.9 的 API S3 secret/endpoint 配置，使用原 staging VersionId 做事务外 HEAD；缺少存储配置返回 503。缺失版本返回 409 STATE_CONFLICT，应重新上传，不会续签或回退到 latest。HEAD 不证明 SHA/图片合格，F3 仍执行准确 GET、实算 SHA 和解码。相同 key/body 返回原始 202，但每次重新检查当前身份/Admin；不重复 HEAD、不增加 generation。相同 key、不同请求体返回 409。
+
+无新增配置或迁移。停止 API 可暂停新人工重放，保留任务/审计/历史；已受理的任务仍由 Worker 执行，停止异步处理按 3.11/3.12 排空。精确事务与验收见 [I-03A3 验收](docs/08-delivery/20-i03a3-image-job-replay.md)。
+
+### 3.14 受控图像下载（I-02F4）
+
+沿用 `API_IDENTITY_ENABLED=1`、`API_UPLOADS_ENABLED=1` 与 3.9 的 S3 配置，无新增 secret。API 凭据需具有获准租户/实验室 O/A 前缀的 GetObjectVersion 权限；不要为浏览器或 API 增加 List/Delete 权限。Worker 仍使用独立凭据。
+
+GET `/api/v1/images/{id}/download` 默认 analysis，`?variant=original` 需要 safety_admin；两者先核图像实验室 READ。唯一 query 为单个 variant，不接受 object_key/versionId/tenant_id。GET 使用现有 session，无 Idempotency-Key/CSRF 命令头；URL 只通过同源受认证 API 返回，不重定向。
+
+响应为 `{data:{url,expires_at},request_id}`，URL 使用同源 HTTPS、path-style SigV4、准确 VersionId，签发时有效期 60 秒。原样使用完整 URL，不替换 Host/路径/参数；图片应使用页面 no-referrer 策略，不复制 URL 至日志、统计或持久缓存。API 响应设置 Cache-Control=no-store、Referrer-Policy=no-referrer。
+
+仅 ready 且所选 variant 的规范 O/A key、SHA、准确版本齐全时签发；validating/rejected/deleted 返回 409。普通读者只获分析图；原图每次签发写 image.download_original 审计，失败则整个事务回滚、返回错误，不能收到 grant。签发在身份/角色/session/图片锁内进行，使用固定凭据做本地签名，不在事务内 HEAD/GET。下载不会修改图像、上传、任务或事件。
+
+下载签发共用 120 次/分钟用户配额，不占 60 次/分钟写配额；Redis 故障返回 503，无普通元数据 GET 的本地降级。撤权后禁止再签发，已经签发的 URL 最长仍可用至 60 秒到期；不能宣称随 session 立即撤销。签发不检查存储网络和对象存在性，准确版本已丢失时对象 GET 可能失败，不能回退 latest 或修改 DB ready 状态。关闭上传开关并重启 API 可停止签发；保留历史审计与对象。证据与真实部署待验收项见 [I-02F4 验收](docs/08-delivery/21-i02f4-image-download.md)。
 
 ## 4. 验证
 
@@ -291,7 +371,7 @@ AI 环境执行：
 
 I-01A 的业务/AI/协议测试自行在临时目录生成令牌和合成请求，不要求预设 APP_ENV，也不连接 Redis/MySQL/对象存储。
 包含实际 API/AI 子进程 HTTP smoke，不只是 import 非空检查。
-I-01B–I-02F2 的真实数据库测试必须运行 3.5 的隔离启动器；直接 pytest tests/persistence 会跳过未配置的 MySQL 用例，不能把跳过算作数据库通过。上传测试的本地 SDK 签名/Stubber 不连接真实 S3，也不能替代 UP-03/SEC-03 部署验收。
+I-01B–I-02F4/I-03A 的真实数据库测试必须运行 3.5 的隔离启动器；直接 pytest tests/persistence 会跳过未配置的 MySQL 用例，不能把跳过算作数据库通过。图像处理测试使用真实 Pillow；SDK Stubber 和本地 SigV4 不连接真实 S3，不能替代 UP-03/SEC-03 部署验收。
 
 
 设计校验使用独立工具环境，安装 tools/design/requirements.txt 后执行：
@@ -312,12 +392,12 @@ CI 必须先 --check，不能先生成来掩盖漂移。设计校验不是应用
 
 I-01B 的实际结果与后续边界见 [验收记录](docs/08-delivery/08-i01b-acceptance.md)。I-01C 会话、RBAC、幂等与租户事务实现及验收范围见 [I-01C 验收记录](docs/08-delivery/09-i01c-acceptance.md)。
 
-截至 2026-10-01，I-01A PR #5、I-01B PR #7、I-01C PR #8 均已合并。本轮基于 #8 合并后的 main 进入 I-02；数据库/安全变更仍需独立评审，不直接推送 main。
-I-02A 的领域守卫边界见 [领域命令守卫验收](docs/08-delivery/10-i02a-domain-guards.md)；本批最新身份 API、事务和故障验证见 [I-02B 验收](docs/08-delivery/11-i02b-identity-api.md)。本批未推送，不能将旧 PR 的 CI 成绩作为新分支已通过。
+截至已核验的历史状态，I-01A PR #5、I-01B PR #7、I-01C PR #8、I-02A–F2 PR #9 均已合并。当前在 `wsq/i-03a-durable-dispatch` 保留 A1/A2/F3/A3/F4 本地改动；本轮未提交、Push、创建 PR 或重新核验远程状态。数据库/安全变更仍需独立评审，不直接推送 main。
+I-02A 的领域守卫边界见 [领域命令守卫验收](docs/08-delivery/10-i02a-domain-guards.md)；身份 API、事务和历史故障验证见 [I-02B 验收](docs/08-delivery/11-i02b-identity-api.md)。当前 A1/A2/F3/A3/F4 未推送，不能将旧 PR 的 CI 成绩作为新分支已通过。
 I-02C 的角色接口、作用域、版本与会话语义见 [角色 API 验收](docs/08-delivery/12-i02c-role-api.md)。角色请求的 expected_version 来自目标 User.version，laboratory_id 必须显式传 UUID/null；成功改权会撤销目标全部会话，包括操作者修改自身角色时的当前会话。三接口与 I-02B 共用开关和安全请求头，无新增配置。
 I-02D 的接口、事务与本轮会话锁修复见 [基础 API 验收](docs/08-delivery/13-i02d-foundation-api.md)。实施计划的 I-0 表格同步记录本地验证状态，不把未提交工作记作远程 CI 或独立批准。
 I-02E 的两个巡检项查询、同源探测基础与能力门禁见 [巡检项查询验收](docs/08-delivery/14-i02e-item-query-api.md)；这不代表完整写动作投影已接通。
 I-02F1 的上传授权、S3 配置/签名、固定版本适配与实际测试见 [上传授权验收](docs/08-delivery/15-i02f1-upload-grant-api.md)，默认关闭，仅 dev/test；CI 的 AI 依赖隔离清单同时禁止 boto3/botocore，本地通过不代表远程 CI 已运行。
 I-02F2 的完成受理/图像查询和原子任务写入见 [完成受理验收](docs/08-delivery/16-i02f2-upload-completion-api.md)；不把初始 task/dispatch 记录等同于持久任务闭环。
-下一批优先 I-03A：落地 publisher、任务领取/lease/fencing、重试和 sweeper 共用基础，再由 I-02F3 接入 general 图像验证消费及真实存储联调；此前不标 ready。后续接提交/重试/完成及事实、评估、复核与整改完整事务。真实模型主线按 I-ML-01 推进，不以基础 API、查询或纯领域测试代替模型和生产验收。
+I-03A1/A2 已接调度、上传验证执行租约与技术失败恢复；I-02F3 已补 general 消费者、真实图像解码和完整 ready/rejected 事务，见 [图像验证验收](docs/08-delivery/19-i02f3-image-validation.md)。I-03A3 新增 3 个图像任务查询/人工重放 API，见 [重放验收](docs/08-delivery/20-i03a3-image-job-replay.md)；I-02F4 新增受控图像下载，见 [本批验收](docs/08-delivery/21-i02f4-image-download.md)。真实 MinIO/IAM/nginx/TLS 部署验收仍未完成。其他任务类型及其 replay、领域事件发布/inbox 仍待实现。后续接提交/重试/完成及事实、评估、复核与整改完整事务。真实模型主线按 I-ML-01 推进，不以局部测试代替模型和生产验收。
 

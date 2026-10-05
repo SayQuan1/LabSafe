@@ -91,3 +91,7 @@ class RateLimits:
 
     def upload_grant(self, principal):
         self._charge("upload", f"{principal.tenant_id}:{principal.user_id}", 10, 60)
+
+    def download_grant(self, principal):
+        # Read quota, but bearer-capability issuance must fail closed on Redis loss.
+        self._charge("user", f"{principal.tenant_id}:{principal.user_id}", 120, 60)
