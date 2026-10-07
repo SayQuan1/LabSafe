@@ -15,6 +15,19 @@ from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 
 from packages.domain.image_download import DOWNLOAD_SECONDS, validate_reference
+from packages.domain.report_download import (
+    REPORT_DOWNLOAD_SECONDS,
+    ReportDownload,
+)
+from packages.domain.report_download import (
+    validate_reference as validate_report_reference,
+)
+from packages.domain.report_execution import (
+    MAX_REPORT_BYTES,
+    REPORT_MIME,
+    artifact_for,
+    report_key,
+)
 from packages.domain.security import ServiceError
 from packages.domain.uploads import GRANT_SECONDS, MAX_BYTES, MIME_TYPES, digest, staging_key
 
@@ -248,6 +261,56 @@ class S3Storage:
         except (BotoCoreError, ClientError, ValueError, KeyError, TypeError):
             raise dependency() from None
 
+    def presign_report_get(self, reference: ReportDownload):
+        """Local SigV4 for one CSV report and its exact stored VersionId."""
+        validate_report_reference(reference)
+        try:
+            url = self.signing.generate_presigned_url(
+                "get_object",
+                Params={
+                    "Bucket": BUCKET,
+                    "Key": reference.key,
+                    "VersionId": reference.object_version,
+                },
+                ExpiresIn=REPORT_DOWNLOAD_SECONDS,
+                HttpMethod="GET",
+            )
+            parts, origin = urlsplit(url), urlsplit(self.settings.public_origin)
+            query = parse_qs(parts.query, strict_parsing=True)
+            if (
+                parts.scheme != origin.scheme
+                or parts.netloc != origin.netloc
+                or parts.path != f"/{BUCKET}/{reference.key}"
+                or parts.fragment
+                or len(url) > 4096
+                or set(query)
+                != {
+                    "versionId",
+                    "X-Amz-Algorithm",
+                    "X-Amz-Credential",
+                    "X-Amz-Date",
+                    "X-Amz-Expires",
+                    "X-Amz-SignedHeaders",
+                    "X-Amz-Signature",
+                }
+                or any(len(values) != 1 for values in query.values())
+                or query.get("versionId") != [reference.object_version]
+                or query.get("X-Amz-Algorithm") != ["AWS4-HMAC-SHA256"]
+                or query.get("X-Amz-Expires") != [str(REPORT_DOWNLOAD_SECONDS)]
+                or query.get("X-Amz-SignedHeaders") != ["host"]
+            ):
+                raise ValueError
+            started = datetime.strptime(query["X-Amz-Date"][0], "%Y%m%dT%H%M%SZ")
+            credential = f"{self.settings.access_key}/{started:%Y%m%d}/us-east-1/s3/aws4_request"
+            if (
+                query.get("X-Amz-Credential") != [credential]
+                or re.fullmatch(r"[a-f0-9]{64}", query["X-Amz-Signature"][0]) is None
+            ):
+                raise ValueError
+            return DownloadGrant(url, started + timedelta(seconds=REPORT_DOWNLOAD_SECONDS))
+        except (BotoCoreError, ClientError, ValueError, KeyError, TypeError):
+            raise dependency() from None
+
     @staticmethod
     def _failure(error):
         if isinstance(error, ClientError) and error.response.get("Error", {}).get("Code") in {
@@ -454,3 +517,20 @@ class S3Storage:
             return self.result_version(result)
         except (BotoCoreError, ClientError, OSError) as error:
             raise self._failure(error) from None
+
+    def put_report(self, source, payload):
+        """Upload deterministic CSV bytes; register only an explicit VersionId."""
+        if not isinstance(payload, bytes) or not 1 <= len(payload) <= MAX_REPORT_BYTES:
+            raise ServiceError("INTERNAL_ERROR", 500, "Report encoding exceeds limit")
+        checksum = hashlib.sha256(payload).hexdigest()
+        key = report_key(source, checksum)
+        version = self.reuse_version(key, checksum, REPORT_MIME, MAX_REPORT_BYTES)
+        if version is None:
+            try:
+                result = self.internal.put_object(
+                    Bucket=BUCKET, Key=key, Body=payload, ContentType=REPORT_MIME
+                )
+                version = self.result_version(result)
+            except (BotoCoreError, ClientError, OSError) as error:
+                raise self._failure(error) from None
+        return artifact_for(source, payload, version)

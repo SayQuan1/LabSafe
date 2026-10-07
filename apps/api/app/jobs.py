@@ -1,4 +1,4 @@
-"""Strict job metadata and administrator replay adapters; validate_image branch only."""
+"""Strict image/report job metadata and administrator replay adapters."""
 
 from uuid import UUID
 

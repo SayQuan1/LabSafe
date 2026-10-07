@@ -35,16 +35,22 @@ def create_celery_app() -> Celery:
         os.getenv("WORKER_IMAGE_VALIDATION_ENABLED", "0") == "1"
         or os.getenv("WORKER_INFERENCE_ENABLED", "0") == "1"
         or os.getenv("WORKER_RULE_EVALUATION_ENABLED", "0") == "1"
+        or os.getenv("WORKER_REPORT_EXPORT_ENABLED", "0") == "1"
     ):
         from apps.worker.inference_pipeline import consume_inference
         from apps.worker.rule_evaluation import consume_rule
 
         image_enabled = os.getenv("WORKER_IMAGE_VALIDATION_ENABLED", "0") == "1"
-        if image_enabled:
-            from apps.worker.image_validation import consume_image
+        report_enabled = os.getenv("WORKER_REPORT_EXPORT_ENABLED", "0") == "1"
+        if report_enabled:
+            from apps.worker.report_export import consume_report
+
+        if image_enabled or report_enabled:
             from packages.storage.s3 import S3Settings
 
             S3Settings.from_environment(os.environ["PUBLIC_ORIGIN"], worker=True)
+        if image_enabled:
+            from apps.worker.image_validation import consume_image
 
         @celery.task(name="labsafe.tasks.dispatch", ignore_result=True, shared=False)
         def dispatch(message):
@@ -53,6 +59,10 @@ def create_celery_app() -> Celery:
                     consume_inference(message)
                 elif message.get("task_type") == "rule_evaluation":
                     consume_rule(message)
+                elif message.get("task_type") == "report_export":
+                    if not report_enabled:
+                        raise RuntimeError("report_export consumer is disabled")
+                    consume_report(message)
                 else:
                     if not image_enabled:
                         raise RuntimeError("validate_image consumer is disabled")

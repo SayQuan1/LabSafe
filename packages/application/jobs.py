@@ -1,4 +1,4 @@
-"""Manual image-job replay: authenticate, observe fixed input outside locks, revalidate, commit."""
+"""Manual replay; image inputs are inspected outside locks, report snapshots stay in DB."""
 
 from datetime import timedelta
 from uuid import uuid4
@@ -89,11 +89,11 @@ class JobApplication:
                 return claim.response_status, claim.response
             task, current = self.jobs.replay_source(connection, actor, job_id)
             require_replay(actor, task, current, body["expected_version"])
-            if observed is None:
+            if task["task_type"] != "report_export" and observed is None:
                 raise _NeedsPinnedInspection(
                     tenant, current
                 )  # Rolls back provisional claim and locks.
-            if current != observed:
+            if task["task_type"] != "report_export" and current != observed:
                 raise ServiceError("STATE_CONFLICT", 409, "Pinned input changed during inspection")
             data = self.jobs.replay(connection, actor, task, body["reason"], request_id)
             response = {"data": data, "request_id": request_id}

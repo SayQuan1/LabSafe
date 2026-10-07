@@ -19,7 +19,7 @@ I-02F2 新增 completeUpload/getImage；上传完成受理为 validating，并�
 I-03A1/A2 接通上传验证任务持久调度、租约、围栏及恢复；I-02F3 接通可选 general Worker、真实 Pillow 图像处理与 ready/rejected 事务。
 I-03A3 新增 getJob/listDeadLetters/replayJob 的 validate_image 分支，累计注册 34 个公共业务 API；管理员重放保留固定输入和历史。
 I-02F4 新增 downloadImage，累计注册 35 个公共业务 API；ready 分析图按实验室 READ 下载，原图额外 Admin 与审计；签名固定版本、60 秒。
-尚不包含 crop/报告下载、完整巡检业务 API、其他任务类型/事件 inbox/AI 闭环、训练权重或生产部署；真实 MinIO/IAM/HTTPS 验收仍待完成。
+已实现整改与CSV报告受理/执行/下载；尚不包含 crop 下载、完整巡检业务 API、其他任务类型/事件 inbox/AI 闭环、训练权重或生产部署；真实 MinIO/IAM/HTTPS 验收仍待完成。
 
 未开启身份 API 时，/ready 只检查 I-01A 进程配置；开启后还检查迁移版本和 Redis 连通性，但仍不是完整系统就绪。开启上传也不会使 /ready 检查真实桶、IAM、签名请求或图像验证。
 所有后端进程和前端构建均拒绝 production；AI_MODE 只接受 mock。
@@ -200,7 +200,7 @@ Redis URL 必须指向操作者已准备好的专用开发实例；上例是变�
 
 登录 `POST /api/v1/auth/login` 发送 JSON `{tenant_code,username,password}` 与 Origin；后续请求携带服务端 session cookie。`GET /api/v1/me` 获取 CSRF；创建用户/禁用/退出还需单个 X-CSRF-Token、Idempotency-Key、Origin 和 application/json。具体字段、响应和错误使用 [公共契约](contracts/public-api-v1.yaml)，不要将密码或 cookie 粘贴到日志/PR。
 
-本阶段不信任 X-Forwarded-For；反代后的 IP 限流按直接 peer 计数，不声称已识别真实终端 IP。身份及基础小请求暂限 64 KiB，模板创建为 2 MiB，以容纳 100 项完整 Unicode/转义正文；这不是未来上传/import 限额。/ready 只核对 `0001_initial` 与 Redis ping；模式结构仍必须用 CLI verify，存储、Worker、完整业务流程和真实模型均未纳入该门禁。生产/远端数据库仍被拒绝。
+本阶段不信任 X-Forwarded-For；反代后的 IP 限流按直接 peer 计数，不声称已识别真实终端 IP。身份及基础小请求暂限 64 KiB，模板创建为 2 MiB，以容纳 100 项完整 Unicode/转义正文；这不是未来上传/import 限额。/ready 只核对 `0002_report_object_version` 与 Redis ping；模式结构仍必须用 CLI verify，存储、Worker、完整业务流程和真实模型均未纳入该门禁。生产/远端数据库仍被拒绝。
 
 ### 3.7 组织→模板→巡检草稿（I-02D）
 
@@ -346,6 +346,31 @@ GET `/api/v1/images/{id}/download` 默认 analysis，`?variant=original` 需要 
 
 下载签发共用 120 次/分钟用户配额，不占 60 次/分钟写配额；Redis 故障返回 503，无普通元数据 GET 的本地降级。撤权后禁止再签发，已经签发的 URL 最长仍可用至 60 秒到期；不能宣称随 session 立即撤销。签发不检查存储网络和对象存在性，准确版本已丢失时对象 GET 可能失败，不能回退 latest 或修改 DB ready 状态。关闭上传开关并重启 API 可停止签发；保留历史审计与对象。证据与真实部署待验收项见 [I-02F4 验收](docs/08-delivery/21-i02f4-image-download.md)。
 
+### 3.15 CSV 报告执行（I-02I2）
+
+在已配置的专用 dev/test 库执行迁移至 head，再运行 verify。本批新增 `0002_report_object_version`，为报告增加 nullable object_version/size_bytes，保留原快照和初始迁移。未升级的库不会通过 `/ready`。
+
+~~~powershell
+.venv-business/Scripts/python.exe -m packages.persistence.cli upgrade
+.venv-business/Scripts/python.exe -m packages.persistence.cli verify
+$env:WORKER_DISPATCH_ENABLED = '1'
+$env:WORKER_REPORT_EXPORT_ENABLED = '1'
+~~~
+
+三个独立终端分别运行以下命令，并在各终端设置上面的开关及现有数据库、Redis、S3 配置：
+
+~~~powershell
+.venv-business/Scripts/python.exe -m apps.worker.dispatch publisher
+.venv-business/Scripts/python.exe -m apps.worker.dispatch sweeper
+.venv-business/Scripts/python.exe -m apps.worker.run
+~~~
+
+报告使用独立 `q.reports` 队列；仅开启报告开关时 Worker 只订阅该队列，同时启用图像/推理/规则开关时也订阅 q.general。publisher/sweeper 仅在报告开关开启时投递/补发 CSV；PDF 继续 queued/pending。报告开关默认关闭且拒绝 production。存储沿用独立 Worker secret，不回退 API 凭据；需 versioning 私有桶及授权租户/实验室 R 路径的 HEAD/GET/版本 GET/PUT 权限，不新增删除或列表权限。真实 IAM/TLS 尚待部署验收。
+
+Worker 在无数据库连接的子进程内从冻结快照生成 CSV 并上传；最长 120 秒，10 秒心跳续租。最终事务重检输入/owner/token/generation 后登记精确对象版本、SHA、大小及 ready，expires_at 为提交时 DB now+24h。失败/kill 由持久任务重试与回收收敛；旧 worker 的上传可能留下未引用版本，不在执行路径删除对象。CSV 输出上限 64 MiB，格式不合规或超限终止为 SCHEMA_MISMATCH。
+
+I-02I3 已接通 `GET /api/v1/reports/exports/{id}/download`。只有 ready、未过期 CSV 且对象 key/checksum/准确 VersionId/大小证据完整时签发；请求人必须是创建人或完整快照范围的 admin，并在当前事务重新具备每个实验室的 export 权限。签名固定 GET、同源、准确 VersionId 和 60 秒 TTL；不重新生成或读取业务数据，query 参数和跨租户/部分授权请求拒绝。PDF 渲染、完成通知、过期状态转换、精确对象清理、真实存储联调和 UI 仍待后续批次。停用时先停 publisher、排空报告 Worker，再关闭报告开关；保留 schema、对象版本及任务历史，勿在有数据的库执行 downgrade。详见 [报告执行验收](docs/08-delivery/29-i02-report-csv-execution.md) 与 [报告下载验收](docs/08-delivery/30-i02-report-download.md)。
+
 ## 4. 验证
 
 根目录、业务环境执行：领域守卫也使用业务环境，不向 AI 环境引入业务授权或持久化依赖。
@@ -392,7 +417,7 @@ CI 必须先 --check，不能先生成来掩盖漂移。设计校验不是应用
 
 I-01B 的实际结果与后续边界见 [验收记录](docs/08-delivery/08-i01b-acceptance.md)。I-01C 会话、RBAC、幂等与租户事务实现及验收范围见 [I-01C 验收记录](docs/08-delivery/09-i01c-acceptance.md)。
 
-截至已核验的历史状态，I-01A PR #5、I-01B PR #7、I-01C PR #8、I-02A–F2 PR #9 均已合并。当前在 `wsq/i-03a-durable-dispatch` 保留 A1/A2/F3/A3/F4 本地改动；本轮未提交、Push、创建 PR 或重新核验远程状态。数据库/安全变更仍需独立评审，不直接推送 main。
+历史 I-03A1/A2、I-02F3/F4、I-03A3 及截至第26批的工作已通过 PR #10 合并，2026-10-07 已 fetch 核验 origin/main=4e4f8bf。第27–30批整改/CSV报告使用 wsq/i-02-remediation-reports；各批验收中的未提交状态是实施当时的历史记录，当前提交/Push/CI状态以本次PR为准。合并前仍需独立审查；数据库/权限/模型变更由两位协作者共同确认，不自动合并。
 I-02A 的领域守卫边界见 [领域命令守卫验收](docs/08-delivery/10-i02a-domain-guards.md)；身份 API、事务和历史故障验证见 [I-02B 验收](docs/08-delivery/11-i02b-identity-api.md)。当前 A1/A2/F3/A3/F4 未推送，不能将旧 PR 的 CI 成绩作为新分支已通过。
 I-02C 的角色接口、作用域、版本与会话语义见 [角色 API 验收](docs/08-delivery/12-i02c-role-api.md)。角色请求的 expected_version 来自目标 User.version，laboratory_id 必须显式传 UUID/null；成功改权会撤销目标全部会话，包括操作者修改自身角色时的当前会话。三接口与 I-02B 共用开关和安全请求头，无新增配置。
 I-02D 的接口、事务与本轮会话锁修复见 [基础 API 验收](docs/08-delivery/13-i02d-foundation-api.md)。实施计划的 I-0 表格同步记录本地验证状态，不把未提交工作记作远程 CI 或独立批准。

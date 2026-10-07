@@ -61,6 +61,8 @@ replayJob 仅 admin，expected_version 匹配且 state=dead_letter/failed。先�
 
 所有对象写入采用确定 key + checksum 后登记；重试发现同hash复用，异hash报错。孤儿对象清理必须以 DB 引用核验为准，不按目录粗暴删除。
 
+I-02I2 的 CSV report_export 使用 report→task 锁序、60 秒租约与独立 10 秒心跳；无 DB 句柄的生成/上传子进程最长 120 秒。提交核对冻结输入及聚合版本、owner/token/generation/attempt/租约有效期，原子登记 key/checksum/object_version/size_bytes、ready、DB now+24h 的 expires_at、系统审计和 task/attempt succeeded。可重试错误或过期回收恢复 report queued；第 4 次耗尽或永久错误置 failed，旧 attempts 保留。报告采用 dev/test opt-in q.reports，发布/补发按 DB format=csv 筛选，PDF 仍 pending。I-02I3 的 downloadExport 在当前租户/报告锁内重新核验创建人或同范围 admin、完整 export 权限、ready/24h 门禁和精确 key+VersionId，再在事务内只做本地 60 秒签名；不重生成、不读取对象。完成通知、过期处理仍待后批，详见 [I-02I2](../08-delivery/29-i02-report-csv-execution.md) 与 [I-02I3](../08-delivery/30-i02-report-download.md)。
+
 ## 6. 必测故障点
 
 提交前kill→无业务/无事件；提交后发布前kill→sweeper补发；发布后mark前kill→重复事件由inbox防重；AI完成后DB提交前kill→可重复计算但仅当前token提交；DB提交后ack前kill→重复消息无新增结果；lease过期后旧结果→拒绝；Redis清空→30秒扫描+发布恢复；超过4次→dead_letter；手工重放→新generation且完整历史。

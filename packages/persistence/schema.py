@@ -13,7 +13,17 @@ MODEL_PATH = Path(__file__).parent / "migrations/snapshots/0001_initial.json"
 
 
 def model():
-    return json.loads(MODEL_PATH.read_text(encoding="utf-8"))
+    value = json.loads(MODEL_PATH.read_text(encoding="utf-8"))
+    # Additive head migration; never rewrite the released 0001 snapshots.
+    for name, sql_type in (("object_version", "VARCHAR(200)"), ("size_bytes", "BIGINT UNSIGNED")):
+        value["tables"]["report_exports"]["columns"][name] = {
+            "type": sql_type,
+            "nullable": True,
+            "default_sql": None,
+            "description": "",
+            "generated_sql": None,
+        }
+    return value
 
 
 def expression_tokens(value):
@@ -228,7 +238,7 @@ def verify_schema(connection) -> dict:
                 )
                 compare(f"{table}.{name}.enforced", checks[table][name]["ENFORCED"], "YES")
     head = connection.scalar(text("SELECT version_num FROM alembic_version"))
-    compare("migration_head", head, "0001_initial")
+    compare("migration_head", head, "0002_report_object_version")
     compare("session.time_zone", connection.scalar(text("SELECT @@session.time_zone")), "+00:00")
     actual_modes = set(connection.scalar(text("SELECT @@session.sql_mode")).split(","))
     required_modes = set(STRICT_SQL_MODE.split(","))

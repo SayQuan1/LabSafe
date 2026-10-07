@@ -37,7 +37,9 @@ def test_non_deadlock_database_errors_are_not_retried(errno):
     assert command.call_count == 1
 
 
-@pytest.mark.parametrize("revision", ["0001_initial", "unknown", None])
+@pytest.mark.parametrize(
+    "revision", ["0002_report_object_version", "0001_initial", "unknown", None]
+)
 def test_readiness_checks_revision_and_releases_connection_before_redis(revision):
     connected = False
     connection = Mock()
@@ -59,7 +61,7 @@ def test_readiness_checks_revision_and_releases_connection_before_redis(revision
     engine.connect.side_effect = connect
     limits.ready.side_effect = ready
     app = IdentityApplication(engine, Mock(), limits, "test")
-    if revision == "0001_initial":
+    if revision == "0002_report_object_version":
         app.readiness()
         limits.ready.assert_called_once_with()
     else:

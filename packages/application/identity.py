@@ -88,7 +88,7 @@ class IdentityApplication:
         # This is identity readiness, not the future object/AI/worker readiness gate.
         with self.engine.connect() as connection:
             revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
-            if revision != "0001_initial":
+            if revision != "0002_report_object_version":
                 raise ServiceError("DEPENDENCY_UNAVAILABLE", 503, "Database revision is not ready")
         self.limits.ready()
 

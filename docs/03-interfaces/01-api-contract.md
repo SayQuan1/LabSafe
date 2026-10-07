@@ -111,10 +111,10 @@ CSV列固定：inspection_id,item_id,laboratory_id,location_id,run_id,fact_revis
 ### 5.7 图像验证结果与受控下载（I-02F3/F4）
 
 - F3 的 opt-in general Worker 只消费 validate_image；准确 GET、实算 SHA、真实 Pillow 解码、一次 EXIF 旋转、去元数据 RGB PNG 后登记 O/A 和 ready。内容拒绝登记 image/upload=rejected、task=succeeded；技术故障保留 validating、自动重试/技术终态。ImageValidated 只在成功时写 Outbox，下游发布/inbox 未接通。见 [F3 验收](../08-delivery/19-i02f3-image-validation.md)。
-- F4 接通 GET /api/v1/images/{id}/download（downloadImage），默认 variant=analysis，original 额外 Admin+原图读取审计。两者均按图像所属实验室 READ，只有 ready 且所选 O/A key/SHA/版本完整可签发，非 ready 返回 409。只允许单个 variant 参数，拒绝客户端对象 key/version/tenant 或额外 query。
+- F4 接通 GET /api/v1/images/{id}/download（downloadImage），默认 variant=analysis，original 额外 Admin+原图读取审计。两者均按图像所属实验室 READ，只有 ready 且所选 O/A key/SHA/版本完整可签发，非 ready 返回 409。只允许单个 variant 参数，拒绝客户端对象 key/version/tenant 或额外 query。I-02I3 接通 GET /api/v1/reports/exports/{id}/download：ready、24h 内的 CSV 才能按创建人或同范围 admin 签发，且完整快照范围重新具备 export 权限；签名固定准确 key+VersionId、60 秒，不重新生成。
 - DownloadGrant 仅 `{url,expires_at}`；同源 HTTPS SigV4 GET、固定数据库 VersionId、60 秒。签名原样使用，不跳到最新对象。API 返回 no-store/no-referrer，不重定向；原图审计与签发事务一起提交，审计失败不返回 grant。GET 不要求写命令头；每次原图签发独立审计，不做幂等缓存。
 - 当前身份/角色/session 和图片记录在事务内锁定，SDK 签名为本地操作，无 HEAD/GET 或凭据刷新。下载不改变 image/upload/task/event。签发不证明对象仍存在或真实 IAM/TLS 可用；对象 GET 失败不能据此更换 VersionId 或伪造成功。
-- 共用 120 次/分钟用户限流，Redis 故障不签发；不占写配额，不使用普通元数据读的降级。撤权后禁止新签发，既有 URL 到期前最长 60 秒仍可能有效。沿用 API_UPLOADS_ENABLED 和 API S3 secret；无新增迁移/配置。见 [F4 验收](../08-delivery/21-i02f4-image-download.md)。crop/报告下载与真实部署验收未完成。
+- 共用 120 次/分钟用户限流，Redis 故障不签发；不占写配额，不使用普通元数据读的降级。撤权后禁止新签发，既有 URL 到期前最长 60 秒仍可能有效。沿用 API_UPLOADS_ENABLED 和 API S3 secret；无新增迁移/配置。见 [F4 验收](../08-delivery/21-i02f4-image-download.md)。crop 与真实部署验收仍未完成；报告下载见 [I-02I3 验收](../08-delivery/30-i02-report-download.md)。
 
 ### 5.8 提交巡检项与推理入队（I-02G1）
 

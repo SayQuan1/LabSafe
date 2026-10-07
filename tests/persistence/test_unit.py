@@ -20,10 +20,18 @@ from packages.persistence.schema import (
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_frozen_migration_matches_authoritative_design():
+def test_head_schema_matches_authoritative_design_and_preserves_initial_baseline():
     assert model() == json.loads((ROOT / "contracts/data-model.json").read_text(encoding="utf-8"))
+    baseline = json.loads(MODEL_PATH.read_text(encoding="utf-8"))
+    head = model()
+    for name in ("object_version", "size_bytes"):
+        del head["tables"]["report_exports"]["columns"][name]
+    assert head == baseline
     snapshot = MODEL_PATH.with_suffix(".sql").read_text(encoding="utf-8").strip()
-    assert snapshot == (ROOT / "contracts/database-design.sql").read_text(encoding="utf-8").strip()
+    head_ddl = (ROOT / "contracts/database-design.sql").read_text(encoding="utf-8").strip()
+    additions = "  `object_version` VARCHAR(200) NULL,\n  `size_bytes` BIGINT UNSIGNED NULL,\n"
+    assert head_ddl.count(additions) == 1
+    assert snapshot == head_ddl.replace(additions, "")
 
 
 @pytest.mark.parametrize("environment", ["production", "staging", "", "prod"])

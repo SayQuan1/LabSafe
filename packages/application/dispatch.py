@@ -19,9 +19,10 @@ def transaction(engine):
 
 
 class DispatchPublisher:
-    def __init__(self, engine, transport):
+    def __init__(self, engine, transport, *, report_enabled=False):
         self.engine = engine
         self.transport = transport
+        self.report_enabled = report_enabled
 
     def publish_batch(self, limit=100):
         if type(limit) is not int or not 1 <= limit <= 100:
@@ -30,7 +31,7 @@ class DispatchPublisher:
         for _ in range(limit):
             owner = str(uuid4())
             with transaction(self.engine) as connection:
-                row = dispatch.claim(connection, owner)
+                row = dispatch.claim(connection, owner, report_enabled=self.report_enabled)
             if row is None:
                 break
 
@@ -62,9 +63,9 @@ class DispatchPublisher:
         return published
 
 
-def sweep_dispatch(engine):
+def sweep_dispatch(engine, *, report_enabled=False):
     with transaction(engine) as connection:
-        recovered = dispatch.recover_publications(connection)
+        recovered = dispatch.recover_publications(connection, report_enabled=report_enabled)
     with transaction(engine) as connection:
-        resent = dispatch.redispatch(connection)
+        resent = dispatch.redispatch(connection, report_enabled=report_enabled)
     return recovered, resent
