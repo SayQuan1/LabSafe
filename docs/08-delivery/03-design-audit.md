@@ -20,7 +20,7 @@
 
 ## 2. 具体决策证据
 
-- [模型与数据路线](../04-ai-rules/02-model-data-plan.md)：固定D-FINE-N源提交、四类双向映射、安全微调、RGB直缩放、qmax/无NMS、固定ONNX签名和数值门禁；OCR仍为PP-OCRv4 CPU。
+- [模型与数据路线](../04-ai-rules/02-model-data-plan.md)：固定 D-FINE-N COCO 80 类源提交、官方类别映射、安全加载、RGB直缩放、qmax/无NMS、固定 ONNX 签名和数值门禁；OCR仍为 PP-OCRv6_small ONNX CPU。
 - [分层验收与校准](../07-quality-operations/04-acceptance-policy.md)：开发目标明确，正式批准独立；不给不存在的专家结论盖章。
 - [整改关闭记录](04-remediation-plan.md)：G项逐项结果和原D-01至D-08追踪。
 - [实施任务](01-implementation-plan.md)：直接从只有文档的仓库创建工程，不要求先有完整应用。

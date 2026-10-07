@@ -26,7 +26,7 @@
 | AI | requirements/py311-ai.txt；I-01A 无 Celery、Redis、业务 ORM 或真实模型包 |
 | 共用部分 | common.txt 固定当前直接依赖；inference_protocol 只包含 wire schema、DTO 校验和规范哈希 |
 | Python 版本 | pyproject 要求 >=3.11,<3.12；运行时显式校验 minor；CI 使用 3.11 |
-| 模型 | D-FINE-N、检测 CUDA FP32 建议、PP-OCRv4 CPU 及真实 CPU profile 均不改变 |
+| 模型 | D-FINE-N、检测 CUDA FP32 建议、PP-OCRv6_small ONNX CPU 及真实 CPU profile 均不改变 |
 | 环境安全 | I-01A 仅 dev/test，AI_MODE=mock；生产与 real 启动拒绝 |
 
 FastAPI/Celery 是必需运行依赖，缺失时必须失败，不在应用入口构造兼容外观的假框架。

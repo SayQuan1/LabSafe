@@ -4,21 +4,23 @@
 
 模型输出是观测；FactRevision是可人工修订的解释；Finding是确定规则产生、等待人工确认的候选。模型置信度不是安全严重度。不得从OCR未识别推断安全，也不得从模型结果直接派发整改。
 
-[manifest Schema](../../contracts/model-manifest-v1.json)提供制品、模式、适配器、词典、阈值、校准和评测引用。production必须使用已校准且获得批准的manifest；dev/test允许[模型方案](02-model-data-plan.md)明确标注的联调初值，缺值仍拒绝加载，不临时猜测。bundle有detector/ocr/quality/dictionary各一份、每个SHA逐文件验证。evaluation_passed只是声明，正式validate/publish/activate须按[验收规范](../07-quality-operations/04-acceptance-policy.md)核验真实报告及服务端批准台账。选型和四类项目数据路线已经固定，实测和业务批准属于I/R阶段，不是当前设计必须先产出的结果。
+[manifest Schema](../../contracts/model-manifest-v1.json)提供制品、模式、适配器、词典、阈值、校准和评测引用。production必须使用已校准且获得批准的manifest；dev/test允许[模型方案](02-model-data-plan.md)明确标注的联调初值，缺值仍拒绝加载，不临时猜测。bundle有detector/ocr/quality/dictionary各一份、每个SHA逐文件验证。evaluation_passed只是声明，正式validate/publish/activate须按[验收规范](../07-quality-operations/04-acceptance-policy.md)核验真实报告及服务端批准台账。选型和 COCO 80 类模型路线已经固定，实测和业务批准属于I/R阶段，不是当前设计必须先产出的结果。
 
 ## 2. vision-v1 适配器接口
 
 | 接口 | 输入 | 输出与算法要求 |
 |---|---|---|
 | Quality.evaluate | RGB8 H×W×3 | quality-rgb-lap1-v1：最长边仅缩小到1024、PIL BILINEAR；固定整数灰度和四邻域Laplacian总体方差；精确参数见事实提取规范 |
-| Detector.detect | RGB8直接resize640/除255，NCHW float32；orig_target_sizes=int64[[W,H]] | dfine-n4-rgb-stretch-v1：labels/boxes/scores各300query；每query仅最大logit类别的sigmoid分数、无NMS；0 bottle/1 label/2 shelf/3 cabinet；原图框裁边归一化，全请求最多100结果，详见模型方案 |
-| OCR.recognize | RGB8 label crop | 适配PaddleOCR到有序文本行(text,confidence,quad)，按y再x排序；不得把模型库原始随版本变化的结构透传API |
+| Detector.detect | RGB8直接resize640/除255，pixel_values=NCHW float32 | dfine-coco80-rgb-stretch-v1：实际logits[1,300,80]/pred_boxes[1,300,4]，qmax/sigmoid及cxcywh转换；官方 COCO 0–79 类、无四类压缩、无NMS；保留框裁边归一化，全请求最多100结果，详见模型方案 |
+| OCR.recognize | RGB8原图或明确文字区域；适配层转BGR | PP-OCRv6_small ONNX CPU：DB文字检测、透视裁剪、CTC解码到有序文本行(text,confidence,quad)，按y再x排序；不透传模型原始张量 |
 | Dictionary.resolve | OCR字段、冻结词典 | 规范化NFKC+casefold、空白压缩；优先CAS精确，再alias精确，再规范Levenshtein相似度1-distance/maxlen；降序score再entity_id，top5 |
 | Relations.evaluate | 同图overview的bottle boxes及容器归属 | 中心点落入的最小面积容器，面积并列为未知；同容器时gap/max(widths)≤adjacent_gap_ratio且竖直交长/min(heights)≥0.5为adjacent；无/歧义容器unknown，不从框重叠猜遮挡 |
 
 这是首期要求模型包装器遵守的接口，不声称任意下载的ONNX都天然符合。实际模型不匹配必须增加显式适配转换并评测，不能猜输出张量。quality artifact保存算法/依赖配置，OCR artifact可为包含模型和字典的受控只读包；解包拒绝绝对路径/..和符号链接。具体模型权重及兼容runtime锁文件尚须实物验收。
 
-IRR-06的确定性细节、OCR行到字段及黄金输入见[事实提取规范](03-fact-extraction-contract.md)。该规范补齐当前算法，不更换D-FINE-N/PP-OCRv4，不引入LLM。参考代码是设计工具，不是已实现的服务。
+当前 [CPU 本地检测续批](../08-delivery/32-i-ml01-cpu-detection.md) 已执行真实官方权重。COCO 无 label/shelf/cabinet，因此COCO入口不产生标签OCR、化学实体或容器关系，parent_detection_id=null；OCR续批可独立识别原图文字，尚未将文字绑定到瓶子/化学字段。下述标签/关系算法是待接线要求，不能通过将任意 COCO 类改名为旧四类来填补证据。
+
+IRR-06的确定性细节、OCR行到字段及黄金输入见[事实提取规范](03-fact-extraction-contract.md)。用户在2026-10-07选择PP-OCRv6_small ONNX，替代原PP-OCRv4 CPU路线；D-FINE-N和确定性事实语义保持一致，不引入LLM。实际CPU文字适配见[OCR续批](../08-delivery/33-i-ml01-ocrv6-cpu.md)，行到业务字段/实体关联仍待接线。参考代码是设计工具，不是已实现的服务。
 
 质量未通过比较严格使用blur_score<blur_min、brightness<dark_min、glare_ratio>glare_max；恰等阈值为通过。首期自动quality只输出blur/dark/glare原因；协议occluded/unreadable保留扩展，本期不以没有定义的遮挡模型自动判失败；识别不足通过needs_review保留不确定性。
 

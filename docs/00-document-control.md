@@ -16,7 +16,11 @@
 
 ## 2. 状态与审批
 
+2026-10-07 用户选择PP-OCRv6_small ONNX并提供det/rec资产，替代原PP-OCRv4/Paddle CPU选型；当前CPU、不安装CUDA。ocr_backend及runtime_profile生成契约同步变更，旧v4/paddleocr组合不兼容；不能给历史制品或报告改名复用。文字本地实现与完整业务接线分别验收，见[OCR续批](08-delivery/33-i-ml01-ocrv6-cpu.md)。
+
 “结构校验通过”“设计可编码”“协作者批准”“系统可上线”分别判断。无签署记录不得称已批准。实际模型、依赖兼容性、数据许可、专家规则和性能成绩不可虚构。
+
+2026-10-07 [可重建OCR证据续批](08-delivery/35-i-ml01-rebuildable-ocr-evidence.md)统一真实OCR裁剪到perspective-rgb-v1黑色边界，替代本地旧复制边缘算法；适配器和本地报告升级v2，历史33/34证据保留。RPC/业务引用闭包未改变，不把局部证据基础记作已落库或已批准。
 
 ## 3. 排版和维护
 

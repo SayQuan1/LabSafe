@@ -1,5 +1,6 @@
 """AI, rule, model and queue schemas share the public type conventions."""
 import copy
+from dfine_reference import CLASSES as DFINE_CLASSES
 
 def extend(g):
     globals().update(g)
@@ -25,7 +26,7 @@ def extend(g):
     op('post','/rule-versions','importRuleVersion','RuleVersion','RuleImport','admin',201)
     model('ModelArtifact',{'role':enum('detector','ocr','quality','dictionary'),'object_key':text(1024),'sha256':SHA,'license':text(200),'runtime':text(100)})
     model('Thresholds',{'detection_min':PROB,'ocr_min':PROB,'entity_min':PROB,'blur_min':{'type':'number','minimum':0},'dark_min':PROB,'glare_max':PROB,'adjacent_gap_ratio':{'type':'number','minimum':0,'maximum':2}})
-    model('ModelManifest',{'bundle_id':ID,'version_label':text(64),'pipeline_version':enum('vision-v1'),'dictionary_version_id':ID,'dictionary_sha256':SHA,'git_commit':{'type':'string','pattern':'^[a-f0-9]{40}$'},'dataset_version':text(100),'device_profiles':arr(enum('cpu','cuda'),1,2),'artifacts':arr(ref('ModelArtifact'),4,4),'thresholds':ref('Thresholds'),'input_max_side':integer(512,2048),'detector_backend':enum('onnxruntime'),'ocr_backend':enum('paddleocr'),'evaluation_report_key':text(1024),'evaluation_passed':BOOL})
+    model('ModelManifest',{'bundle_id':ID,'version_label':text(64),'pipeline_version':enum('vision-v1'),'dictionary_version_id':ID,'dictionary_sha256':SHA,'git_commit':{'type':'string','pattern':'^[a-f0-9]{40}$'},'dataset_version':text(100),'device_profiles':arr(enum('cpu','cuda'),1,2),'artifacts':arr(ref('ModelArtifact'),4,4),'thresholds':ref('Thresholds'),'input_max_side':integer(512,2048),'detector_backend':enum('onnxruntime'),'ocr_backend':enum('onnxruntime'),'evaluation_report_key':text(1024),'evaluation_passed':BOOL})
     model('ModelImport',{'manifest':ref('ModelManifest'),'reason':text(2000)})
     op('get','/model-versions/{id}/manifest','getModelManifest','ModelManifest',permission='admin')
     op('post','/model-versions','importModelVersion','ModelVersion','ModelImport','admin',201)
@@ -38,7 +39,7 @@ def extend(g):
     am('InferenceRequest',{'run_id':ID,'attempt_id':ID,'fencing_token':integer(1),'tenant_id':ID,'laboratory_id':ID,'item_id':ID,'submission_revision':integer(1),'model_bundle_id':ID,'model_checksum':SHA,'dictionary_version_id':ID,'dictionary_sha256':SHA,'pipeline_version':enum('vision-v1'),'device_profile':enum('cpu','cuda'),'deadline_at':DT,'request_hash':SHA,'image_refs':arr(ref('ImageRef'),1,3)})
     am('Point',{'x':PROB,'y':PROB})
     am('Quality',{'image_id':ID,'status':enum('pass','needs_retake'),'reasons':arr(enum('blur','dark','glare','occluded','unreadable'),hi=5),'blur_score':{'type':'number','minimum':0},'brightness':PROB,'glare_ratio':PROB})
-    am('Detection',{'detection_id':ID,'image_id':ID,'parent_detection_id':nullable(ID),'type':enum('bottle','label','shelf','cabinet'),'bbox':arr(PROB,4,4),'confidence':PROB})
+    am('Detection',{'detection_id':ID,'image_id':ID,'parent_detection_id':nullable(ID),'class_id':{'type':'integer','minimum':0,'maximum':79},'type':enum(*DFINE_CLASSES),'bbox':arr(PROB,4,4),'confidence':PROB})
     am('CropRecipe',{'crop_id':ID,'image_id':ID,'detection_id':ID,'quad':arr(ref('Point'),4,4),'output_width':integer(1,2048),'output_height':integer(1,2048),'transform_version':enum('perspective-rgb-v1')})
     am('OCRField',{'image_id':ID,'detection_id':ID,'crop_id':ID,'field':enum('name','expiry','production','opened','date_unknown','concentration','hazard_mark'),'raw_text':text(2000,0),'normalized_text':nullable(text(500)),'confidence':PROB})
     am('Candidate',{'entity_id':ID,'canonical_name':text(),'confidence':PROB,'match_method':enum('cas_exact','alias_exact','fuzzy')})

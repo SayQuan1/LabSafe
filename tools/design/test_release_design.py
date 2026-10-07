@@ -10,7 +10,7 @@ def read(name):return json.loads((ROOT/'contracts'/name).read_text(encoding='utf
 def schema_check(name,value):Draft202012Validator(read(name),format_checker=FormatChecker()).validate(value)
 def fixture():
     policy=read('development-acceptance-policy.json');policy.update(policy_id='SYNTHETIC-APPROVED-FOR-UNIT-TEST',status='approved')
-    manifest={'bundle_id':'22222222-2222-4222-8222-222222222222','version_label':'synthetic-unit-test','pipeline_version':'vision-v1','dictionary_version_id':'33333333-3333-4333-8333-333333333333','dictionary_sha256':'a'*64,'git_commit':'a'*40,'dataset_version':'SYNTHETIC-NO-REAL-DATA','device_profiles':['cuda'],'artifacts':[{'role':role,'object_key':'fixtures/'+role+'.json','sha256':digest({'synthetic':role}),'license':'SYNTHETIC TEST ONLY','runtime':'fixture'} for role in ['detector','ocr','quality','dictionary']],'thresholds':{'detection_min':.25,'ocr_min':.6,'entity_min':.9,'blur_min':80,'dark_min':.12,'glare_max':.3,'adjacent_gap_ratio':.25},'input_max_side':640,'detector_backend':'onnxruntime','ocr_backend':'paddleocr','evaluation_report_key':'fixtures/synthetic-evaluation.json','evaluation_passed':True,'purpose':'production','adapter_id':'dfine-n4-rgb-stretch-v1','model_family':'dfine_n','source_ref':'https://github.com/Peterande/D-FINE','source_commit':SOURCE_COMMIT,'runtime_profile':'dfine-cuda-fp32-ocrv4cpu-v1','calibration':{'status':'calibrated','validation_split_sha256':'b'*64,'report_sha256':'c'*64},'evaluation_policy_id':policy['policy_id'],'evaluation_policy_sha256':digest(policy)}
+    manifest={'bundle_id':'22222222-2222-4222-8222-222222222222','version_label':'synthetic-unit-test','pipeline_version':'vision-v1','dictionary_version_id':'33333333-3333-4333-8333-333333333333','dictionary_sha256':'a'*64,'git_commit':'a'*40,'dataset_version':'SYNTHETIC-NO-REAL-DATA','device_profiles':['cuda'],'artifacts':[{'role':role,'object_key':'fixtures/'+role+'.json','sha256':digest({'synthetic':role}),'license':'SYNTHETIC TEST ONLY','runtime':'fixture'} for role in ['detector','ocr','quality','dictionary']],'thresholds':{'detection_min':.25,'ocr_min':.6,'entity_min':.9,'blur_min':80,'dark_min':.12,'glare_max':.3,'adjacent_gap_ratio':.25},'input_max_side':640,'detector_backend':'onnxruntime','ocr_backend':'onnxruntime','evaluation_report_key':'fixtures/synthetic-evaluation.json','evaluation_passed':True,'purpose':'production','adapter_id':'dfine-coco80-rgb-stretch-v1','model_family':'dfine_n','source_ref':'https://github.com/Peterande/D-FINE','source_commit':SOURCE_COMMIT,'runtime_profile':'dfine-cuda-fp32-ocrv6smallcpu-v1','calibration':{'status':'calibrated','validation_split_sha256':'b'*64,'report_sha256':'c'*64},'evaluation_policy_id':policy['policy_id'],'evaluation_policy_sha256':digest(policy)}
     manifest['runtime']={'detector_device':'cuda','ocr_device':'cpu','detector_precision':'fp32','preprocess_id':'dfine-rgb-stretch640-v1','postprocess_id':'dfine-qmax-v1','onnx_opset':16,'runtime_lock_sha256':digest({'synthetic':'runtime-lock'})}
     manifest['content_sha256']=content_digest(manifest)
     measurements=[]
@@ -42,12 +42,15 @@ def run_tests():
     schema_check('model-manifest-v1.json',mock);count+=1
     assert validate_manifest(mock,'test');count+=1
     rejected(lambda:validate_manifest(mock,'production',TENANT,policy,report,registry))
-    for field,value in [('content_sha256','0'*64),('adapter_id','unregistered'),('input_max_side',512),('runtime_profile','dfine-cpu-fp32-ocrv4cpu-v1'),('adapter_id','yolox-tiny4-decoded-v1'),('model_family','yolox_tiny'),('source_commit','b'*40)]:
+    for field,value in [('content_sha256','0'*64),('adapter_id','unregistered'),('input_max_side',512),('runtime_profile','dfine-cpu-fp32-ocrv6smallcpu-v1'),('adapter_id','yolox-tiny4-decoded-v1'),('model_family','yolox_tiny'),('source_commit','b'*40)]:
         bad=copy.deepcopy(manifest);bad[field]=value
         if field!='content_sha256':bad['content_sha256']=content_digest(bad)
         rejected(lambda:validate_manifest(bad,'dev'))
-    cpu=copy.deepcopy(dev);cpu['device_profiles']=['cpu'];cpu['runtime_profile']='dfine-cpu-fp32-ocrv4cpu-v1';cpu['runtime']['detector_device']='cpu';cpu['content_sha256']=content_digest(cpu)
+    cpu=copy.deepcopy(dev);cpu['device_profiles']=['cpu'];cpu['runtime_profile']='dfine-cpu-fp32-ocrv6smallcpu-v1';cpu['runtime']['detector_device']='cpu';cpu['content_sha256']=content_digest(cpu)
     schema_check('model-manifest-v1.json',cpu);assert validate_manifest(cpu,'dev');count+=2
+    for field,value in [('ocr_backend','paddleocr'),('runtime_profile','dfine-cpu-fp32-ocrv4cpu-v1')]:
+        bad=copy.deepcopy(cpu);bad[field]=value;bad['content_sha256']=content_digest(bad)
+        rejected(lambda:validate_manifest(bad,'dev'))
     for key,value in [('detector_device','cpu'),('ocr_device','cuda'),('detector_precision','fp16'),('preprocess_id','letterbox'),('postprocess_id','nms'),('onnx_opset',17),('runtime_lock_sha256','not-a-hash')]:
         bad=copy.deepcopy(manifest);bad['runtime'][key]=value;bad['content_sha256']=content_digest(bad)
         rejected(lambda:validate_manifest(bad,'dev'))

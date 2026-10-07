@@ -2,12 +2,14 @@
 
 决定：IRR-06，2026-09-27。补齐ML-BASE-02现有流程，不改变模型或业务能力。所有算法共享版本和黄金样例；参考为[readiness_reference.py](../../tools/design/readiness_reference.py)，测试为[test_readiness_design.py](../../tools/design/test_readiness_design.py)。这两个文件不是应用实现，纯数值测试不证明真实Pillow/OpenCV/Paddle输出已验证。
 
+2026-10-07实施更新：用户已选择PP-OCRv6_small ONNX CPU；[OCR续批](../08-delivery/33-i-ml01-ocrv6-cpu.md)完成本地文字检测/识别，[联合CPU续批](../08-delivery/34-i-ml01-quality-cpu-pipeline.md)完成下述真实质量像素算法与检测/OCR门禁。字段词法、文字到瓶子/证据闭包和聚合事实仍待接线，不能把本地行报告直接视为OCRField或化学事实。
+
 ## 1. quality-rgb-lap1-v1
 
 1. 输入已按既定流程解码、应用EXIF且去元数据的RGB8分析图；不再旋转或转BGR。
 2. M=max(W,H)。M≤1024不resize；否则w=max(1,(W×1024+floor(M/2))//M)，h同理。Pillow11.3.0、Image.Resampling.BILINEAR、无padding，不放大小图。
 3. 灰度逐像素计算Y=(77R+150G+29B+128)//256。先转uint32防溢出，结果uint8；不使用另一套库默认灰度系数。
-4. Laplacian核为[[0,1,0],[1,-4,1],[0,1,0]]。输入转float64，边界REFLECT_101；宽/高为1时该轴重复唯一像素。等价OpenCV4.10.0.84的Laplacian(ddepth=CV_64F,ksize=1,scale=1,delta=0,borderType=BORDER_REFLECT_101)，不得用CV_8U截负值。
+4. Laplacian核为[[0,1,0],[1,-4,1],[0,1,0]]。输入转float64，边界REFLECT_101；宽/高为1时该轴重复唯一像素。等价OpenCV的Laplacian(ddepth=CV_64F,ksize=1,scale=1,delta=0,borderType=BORDER_REFLECT_101)，不得用CV_8U截负值。本批NumPy实现已与实际OpenCV4.11独立核对照，包括边界和单像素轴；quality执行本身不依赖OpenCV。
 5. blur_score=所有Laplacian像素的总体方差（ddof=0）；brightness=mean(Y)/255；glare_ratio=count(Y≥250)/(w×h)。float64累计，禁止先ROUND。
 6. blur_score<blur_min、brightness<dark_min、glare_ratio>glare_max分别加blur/dark/glare；恰等通过。多原因按上述顺序，任一原因即needs_retake。
 
@@ -23,7 +25,7 @@ overview全部bottle按detection_id排序生成i<j无序对，先检查200对上
 
 ## 3. OCR行的输入与排序
 
-每个label crop按既定PaddleOCR CPU接口得到(text,confidence,quad)，先校验shape、有限confidence∈[0,1]及坐标；未知shape为SCHEMA_MISMATCH，数值损坏MODEL_ERROR。按(min_y,min_x,原返回索引)稳定排序。字段解析只使用文本与该顺序，不将OCR字框当D-FINE新增目标。
+明确的文字/标签区域通过PP-OCRv6_small ONNX CPU适配器得到(text,confidence,quad)，先校验shape、有限confidence∈[0,1]及坐标；未知shape为SCHEMA_MISMATCH，数值损坏MODEL_ERROR。按(min_y,min_x,原返回索引)稳定排序。字段解析只使用文本与该顺序，不将OCR字框当D-FINE新增目标；当前原图文字行尚未绑定业务label/detection/crop引用。[可重建证据续批](../08-delivery/35-i-ml01-rebuildable-ocr-evidence.md)在本地v2报告增加独立文字区域crop_evidence，共享perspective-rgb-v1配方与PNG摘要；识别旋转单独记录并核RGB摘要，不等于已经绑定协议detection_id或生成字段事实。
 
 匹配文本为NFKC+连续空白压缩+trim；英文关键词不区分大小写。raw_text保留原字符串，跨行用单个LF连接，不改OCR原文。normalized_text另按规则生成。所有字符长度按Unicode字符数，不按UTF-8字节。超过现有字段容量立即MODEL_ERROR，不截断后尝试匹配。
 

@@ -13,6 +13,8 @@ python tools/design/validate_specs.py
 
 ## 2. 编码阶段必须落地的测试
 
+[第35批裁剪证据](../08-delivery/35-i-ml01-rebuildable-ocr-evidence.md)已补共享图像算法、9项裁剪验证与真实9区域跨进程重建，含源RGB/PNG/识别像素摘要、竖长区域90°识别旋转及篡改拒绝。此证据仅覆盖AI-09/UP-02的本地图像重建部分；未验证对象写入、唯一键事务、完整RPC证据归属、现场照片准确率或瓶子关联，不关闭整个用例。
+
 下表是待实现的应用验收用例，不虚报已经执行。每例保存输入、关键DB断言、HTTP状态和trace；失败不得仅靠截图解释。
 
 | ID | 前置条件与操作 | 明确预期 |
@@ -28,8 +30,8 @@ python tools/design/validate_specs.py
 | AI-02 | AI繁忙、超时、OOM、子进程被kill | 429/稳定错误；health仍可响应；子进程回收，ready恢复需smoke |
 | AI-03 | CPU任务超过30秒但低于180秒，CUDA超过45秒 | CPU按预算继续；CUDA终止，不存伪成功 |
 | AI-04 | 双图相似瓶、detail来自另一处、OCR日期歧义 | 不跨图合并邻接；越owner拒绝；歧义unknown |
-| AI-05 | COCO类别1..4、空标注、类别0/5、四类训练/评测往返 | 模型标签恰0..3，评测预测反向到1..4；未知拒绝，不创建背景类；COCO头不按前4行复制 |
-| AI-06 | 已训练四类checkpoint，50图含横竖图/红蓝像素/边缘框；PyTorch、ORT CPU/CUDA FP32对照 | RGB/PIL直缩放/除255、W/H顺序正确；无二次坐标变换；全部候选数值与过滤结果符合模型方案容差，不照抄letterbox示例 |
+| AI-05 | 官方 COCO 80 类、空标注、稀疏 category_id、80 类训练/评测往返 | 模型标签恰 0..79，评测预测反向到官方 category_id；未知拒绝，不创建背景类；不按前几行压缩类别 |
+| AI-06 | 官方 COCO checkpoint，50 图含横竖图/红蓝像素/边缘框；PyTorch、ORT CPU/CUDA FP32 对照 | RGB/PIL直缩放/除255、W/H顺序正确；无二次坐标变换；全部候选数值与过滤结果符合模型方案容差 |
 | AI-07 | logits并列、同query多高分、嵌套瓶标签、阈值相等、NaN/Inf、三图100/101结果 | 每query一类并列取小ID；无跨类NMS；等阈值保留；损坏MODEL_ERROR；100可返回、101整次失败不截断 |
 | AI-08 | CUDA不可见、CPU fallback、错误lock/provider、OOM、kill/reload，连续容量请求 | 不伪装CUDA ready；不静默CPU重跑；子进程回收后smoke再就绪；容量/显存符合部署门禁，不改旧run设备 |
 | AI-09 | 小标签、邻瓶标签、容器边界、重复query、无文字/未知日期 | 原图crop可重建；关联歧义unknown并人工复核；规则不因框变更绕过证据；保留CPU OCR配置 |
@@ -61,6 +63,10 @@ python tools/design/validate_specs.py
 | AI-10 | quality黄金像素/resize、OpenCV核等价、原始Paddle行、名称跨行/冲突日期/容器并列 | 精确符合quality-rgb-lap1-v1/ocr-fields-v1及关系规范；不以合成标量测试替代实际图像库对照 |
 
 ## 3. 实施完成定义
+
+本地[质量/联合CPU续批](../08-delivery/34-i-ml01-quality-cpu-pipeline.md)新增17项真实像素/门禁/失败回收测试，CPU45项全部执行；包含实际Pillow resize、NumPy与OpenCV核对照和真实横竖图联合模型smoke。仍未覆盖文字到业务字段/关系、受控对象存储和HTTP集成，AI-09/10不因此整体关闭。
+
+2026-10-07本地CPU OCR实际覆盖见[PP-OCRv6_small续批](../08-delivery/33-i-ml01-ocrv6-cpu.md)：12项新增数值/几何/容量/安全加载/子进程测试、真实合成中英标签与重放已执行。与既有检测CPU回归合计28项，不含现场准确率、Paddle完整黄金对照、化学实体/日期事实或HTTP集成验收。AI-09/10仍须业务证据闭包与完整真实图像对照，不能用三行合成字替代。
 
 每模块PR必须附对应上述测试。集成测试真实MySQL/Redis/MinIO；AI流程可先使用协议mock，但MODEL/EVAL/OPS不接受mock替代。故障注入只在隔离测试环境，不对用户现有数据库执行破坏操作。
 

@@ -20,6 +20,18 @@ ai = [
   "jsonschema==4.23.0",
   "rfc3339-validator==0.1.4",
 ]
+ai-real = [
+  "numpy==2.2.2",
+  "Pillow==11.3.0",
+  "onnxruntime==1.20.1",
+  "opencv-python-headless==4.11.0.86",
+  "pyclipper==1.3.0.post6",
+]
+image-evidence = [
+  "numpy==2.2.2",
+  "Pillow==11.3.0",
+  "opencv-python-headless==4.11.0.86",
+]
 api = [
   "fastapi==0.115.6",
   "pydantic==2.10.5",

@@ -1,0 +1,187 @@
+{
+  "status": "PASS",
+  "executed_at_utc": "2026-10-07T09:49:19.109494+00:00",
+  "input_kind": "synthetic-images",
+  "replay_equal": true,
+  "font_sha256": "3084f1f88369af6bf9989c909024164d953d1e38d08734f05f28ef24b2f9d577",
+  "font_size": 42,
+  "synthetic_ground_truth": [
+    "ETHANOL",
+    "EXP 2027-12-31",
+    "乙醇"
+  ],
+  "result": {
+    "schema_version": "ocrv6-local-v1",
+    "run_id": "11111111-1111-4111-8111-111111111111",
+    "purpose": "development",
+    "is_simulated": false,
+    "device": "cpu",
+    "adapter_id": "ppocrv6-small-db-ctc-cpu-v1",
+    "artifacts": {
+      "det": {
+        "inference.onnx": "d73e0058b7a8086bbd57f3d10b8bcd4ff95363f67e06e2762b5e814fe9c9410e",
+        "inference.yml": "193f435274bf9f0b5f71a929bbfbcf148282df7e633b34e7c373e8f44741b516"
+      },
+      "rec": {
+        "inference.onnx": "5435fd747c9e0efe15a96d0b378d5bd157e9492ed8fd80edf08f30d02fa24634",
+        "inference.yml": "ab078671bb49f06228eadccd34f1bb501e157f7a047095ffb943ba81512c77d1"
+      }
+    },
+    "runtime": {
+      "python": "3.11.4",
+      "platform": "Windows-10-10.0.22000-SP0",
+      "packages": {
+        "onnxruntime": "1.20.1",
+        "numpy": "2.2.2",
+        "Pillow": "11.3.0",
+        "opencv-python-headless": "4.11.0.86",
+        "pyclipper": "1.3.0.post6",
+        "PyYAML": "6.0.2"
+      },
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "intra_op_threads": 2,
+      "inter_op_threads": 1,
+      "execution_mode": "sequential",
+      "det_preprocess": "bgr-imagenet-max960-round32-v1",
+      "det_postprocess": "db-thresh0.2-box0.45-unclip1.4-no-dilation-v1",
+      "rec_preprocess": "bgr-height48-minwidth320-align8-max3200-pad0-v1",
+      "rec_postprocess": "ctc-blank0-deduplicate-append-space-v1",
+      "crop": "quad-perspective-linear-replicate-rotate-tall1.5-v1",
+      "orientation_classifier": false
+    },
+    "runtime_sha256": "46ce797abc34f50b8feaf147bc290215c44f91dc5a6bfd45cc6bbfa9b23c3988",
+    "text_min": 0.6,
+    "review_required": true,
+    "business_capabilities": {
+      "text_recognition": true,
+      "chemical_entities": false,
+      "container_relations": false,
+      "bottle_association": false
+    },
+    "load_and_smoke_ms": 1046,
+    "total_ms": 1375,
+    "images": [
+      {
+        "image_id": "7f7ba051-b056-5812-8d6d-39f4c45676e5",
+        "input_sha256": "61feea98b0dac02425541a52e106da91b403bcdcdf26595bef4bd0bf42846542",
+        "width": 800,
+        "height": 400,
+        "ocr_ms": 94,
+        "lines": []
+      },
+      {
+        "image_id": "b21b9766-2632-5441-a327-94e6874675f4",
+        "input_sha256": "6280607a1e21cd6be7e4a4fa56bcaf93dd02e984660280cbb4c08cf9f0472642",
+        "width": 800,
+        "height": 400,
+        "ocr_ms": 172,
+        "lines": [
+          {
+            "detection_confidence": 0.8343919518514015,
+            "text": "ETHANOL",
+            "confidence": 0.9999117170061383,
+            "quad": [
+              [
+                0.07384230287859825,
+                0.13283208020050125
+              ],
+              [
+                0.32540675844806005,
+                0.13283208020050125
+              ],
+              [
+                0.32540675844806005,
+                0.2631578947368421
+              ],
+              [
+                0.07384230287859825,
+                0.2631578947368421
+              ]
+            ],
+            "line_id": "fd4c4c96-4eb0-500b-81ef-dfe69e78f629",
+            "image_id": "b21b9766-2632-5441-a327-94e6874675f4",
+            "parent_detection_id": null,
+            "uncertain": false
+          },
+          {
+            "detection_confidence": 0.8014122599585988,
+            "text": "EXP 2027-12-31",
+            "confidence": 0.9815721213817596,
+            "quad": [
+              [
+                0.07509386733416772,
+                0.37844611528822053
+              ],
+              [
+                0.47434292866082606,
+                0.37844611528822053
+              ],
+              [
+                0.47434292866082606,
+                0.5162907268170426
+              ],
+              [
+                0.07509386733416772,
+                0.5162907268170426
+              ]
+            ],
+            "line_id": "e6674a19-07b1-572b-9360-f3738b711f87",
+            "image_id": "b21b9766-2632-5441-a327-94e6874675f4",
+            "parent_detection_id": null,
+            "uncertain": false
+          },
+          {
+            "detection_confidence": 0.861659515987743,
+            "text": "乙醇",
+            "confidence": 0.9999733567237854,
+            "quad": [
+              [
+                0.0688360450563204,
+                0.6215538847117794
+              ],
+              [
+                0.18898623279098872,
+                0.6215538847117794
+              ],
+              [
+                0.18898623279098872,
+                0.7844611528822055
+              ],
+              [
+                0.0688360450563204,
+                0.7844611528822055
+              ]
+            ],
+            "line_id": "9850d719-800f-57bd-b2d1-623462b29a24",
+            "image_id": "b21b9766-2632-5441-a327-94e6874675f4",
+            "parent_detection_id": null,
+            "uncertain": false
+          }
+        ]
+      }
+    ]
+  },
+  "provided_files": {
+    "det": {
+      "inference.json": "89240f689a4a77aad75ef55a8df0a15c8e1d4980a327d17e58f24bbadde5aeab",
+      "inference.onnx": "d73e0058b7a8086bbd57f3d10b8bcd4ff95363f67e06e2762b5e814fe9c9410e",
+      "inference.yml": "193f435274bf9f0b5f71a929bbfbcf148282df7e633b34e7c373e8f44741b516",
+      "README.md": "e9403667f0f92055d8ce9e73a2beb1002fc489d9342697db74039eb7178bb5fb"
+    },
+    "rec": {
+      "inference.json": "f0bf53c853937a917affdd74467472167727f8ab0f0f7bded01c4a16c27e46e6",
+      "inference.onnx": "5435fd747c9e0efe15a96d0b378d5bd157e9492ed8fd80edf08f30d02fa24634",
+      "inference.yml": "ab078671bb49f06228eadccd34f1bb501e157f7a047095ffb943ba81512c77d1",
+      "README.md": "7d46dbd183ac09bd5a2e6b4577dcb29240751b1c00eb6813eca308d529f86806"
+    }
+  },
+  "limitations": [
+    "No real-photo accuracy evaluation",
+    "No chemical entity or date facts",
+    "No bottle association or HTTP business RPC",
+    "No orientation classifier",
+    "No Paddle reference comparison or production approval"
+  ]
+}

@@ -75,7 +75,7 @@
         "ocr_backend": {
           "type": "string",
           "enum": [
-            "paddleocr",
+            "onnxruntime",
             "mock"
           ]
         },
@@ -105,7 +105,7 @@
         "adapter_id": {
           "type": "string",
           "enum": [
-            "dfine-n4-rgb-stretch-v1",
+            "dfine-coco80-rgb-stretch-v1",
             "fixture-v1"
           ]
         },
@@ -128,8 +128,8 @@
         "runtime_profile": {
           "type": "string",
           "enum": [
-            "dfine-cpu-fp32-ocrv4cpu-v1",
-            "dfine-cuda-fp32-ocrv4cpu-v1",
+            "dfine-cpu-fp32-ocrv6smallcpu-v1",
+            "dfine-cuda-fp32-ocrv6smallcpu-v1",
             "fixture-v1"
           ]
         },

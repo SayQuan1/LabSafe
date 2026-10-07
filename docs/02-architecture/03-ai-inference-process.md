@@ -10,11 +10,15 @@ AI 是单 Uvicorn worker supervisor + 一个 multiprocessing spawn 计算子进�
 
 AI 只能读授权 analysis/ 对象和只读模型目录，无 MySQL/Redis/业务 ORM/规则依赖。Worker 根据裁剪配方写证据对象。AI 不返回可写 URL、不持有写权限。
 
-模型和数据路线以[固定模型方案](../04-ai-rules/02-model-data-plan.md)为准：AI运行时Python3.11、D-FINE-N四类ONNX，业务同为Python3.11但保留独立依赖环境；RGB直接resize640并除255，qmax/无NMS，不套用其他模型的letterbox。建议生产检测CUDA FP32；OCR保持PP-OCRv4 CPU。APP_ENV/AI_MODE在启动校验；production禁止fixture和未批准bundle，dev/test可用同协议mock进程。/version除purpose/is_simulated外回显adapter_id、runtime_profile、runtime_lock_sha256、detector_device和ocr_device；这些值取实际通过启动校验的加载状态，Worker与受控manifest逐项核对。
+模型和数据路线以[固定模型方案](../04-ai-rules/02-model-data-plan.md)及本批验收为准：AI运行时 Python3.11、官方 D-FINE COCO 80 类 ONNX，业务同为 Python3.11 但保留独立依赖环境；RGB直接resize640并除255，官方输出为 300 queries、qmax/无NMS，协议保留 0–79 `class_id` 和对应 `type`。建议生产检测 CUDA FP32；OCR保持 PP-OCRv6_small ONNX CPU。APP_ENV/AI_MODE 在启动校验；production 禁止 fixture 和未批准 bundle，dev/test 可用同协议 mock 进程。/version 除 purpose/is_simulated 外回显 adapter_id、runtime_profile、runtime_lock_sha256、detector_device 和 ocr_device；这些值取实际通过启动校验的加载状态，Worker 与受控 manifest 逐项核对。
 
-I-01A只交付同协议开发fixture和HTTP进程入口；下面的真实spawn计算子进程、模型加载与故障恢复仍按I-03/I-ML实施，不能将fixture冒充完整supervisor。运行和验收入口见[开发指南](../../DEVELOPMENT.md)。
+I-01A只交付同协议开发fixture和HTTP进程入口；I-ML-01 [CPU 本地检测续批](../08-delivery/32-i-ml01-cpu-detection.md) 已实现一次性spawn、真实模型加载/smoke、1–3图检测和超时回收。当前仅使用CPU，不安装CUDA；HTTP仍为AI_MODE=mock。本地coco80-local-v1报告尚未接受控analysis读取、quality、Worker RPC或事实落库；下面的常驻supervisor、完整流水线与版本激活仍待I-03/I-ML接通。运行和验收入口见[开发指南](../../DEVELOPMENT.md)。
 
 ## 2. 生命周期
+
+[联合CPU续批](../08-delivery/34-i-ml01-quality-cpu-pipeline.md)已实现本地真实质量门禁和同一子进程的检测/OCR顺序执行。全部原图先检查质量，任一失败返回整批needs_retake、跳过模型；quality-only与联合入口使用同一函数。仍未接受控analysis/HTTP，且不符合完整InferenceResult；下述常驻服务生命周期及RPC阶段预算未由本地180秒总期限替代。
+
+2026-10-07 [PP-OCRv6_small CPU续批](../08-delivery/33-i-ml01-ocrv6-cpu.md) 已接独立本地文字检测/识别，原图文字区域不依赖COCO标签类别。当前ocrv6-local-v1行报告保留原文/置信度/quad、无瓶子归属或化学字段；不是完整InferenceResult。后续业务接线须明确OCR文字区域如何纳入证据闭包，不能借用任意COCO类别填充label/detection/crop引用。以下完整流水线中的label关联仍待落实。
 
 ### 静态路由与多版本
 
@@ -80,6 +84,8 @@ HTTP connect=2秒、池等待=1秒、读写取剩余总预算；不能仅靠 soc
 - 裁剪写入失败整个 attempt 失败。未提交对象保留 24h 后作为孤儿清理；只有已提交 derivative 才允许签名访问。
 
 ## 7. 结果落库与恢复
+
+[第35批可重建OCR证据](../08-delivery/35-i-ml01-rebuildable-ocr-evidence.md)已实现packages/image_evidence/perspective.py并接真实OCR本地入口。AI/Worker共用配方重建函数，PNG固定RGB/Pillow compress9、无元数据；记录源RGB/PNG/识别像素摘要。识别的90°旋转单独记录，证据PNG保留原图方向。运行记录含图像依赖版本、OpenCV build摘要、zlib版本，不把同版本号当跨平台字节一致性保证，重建时实际核SHA。独立/联合本地报告升级v2；当前OCR证据属于独立文字区域，不冒充RPC强制detection_id的CropRecipe，Worker写证据与下述提交尚未接通。
 
 先校验 Schema，再核 tenant/run/attempt/token、输入 hash、model/dictionary/pipeline；所有证据 ID 必须在本结果闭包内；父子图、坐标和 relation 归属再做语义检查。不合法为 SCHEMA_MISMATCH，禁止自动补零或改字段。
 

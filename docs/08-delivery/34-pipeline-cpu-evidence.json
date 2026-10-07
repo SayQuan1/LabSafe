@@ -1,0 +1,719 @@
+{
+  "status": "PASS",
+  "executed_at_utc": "2026-10-07T10:02:24.723958+00:00",
+  "input_kind": "synthetic-images",
+  "replay_equal": true,
+  "quality_stage_equal": true,
+  "font_sha256": "3084f1f88369af6bf9989c909024164d953d1e38d08734f05f28ef24b2f9d577",
+  "generation": {
+    "font_size": 42,
+    "background_rgb": [
+      180,
+      180,
+      180
+    ],
+    "origins": [
+      [
+        40,
+        50
+      ],
+      [
+        40,
+        150
+      ],
+      [
+        40,
+        250
+      ]
+    ],
+    "ground_truth": [
+      "ETHANOL",
+      "EXP 2027-12-31",
+      "乙醇"
+    ]
+  },
+  "joint_result": {
+    "schema_version": "cpu-pipeline-local-v1",
+    "pipeline_id": "quality-coco80-ocrv6-cpu-v1",
+    "run_id": "11111111-1111-4111-8111-111111111111",
+    "purpose": "development",
+    "is_simulated": false,
+    "device": "cpu",
+    "outcome": "needs_review",
+    "review_required": true,
+    "models_executed": true,
+    "artifacts": {
+      "detector": {
+        "model_sha256": "0f684f409618ee8a822410e754a29caa817d1aa16283ce89cad936d0a48e2f35",
+        "config_sha256": "a5c7533f3b72be6bb102b93e1b34ca3643af4e0590408a7881543cbb0aa80c4c",
+        "preprocessor_sha256": "cd38cd59999e7a95d68e487fbe5132df3d4e5c32a0836add57e6126ba0c4eaf1"
+      },
+      "ocr": {
+        "det": {
+          "inference.onnx": "d73e0058b7a8086bbd57f3d10b8bcd4ff95363f67e06e2762b5e814fe9c9410e",
+          "inference.yml": "193f435274bf9f0b5f71a929bbfbcf148282df7e633b34e7c373e8f44741b516"
+        },
+        "rec": {
+          "inference.onnx": "5435fd747c9e0efe15a96d0b378d5bd157e9492ed8fd80edf08f30d02fa24634",
+          "inference.yml": "ab078671bb49f06228eadccd34f1bb501e157f7a047095ffb943ba81512c77d1"
+        }
+      }
+    },
+    "runtime": {
+      "python": "3.11.4",
+      "platform": "Windows-10-10.0.22000-SP0",
+      "quality": {
+        "algorithm_id": "quality-rgb-lap1-v1",
+        "packages": {
+          "numpy": "2.2.2",
+          "Pillow": "11.3.0"
+        },
+        "resize": {
+          "max_side": 1024,
+          "interpolation": "Pillow-BILINEAR",
+          "rounding": "integer-half-up",
+          "upscale": false,
+          "padding": false
+        },
+        "gray": {
+          "weights": [
+            77,
+            150,
+            29
+          ],
+          "offset": 128,
+          "divisor": 256,
+          "dtype": "uint32"
+        },
+        "laplacian": {
+          "kernel": [
+            [
+              0,
+              1,
+              0
+            ],
+            [
+              1,
+              -4,
+              1
+            ],
+            [
+              0,
+              1,
+              0
+            ]
+          ],
+          "border": "REFLECT_101",
+          "singleton_axis": "repeat",
+          "dtype": "float64",
+          "variance_ddof": 0
+        },
+        "brightness_divisor": 255,
+        "glare_gray_min": 250,
+        "round_scores": false
+      },
+      "detector": {
+        "adapter_id": "dfine-coco80-rgb-stretch-v1",
+        "providers": [
+          "CPUExecutionProvider"
+        ],
+        "intra_op_threads": 2,
+        "inter_op_threads": 1,
+        "execution_mode": "sequential",
+        "preprocess": "rgb-stretch640-bilinear-rescale255",
+        "postprocess": "qmax-sigmoid-threshold-geometry-no-nms"
+      },
+      "ocr": {
+        "python": "3.11.4",
+        "platform": "Windows-10-10.0.22000-SP0",
+        "packages": {
+          "onnxruntime": "1.20.1",
+          "numpy": "2.2.2",
+          "Pillow": "11.3.0",
+          "opencv-python-headless": "4.11.0.86",
+          "pyclipper": "1.3.0.post6",
+          "PyYAML": "6.0.2"
+        },
+        "providers": [
+          "CPUExecutionProvider"
+        ],
+        "intra_op_threads": 2,
+        "inter_op_threads": 1,
+        "execution_mode": "sequential",
+        "det_preprocess": "bgr-imagenet-max960-round32-v1",
+        "det_postprocess": "db-thresh0.2-box0.45-unclip1.4-no-dilation-v1",
+        "rec_preprocess": "bgr-height48-minwidth320-align8-max3200-pad0-v1",
+        "rec_postprocess": "ctc-blank0-deduplicate-append-space-v1",
+        "crop": "quad-perspective-linear-replicate-rotate-tall1.5-v1",
+        "orientation_classifier": false
+      }
+    },
+    "runtime_sha256": "9ccd1b19bfd3f14fe1bfa737c6d3ff4907341500322d65554969e06c70ee3a55",
+    "config": {
+      "pipeline_id": "quality-coco80-ocrv6-cpu-v1",
+      "detection_min": 0.4,
+      "text_min": 0.6,
+      "quality": {
+        "blur_min": 80.0,
+        "dark_min": 0.12,
+        "glare_max": 0.3
+      },
+      "quality_only": false
+    },
+    "config_sha256": "db272bd1bb4a66c86d8d3646502e8c0bc917641d68a46769a7b0b71fc8793e54",
+    "business_capabilities": {
+      "chemical_entities": false,
+      "container_relations": false,
+      "bottle_association": false,
+      "date_facts": false
+    },
+    "timing_ms": {
+      "quality_ms": 125,
+      "load_and_smoke_ms": 1469,
+      "total_ms": 2329
+    },
+    "images": [
+      {
+        "image_id": "2df60aa4-5a6b-552a-a704-5b4968924005",
+        "input_sha256": "4da941b3daa4ed5ec300d93a63bc2b8536a037fb960441da1c2aee2991b0ecc9",
+        "width": 800,
+        "height": 400,
+        "quality": {
+          "algorithm_id": "quality-rgb-lap1-v1",
+          "analysis_size": [
+            800,
+            400
+          ],
+          "blur_score": 475.6010625,
+          "brightness": 0.6932513725490196,
+          "glare_ratio": 0.0,
+          "passed": true,
+          "reasons": [],
+          "thresholds": {
+            "blur_min": 80.0,
+            "dark_min": 0.12,
+            "glare_max": 0.3
+          }
+        },
+        "inference_executed": true,
+        "detections": [],
+        "lines": [
+          {
+            "detection_confidence": 0.870720693406153,
+            "text": "ETHANOL",
+            "confidence": 0.9998979653630938,
+            "quad": [
+              [
+                0.04881101376720901,
+                0.14285714285714285
+              ],
+              [
+                0.30037546933667086,
+                0.14285714285714285
+              ],
+              [
+                0.30037546933667086,
+                0.2606516290726817
+              ],
+              [
+                0.04881101376720901,
+                0.2606516290726817
+              ]
+            ],
+            "line_id": "c846941b-2c3f-5da5-b3aa-d25955493eb5",
+            "image_id": "2df60aa4-5a6b-552a-a704-5b4968924005",
+            "parent_detection_id": null,
+            "uncertain": false
+          },
+          {
+            "detection_confidence": 0.8324075082385712,
+            "text": "EXP 2027-12-31",
+            "confidence": 0.9998614490032196,
+            "quad": [
+              [
+                0.05131414267834793,
+                0.39097744360902253
+              ],
+              [
+                0.4493116395494368,
+                0.39097744360902253
+              ],
+              [
+                0.4493116395494368,
+                0.5112781954887218
+              ],
+              [
+                0.05131414267834793,
+                0.5112781954887218
+              ]
+            ],
+            "line_id": "48d5ae7f-f5e3-52a8-818e-7f6aaa23c5d2",
+            "image_id": "2df60aa4-5a6b-552a-a704-5b4968924005",
+            "parent_detection_id": null,
+            "uncertain": false
+          },
+          {
+            "detection_confidence": 0.8772694493754435,
+            "text": "乙醇",
+            "confidence": 0.9999695420265198,
+            "quad": [
+              [
+                0.04380475594493116,
+                0.6290726817042607
+              ],
+              [
+                0.1639549436795995,
+                0.6340852130325815
+              ],
+              [
+                0.16270337922403003,
+                0.7819548872180451
+              ],
+              [
+                0.0425531914893617,
+                0.7769423558897243
+              ]
+            ],
+            "line_id": "dad4c17e-f3a9-53e9-9b26-a2cf840577d7",
+            "image_id": "2df60aa4-5a6b-552a-a704-5b4968924005",
+            "parent_detection_id": null,
+            "uncertain": false
+          }
+        ],
+        "detection_ms": 172,
+        "ocr_ms": 171,
+        "detection_diagnostics": {
+          "candidates": 300,
+          "below_threshold": 300,
+          "outside_image": 0,
+          "kept": 0
+        }
+      },
+      {
+        "image_id": "e9f8262b-4474-5ce3-b585-b2039a0cd54f",
+        "input_sha256": "77f0c9ab2bb8728b23f2d1f37ac1382daa87252e280c7ce0cc1d9b77d3c2ca24",
+        "width": 400,
+        "height": 800,
+        "quality": {
+          "algorithm_id": "quality-rgb-lap1-v1",
+          "analysis_size": [
+            400,
+            800
+          ],
+          "blur_score": 475.6010625,
+          "brightness": 0.6932513725490196,
+          "glare_ratio": 0.0,
+          "passed": true,
+          "reasons": [],
+          "thresholds": {
+            "blur_min": 80.0,
+            "dark_min": 0.12,
+            "glare_max": 0.3
+          }
+        },
+        "inference_executed": true,
+        "detections": [],
+        "lines": [
+          {
+            "detection_confidence": 0.8953683316882918,
+            "text": "ETHANOL",
+            "confidence": 0.9998895440782819,
+            "quad": [
+              [
+                0.10025062656641603,
+                0.07259073842302878
+              ],
+              [
+                0.6040100250626567,
+                0.07259073842302878
+              ],
+              [
+                0.6040100250626567,
+                0.12640801001251564
+              ],
+              [
+                0.10025062656641603,
+                0.12640801001251564
+              ]
+            ],
+            "line_id": "a673091c-3e65-5496-a3bf-be9f3cc49b84",
+            "image_id": "e9f8262b-4474-5ce3-b585-b2039a0cd54f",
+            "parent_detection_id": null,
+            "uncertain": false
+          },
+          {
+            "detection_confidence": 0.8778265781584627,
+            "text": "EXP 2027-12-31",
+            "confidence": 0.9996397154671806,
+            "quad": [
+              [
+                0.10275689223057644,
+                0.19774718397997496
+              ],
+              [
+                0.9022556390977443,
+                0.19774718397997496
+              ],
+              [
+                0.9022556390977443,
+                0.2503128911138924
+              ],
+              [
+                0.10275689223057644,
+                0.2503128911138924
+              ]
+            ],
+            "line_id": "eeea39d4-41b1-5766-a9fa-7f779255928e",
+            "image_id": "e9f8262b-4474-5ce3-b585-b2039a0cd54f",
+            "parent_detection_id": null,
+            "uncertain": false
+          },
+          {
+            "detection_confidence": 0.9000362356080175,
+            "text": "乙醇",
+            "confidence": 0.9999749064445496,
+            "quad": [
+              [
+                0.08521303258145363,
+                0.31789737171464333
+              ],
+              [
+                0.3283208020050125,
+                0.31789737171464333
+              ],
+              [
+                0.3283208020050125,
+                0.38423028785982477
+              ],
+              [
+                0.08521303258145363,
+                0.38423028785982477
+              ]
+            ],
+            "line_id": "fe7d26e8-7890-585f-b5bf-49698f2caedf",
+            "image_id": "e9f8262b-4474-5ce3-b585-b2039a0cd54f",
+            "parent_detection_id": null,
+            "uncertain": false
+          }
+        ],
+        "detection_ms": 157,
+        "ocr_ms": 172,
+        "detection_diagnostics": {
+          "candidates": 300,
+          "below_threshold": 300,
+          "outside_image": 0,
+          "kept": 0
+        }
+      }
+    ]
+  },
+  "mixed_retake_result": {
+    "schema_version": "cpu-pipeline-local-v1",
+    "pipeline_id": "quality-coco80-ocrv6-cpu-v1",
+    "run_id": "11111111-1111-4111-8111-111111111111",
+    "purpose": "development",
+    "is_simulated": false,
+    "device": "cpu",
+    "outcome": "needs_retake",
+    "review_required": true,
+    "models_executed": false,
+    "artifacts": {},
+    "runtime": {
+      "python": "3.11.4",
+      "platform": "Windows-10-10.0.22000-SP0",
+      "quality": {
+        "algorithm_id": "quality-rgb-lap1-v1",
+        "packages": {
+          "numpy": "2.2.2",
+          "Pillow": "11.3.0"
+        },
+        "resize": {
+          "max_side": 1024,
+          "interpolation": "Pillow-BILINEAR",
+          "rounding": "integer-half-up",
+          "upscale": false,
+          "padding": false
+        },
+        "gray": {
+          "weights": [
+            77,
+            150,
+            29
+          ],
+          "offset": 128,
+          "divisor": 256,
+          "dtype": "uint32"
+        },
+        "laplacian": {
+          "kernel": [
+            [
+              0,
+              1,
+              0
+            ],
+            [
+              1,
+              -4,
+              1
+            ],
+            [
+              0,
+              1,
+              0
+            ]
+          ],
+          "border": "REFLECT_101",
+          "singleton_axis": "repeat",
+          "dtype": "float64",
+          "variance_ddof": 0
+        },
+        "brightness_divisor": 255,
+        "glare_gray_min": 250,
+        "round_scores": false
+      },
+      "detector": null,
+      "ocr": null
+    },
+    "runtime_sha256": "a7ab179d2dcc1c6eacf4c26ad90cb789c9bae7ed249698de702c08992414def5",
+    "config": {
+      "pipeline_id": "quality-coco80-ocrv6-cpu-v1",
+      "detection_min": 0.4,
+      "text_min": 0.6,
+      "quality": {
+        "blur_min": 80.0,
+        "dark_min": 0.12,
+        "glare_max": 0.3
+      },
+      "quality_only": false
+    },
+    "config_sha256": "db272bd1bb4a66c86d8d3646502e8c0bc917641d68a46769a7b0b71fc8793e54",
+    "business_capabilities": {
+      "chemical_entities": false,
+      "container_relations": false,
+      "bottle_association": false,
+      "date_facts": false
+    },
+    "timing_ms": {
+      "quality_ms": 126,
+      "load_and_smoke_ms": 0,
+      "total_ms": 172
+    },
+    "images": [
+      {
+        "image_id": "2df60aa4-5a6b-552a-a704-5b4968924005",
+        "input_sha256": "4da941b3daa4ed5ec300d93a63bc2b8536a037fb960441da1c2aee2991b0ecc9",
+        "width": 800,
+        "height": 400,
+        "quality": {
+          "algorithm_id": "quality-rgb-lap1-v1",
+          "analysis_size": [
+            800,
+            400
+          ],
+          "blur_score": 475.6010625,
+          "brightness": 0.6932513725490196,
+          "glare_ratio": 0.0,
+          "passed": true,
+          "reasons": [],
+          "thresholds": {
+            "blur_min": 80.0,
+            "dark_min": 0.12,
+            "glare_max": 0.3
+          }
+        },
+        "inference_executed": false,
+        "detections": [],
+        "lines": [],
+        "detection_ms": 0,
+        "ocr_ms": 0
+      },
+      {
+        "image_id": "08912ff1-bc0c-5fd5-91bf-7cb661078cb0",
+        "input_sha256": "ab8f902973f2712311459cf7d2de45d30c4cc4d0333ec867ef0e75d59e020ab3",
+        "width": 800,
+        "height": 400,
+        "quality": {
+          "algorithm_id": "quality-rgb-lap1-v1",
+          "analysis_size": [
+            800,
+            400
+          ],
+          "blur_score": 0.0,
+          "brightness": 0.0,
+          "glare_ratio": 0.0,
+          "passed": false,
+          "reasons": [
+            "blur",
+            "dark"
+          ],
+          "thresholds": {
+            "blur_min": 80.0,
+            "dark_min": 0.12,
+            "glare_max": 0.3
+          }
+        },
+        "inference_executed": false,
+        "detections": [],
+        "lines": [],
+        "detection_ms": 0,
+        "ocr_ms": 0
+      }
+    ]
+  },
+  "quality_only_result": {
+    "schema_version": "cpu-pipeline-local-v1",
+    "pipeline_id": "quality-coco80-ocrv6-cpu-v1",
+    "run_id": "11111111-1111-4111-8111-111111111111",
+    "purpose": "development",
+    "is_simulated": false,
+    "device": "cpu",
+    "outcome": "quality_passed",
+    "review_required": true,
+    "models_executed": false,
+    "artifacts": {},
+    "runtime": {
+      "python": "3.11.4",
+      "platform": "Windows-10-10.0.22000-SP0",
+      "quality": {
+        "algorithm_id": "quality-rgb-lap1-v1",
+        "packages": {
+          "numpy": "2.2.2",
+          "Pillow": "11.3.0"
+        },
+        "resize": {
+          "max_side": 1024,
+          "interpolation": "Pillow-BILINEAR",
+          "rounding": "integer-half-up",
+          "upscale": false,
+          "padding": false
+        },
+        "gray": {
+          "weights": [
+            77,
+            150,
+            29
+          ],
+          "offset": 128,
+          "divisor": 256,
+          "dtype": "uint32"
+        },
+        "laplacian": {
+          "kernel": [
+            [
+              0,
+              1,
+              0
+            ],
+            [
+              1,
+              -4,
+              1
+            ],
+            [
+              0,
+              1,
+              0
+            ]
+          ],
+          "border": "REFLECT_101",
+          "singleton_axis": "repeat",
+          "dtype": "float64",
+          "variance_ddof": 0
+        },
+        "brightness_divisor": 255,
+        "glare_gray_min": 250,
+        "round_scores": false
+      },
+      "detector": null,
+      "ocr": null
+    },
+    "runtime_sha256": "a7ab179d2dcc1c6eacf4c26ad90cb789c9bae7ed249698de702c08992414def5",
+    "config": {
+      "pipeline_id": "quality-coco80-ocrv6-cpu-v1",
+      "detection_min": 0.4,
+      "text_min": 0.6,
+      "quality": {
+        "blur_min": 80.0,
+        "dark_min": 0.12,
+        "glare_max": 0.3
+      },
+      "quality_only": true
+    },
+    "config_sha256": "81d9015a41571243192341fc6778a83d5c51c4096dce76424cfda37c6fe5f67b",
+    "business_capabilities": {
+      "chemical_entities": false,
+      "container_relations": false,
+      "bottle_association": false,
+      "date_facts": false
+    },
+    "timing_ms": {
+      "quality_ms": 109,
+      "load_and_smoke_ms": 0,
+      "total_ms": 188
+    },
+    "images": [
+      {
+        "image_id": "2df60aa4-5a6b-552a-a704-5b4968924005",
+        "input_sha256": "4da941b3daa4ed5ec300d93a63bc2b8536a037fb960441da1c2aee2991b0ecc9",
+        "width": 800,
+        "height": 400,
+        "quality": {
+          "algorithm_id": "quality-rgb-lap1-v1",
+          "analysis_size": [
+            800,
+            400
+          ],
+          "blur_score": 475.6010625,
+          "brightness": 0.6932513725490196,
+          "glare_ratio": 0.0,
+          "passed": true,
+          "reasons": [],
+          "thresholds": {
+            "blur_min": 80.0,
+            "dark_min": 0.12,
+            "glare_max": 0.3
+          }
+        },
+        "inference_executed": false,
+        "detections": [],
+        "lines": [],
+        "detection_ms": 0,
+        "ocr_ms": 0
+      },
+      {
+        "image_id": "e9f8262b-4474-5ce3-b585-b2039a0cd54f",
+        "input_sha256": "77f0c9ab2bb8728b23f2d1f37ac1382daa87252e280c7ce0cc1d9b77d3c2ca24",
+        "width": 400,
+        "height": 800,
+        "quality": {
+          "algorithm_id": "quality-rgb-lap1-v1",
+          "analysis_size": [
+            400,
+            800
+          ],
+          "blur_score": 475.6010625,
+          "brightness": 0.6932513725490196,
+          "glare_ratio": 0.0,
+          "passed": true,
+          "reasons": [],
+          "thresholds": {
+            "blur_min": 80.0,
+            "dark_min": 0.12,
+            "glare_max": 0.3
+          }
+        },
+        "inference_executed": false,
+        "detections": [],
+        "lines": [],
+        "detection_ms": 0,
+        "ocr_ms": 0
+      }
+    ]
+  },
+  "limitations": [
+    "Synthetic engineering smoke, not real-photo accuracy",
+    "No chemical/date facts or bottle association",
+    "No HTTP/Worker RPC",
+    "No production runtime lock, performance approval or CUDA evaluation"
+  ]
+}

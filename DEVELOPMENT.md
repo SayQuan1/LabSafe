@@ -19,7 +19,7 @@ I-02F2 新增 completeUpload/getImage；上传完成受理为 validating，并�
 I-03A1/A2 接通上传验证任务持久调度、租约、围栏及恢复；I-02F3 接通可选 general Worker、真实 Pillow 图像处理与 ready/rejected 事务。
 I-03A3 新增 getJob/listDeadLetters/replayJob 的 validate_image 分支，累计注册 34 个公共业务 API；管理员重放保留固定输入和历史。
 I-02F4 新增 downloadImage，累计注册 35 个公共业务 API；ready 分析图按实验室 READ 下载，原图额外 Admin 与审计；签名固定版本、60 秒。
-已实现整改与CSV报告受理/执行/下载；尚不包含 crop 下载、完整巡检业务 API、其他任务类型/事件 inbox/AI 闭环、训练权重或生产部署；真实 MinIO/IAM/HTTPS 验收仍待完成。
+已实现整改与CSV报告受理/执行/下载；尚不包含 crop 下载、完整巡检业务 API、其他任务类型/事件 inbox/AI 闭环或生产部署；真实 MinIO/IAM/HTTPS 验收仍待完成。官方 D-FINE COCO 80 类 ONNX 适配器已加入 `apps/ai_inference/adapters/dfine.py`，独立于当前 fixture HTTP 服务。
 
 未开启身份 API 时，/ready 只检查 I-01A 进程配置；开启后还检查迁移版本和 Redis 连通性，但仍不是完整系统就绪。开启上传也不会使 /ready 检查真实桶、IAM、签名请求或图像验证。
 所有后端进程和前端构建均拒绝 production；AI_MODE 只接受 mock。
@@ -37,7 +37,7 @@ py -3.11 -m venv .venv-ai
 ~~~
 
 Linux 使用 python3.11 创建环境，并将 Scripts/python.exe 替换为 bin/python。
-不需安装模型、CUDA、数据库驱动到 AI 环境；AI 只安装 common.txt 与测试依赖。
+不需安装模型、CUDA、数据库驱动到 fixture AI 环境；真实模型适配器另用 `requirements/py311-ai-real.txt`，避免 fixture CI 安装模型运行时。
 requirements 是顶层依赖约束，不是完整传递依赖锁或 GPU 兼容性证明。
 
 ## 3. 配置和启动
@@ -82,7 +82,7 @@ AI 监听 127.0.0.1:8001。五个接口均使用 /internal/inference/v1 前缀�
 不再提供 /fixture、裸 /version 或未鉴权的 AI /healthz。
 请求和响应按生成的契约校验，不给 InferenceResult 私加 is_simulated 字段；模拟身份来自 /version，后续由 Worker 固化到业务 run。
 
-AI_ALLOWED_TENANTS 必须是显式 UUID 清单；令牌为至少 32 字节的随机 ASCII 字符串。
+AI_ALLOWED_TENANTS 必须是显式 UUID 清单；令牌为至少 32 字节的随机 ASCII 字符串。真实模型适配器的依赖通过 `pip install -e .[ai,ai-real]` 安装，模型、config 和预处理文件须先按 [I-ML-01 验收](docs/08-delivery/31-i-ml01-official-onnx-80class.md) 核验 SHA；当前 fixture 服务仍保持 `AI_MODE=mock`。
 请求模型/词典版本、实际 fixture 文件 SHA、设备 cpu、request_hash、图片关联与 analysis key 必须匹配。
 fixture 不下载对象或读取图片；质量分数、空事实与阶段耗时均是合成值，不是性能或识别证据。
 
@@ -371,6 +371,80 @@ Worker 在无数据库连接的子进程内从冻结快照生成 CSV 并上传�
 
 I-02I3 已接通 `GET /api/v1/reports/exports/{id}/download`。只有 ready、未过期 CSV 且对象 key/checksum/准确 VersionId/大小证据完整时签发；请求人必须是创建人或完整快照范围的 admin，并在当前事务重新具备每个实验室的 export 权限。签名固定 GET、同源、准确 VersionId 和 60 秒 TTL；不重新生成或读取业务数据，query 参数和跨租户/部分授权请求拒绝。PDF 渲染、完成通知、过期状态转换、精确对象清理、真实存储联调和 UI 仍待后续批次。停用时先停 publisher、排空报告 Worker，再关闭报告开关；保留 schema、对象版本及任务历史，勿在有数据的库执行 downgrade。详见 [报告执行验收](docs/08-delivery/29-i02-report-csv-execution.md) 与 [报告下载验收](docs/08-delivery/30-i02-report-download.md)。
 
+### 3.16 官方 COCO 80 类 CPU 本地检测（I-ML-01）
+
+当前使用 CPU，不安装 CUDA。独立 `.venv-ai` 已安装 Python 3.11.4、onnxruntime 1.20.1、numpy 2.2.2 和 Pillow 11.3.0；CPU 依赖为 `requirements/py311-ai-real.txt`。业务环境保持独立。
+
+~~~powershell
+$env:APP_ENV = 'dev'
+.\.venv-ai\Scripts\python.exe -m apps.ai_inference.detect `
+  --model C:\Users\12847\Desktop\model.onnx `
+  --input C:\path\image1.jpg C:\path\image2.png `
+  --output C:\path\new-detections.json
+~~~
+
+输入换成实际本地路径，支持1–3张PNG/JPEG/WebP；输出父目录需存在、文件需不存在，省略 --output 则写 stdout。默认模型同目录读取 config.json/preprocessor_config.json 并核验 SHA，可用 --config/--preprocessor 指定。默认 --threshold 0.4、--threads 2、--timeout 180，仅 CPUExecutionProvider。阈值是本地开发默认值，尚未现场校准；--run-id 固定 UUID 可复现检测标识。总期限包括子进程启动、模型加载及全部图像，超时回收，任何图失败均不输出部分结果。
+
+本地报告为 coco80-local-v1，包含全部80类、输入/模型/runtime摘要、诊断及耗时；明确需要人工复核，OCR/化学实体/容器关系能力不可用。HTTP 服务仍使用 AI_MODE=mock，本命令尚未接 Worker 或事实落库。完整范围、真实合成图证据和后续任务见 [CPU续批验收](docs/08-delivery/32-i-ml01-cpu-detection.md)。
+
+### 3.17 PP-OCRv6_small ONNX CPU 本地文字识别
+
+用户已选择PP-OCRv6_small。当前det/rec均使用ORT CPU，额外依赖opencv-python-headless4.11.0.86、pyclipper1.3.0.post6已安装到`.venv-ai`，不安装Paddle或CUDA。新环境执行 `python -m pip install -r requirements/py311-ai-real.txt`。
+
+~~~powershell
+$env:APP_ENV = 'dev'
+.\.venv-ai\Scripts\python.exe -m apps.ai_inference.ocr `
+  --det-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_det_onnx `
+  --rec-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_rec_onnx `
+  --input C:/path/label.jpg `
+  --output C:/path/new-ocr.json
+~~~
+
+替换图片及输出路径；支持1–3张本地图像，输出父目录需存在、文件需不存在，省略output写UTF-8 stdout。可选text-min=0.6、threads=2、timeout=180、run-id。四个运行制品核验SHA，字符表来自rec YAML。返回原图文字、置信度与归一化TL/TR/BR/BL四边形，低分文字保留并标uncertain；超过100区域整次失败。使用有界spawn并回收超时子进程，无角度分类器。
+
+此入口输出ocrv6-local-v2开发报告，需要人工复核；未关联COCO瓶子或生成化学实体/到期日，不作为完整HTTP InferenceResult。原始OCR验收见 [OCR续批](docs/08-delivery/33-i-ml01-ocrv6-cpu.md)，v2裁剪证据见[可重建证据续批](docs/08-delivery/35-i-ml01-rebuildable-ocr-evidence.md)。HTTP仍为AI_MODE=mock。
+
+### 3.18 真实质量门禁与联合CPU流水线
+
+在已有CPU环境执行质量检查→D-FINE COCO80→PP-OCRv6_small文字识别：
+
+~~~powershell
+$env:APP_ENV = 'dev'
+.\.venv-ai\Scripts\python.exe -m apps.ai_inference.pipeline `
+  --model C:/Users/12847/Desktop/model.onnx `
+  --det-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_det_onnx `
+  --rec-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_rec_onnx `
+  --input C:/path/overview.jpg C:/path/detail.png `
+  --output C:/path/new-pipeline.json
+.\.venv-ai\Scripts\python.exe -m apps.ai_inference.pipeline `
+  --quality-only --input C:/path/overview.jpg --output C:/path/new-quality.json
+~~~
+
+替换输入/输出路径，支持1–3图、新输出文件，默认blur_min=80/dark_min=0.12/glare_max=0.30（开发阈值）。任一图片质量失败返回整批needs_retake，不加载模型或返回部分检测/OCR；全部通过后各模型加载一次、对原图顺序推理。quality-only无需模型目录，outcome=quality_passed仅表示质量通过；不能据此判断模型ready或业务安全。检查报告outcome，正常补拍评估退出0、技术错误非零退出。默认threads=2/timeout=180，超时回收子进程，仍不安装CUDA。
+
+报告cpu-pipeline-local-v2记录实际质量分数、输入/模型/runtime摘要与执行阶段；最多100检测及100文字区域，超限整次失败。文字未关联瓶子、化学实体或日期事实，必须人工复核。HTTP仍为AI_MODE=mock。质量/联合算法见[第34批](docs/08-delivery/34-i-ml01-quality-cpu-pipeline.md)，v2裁剪证据与当前边界见[第35批](docs/08-delivery/35-i-ml01-rebuildable-ocr-evidence.md)。
+
+### 3.19 OCR可重建裁剪证据
+
+独立OCR和联合入口共用packages/image_evidence/perspective.py。每行crop_evidence记录裁剪配方、独立crop_id、源RGB/PNG/识别像素摘要。PNG保留原图方向；竖长区域的识别90°逆时针旋转单独记录。后续Worker可调用同一函数重建，先核摘要再写PNG；本批未接对象写入或业务落库。以下例子输入必须是与报告一致、已经归一化方向的RGB PNG，路径替换为实际文件：
+
+~~~python
+import json
+import numpy as np
+from PIL import Image
+from packages.image_evidence.perspective import rebuild_ocr_evidence
+
+with open("pipeline.json", encoding="utf-8") as stream:
+    report = json.load(stream)
+metadata = report["images"][0]["lines"][0]["crop_evidence"]
+with Image.open("analysis.png") as image:
+    pixels = np.asarray(image)
+crop = rebuild_ocr_evidence(pixels, metadata)
+# crop.png is ready for a future bounded, fenced object-storage write.
+~~~
+
+当前AI环境已有所需数值依赖；共享依赖独立锁在requirements/py311-image-evidence.txt，未来Worker启用需匹配图像运行环境，且重建SHA必须实际相同。未在业务环境安装NumPy/OpenCV，不改变HTTP fixture依赖隔离。真实三图/9区域跨进程重建和旋转验证见[验收记录](docs/08-delivery/35-i-ml01-rebuildable-ocr-evidence.md)。
+
 ## 4. 验证
 
 根目录、业务环境执行：领域守卫也使用业务环境，不向 AI 环境引入业务授权或持久化依赖。
@@ -381,8 +455,8 @@ I-02I3 已接通 `GET /api/v1/reports/exports/{id}/download`。只有 ready、�
 
 .\.venv-business\Scripts\python.exe -m pytest tests/persistence/test_unit.py --tb=short
 .\.venv-business\Scripts\python.exe -m pytest tests/business tests/domain tests/security -q
-.\.venv-business\Scripts\python.exe -m ruff check apps packages tests tools/database
-.\.venv-business\Scripts\python.exe -m ruff format --check apps packages tests tools/database
+.\.venv-business\Scripts\python.exe -m ruff check apps packages tests tools/database tools/ml
+.\.venv-business\Scripts\python.exe -m ruff format --check apps packages tests tools/database tools/ml
 
 ~~~
 
@@ -391,7 +465,10 @@ AI 环境执行：
 ~~~powershell
 .\.venv-ai\Scripts\python.exe -m unittest discover -s tests/ai -t . -v
 .\.venv-ai\Scripts\python.exe -m unittest discover -s tests/protocol -t . -v
+.\.venv-ai\Scripts\python.exe -m unittest tests.ai.test_dfine_adapter tests.ai.test_cpu_runner tests.ai.test_cpu_pixels tests.ai.test_ocrv6_adapter tests.ai.test_quality_pixels tests.ai.test_pipeline_cpu tests.ai.test_crop_evidence -v
 ~~~
+
+最后一条须在已安装真实CPU依赖的AI环境执行，覆盖真实NumPy/Pillow及子进程恢复；fixture环境缺这些依赖时的跳过不计为通过。真实权重合成图证据可用 `APP_ENV=test`、`python -m tools.ml.smoke_cpu --model C:\Users\12847\Desktop\model.onnx --output docs/08-delivery/32-cpu-inference-evidence.json` 重建，不需要CUDA，也不证明现场照片准确率。
 
 
 I-01A 的业务/AI/协议测试自行在临时目录生成令牌和合成请求，不要求预设 APP_ENV，也不连接 Redis/MySQL/对象存储。
@@ -417,7 +494,7 @@ CI 必须先 --check，不能先生成来掩盖漂移。设计校验不是应用
 
 I-01B 的实际结果与后续边界见 [验收记录](docs/08-delivery/08-i01b-acceptance.md)。I-01C 会话、RBAC、幂等与租户事务实现及验收范围见 [I-01C 验收记录](docs/08-delivery/09-i01c-acceptance.md)。
 
-历史 I-03A1/A2、I-02F3/F4、I-03A3 及截至第26批的工作已通过 PR #10 合并，2026-10-07 已 fetch 核验 origin/main=4e4f8bf。第27–30批整改/CSV报告使用 wsq/i-02-remediation-reports；各批验收中的未提交状态是实施当时的历史记录，当前提交/Push/CI状态以本次PR为准。合并前仍需独立审查；数据库/权限/模型变更由两位协作者共同确认，不自动合并。
+历史 I-03A1/A2、I-02F3/F4、I-03A3 及截至第26批的工作已通过 PR #10 合并，2026-10-07 已 fetch 核验 origin/main=4e4f8bf。第27–30批整改/CSV报告使用 wsq/i-02-remediation-reports；第31–35批 CPU 模型与OCR证据使用 wsq/i-ml01-cpu-evidence，后者以报告分支为PR基线，先合并报告PR再调整其基线到main。各批验收中的未提交状态是实施当时的历史记录，当前提交/Push/CI状态以本次PR为准。合并前仍需独立审查；数据库/权限/模型变更由两位协作者共同确认，不自动合并。
 I-02A 的领域守卫边界见 [领域命令守卫验收](docs/08-delivery/10-i02a-domain-guards.md)；身份 API、事务和历史故障验证见 [I-02B 验收](docs/08-delivery/11-i02b-identity-api.md)。当前 A1/A2/F3/A3/F4 未推送，不能将旧 PR 的 CI 成绩作为新分支已通过。
 I-02C 的角色接口、作用域、版本与会话语义见 [角色 API 验收](docs/08-delivery/12-i02c-role-api.md)。角色请求的 expected_version 来自目标 User.version，laboratory_id 必须显式传 UUID/null；成功改权会撤销目标全部会话，包括操作者修改自身角色时的当前会话。三接口与 I-02B 共用开关和安全请求头，无新增配置。
 I-02D 的接口、事务与本轮会话锁修复见 [基础 API 验收](docs/08-delivery/13-i02d-foundation-api.md)。实施计划的 I-0 表格同步记录本地验证状态，不把未提交工作记作远程 CI 或独立批准。

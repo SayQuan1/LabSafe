@@ -30,5 +30,10 @@
 28. [I-02I1 report/export 快照与任务受理](28-i02-report-export.md)。
 29. [I-02I2 CSV 报告持久执行与对象版本登记](29-i02-report-csv-execution.md)。
 30. [I-02I3 报告下载签发](30-i02-report-download.md)。
+31. [I-ML-01 官方 D-FINE COCO 80 类 ONNX 适配](31-i-ml01-official-onnx-80class.md)。
+32. [I-ML-01 CPU 本地检测续批](32-i-ml01-cpu-detection.md)。
+33. [I-ML-01 PP-OCRv6_small ONNX CPU 续批](33-i-ml01-ocrv6-cpu.md)。
+34. [I-ML-01 真实质量门禁与联合 CPU 流水线](34-i-ml01-quality-cpu-pipeline.md)。
+35. [I-ML-01 可重建 OCR 裁剪证据](35-i-ml01-rebuildable-ocr-evidence.md)。
 
 本页仅导航；现行设计状态见 [文档控制](../00-document-control.md)，不把候选设计视为已经批准。
