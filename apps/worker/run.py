@@ -19,13 +19,16 @@ def main() -> None:
         for name in ("WORKER_IMAGE_VALIDATION_ENABLED", "WORKER_INFERENCE_ENABLED")
         + ("WORKER_RULE_EVALUATION_ENABLED",)
     )
+    queues = ["q.general"] if general else []
+    if os.getenv("WORKER_REPORT_EXPORT_ENABLED", "0") == "1":
+        queues.append("q.reports")
     app.worker_main(
         [
             "worker",
             "--loglevel=INFO",
             "--pool=solo",
             "--concurrency=1",
-            "--queues=q.general" if general else "--queues=celery",
+            "--queues=" + ",".join(queues or ["celery"]),
         ]
     )
 

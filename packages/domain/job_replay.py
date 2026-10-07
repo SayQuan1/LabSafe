@@ -1,4 +1,4 @@
-"""Manual validate_image replay guards; no queue or object calls."""
+"""Manual image/report task replay guards; no queue or object calls."""
 
 from packages.domain.security import Permission, ServiceError, authorize, not_found, require_version
 
@@ -20,7 +20,7 @@ def require_replay(actor, task, current, expected_version):
     if (
         task is None
         or task["tenant_id"] != actor.tenant_id
-        or task["task_type"] != "validate_image"
+        or task["task_type"] not in {"validate_image", "report_export"}
     ):
         raise not_found()
     require_version(task["version"], expected_version)

@@ -5,6 +5,7 @@ import shutil
 import socket
 import subprocess
 import time
+from uuid import uuid4
 
 import pytest
 from alembic import command
@@ -19,6 +20,7 @@ from packages.persistence.cli import migration_config
 from packages.persistence.database import database_engine
 from packages.persistence.schema import verify_schema
 from packages.persistence.security import SessionService
+from tests.persistence.factories import insert
 from tests.persistence.test_security_mysql import create_tenant
 
 
@@ -40,7 +42,37 @@ def database():
     with engine.begin() as connection:
         assert connection.scalar(text("SELECT id FROM user_sentinel")) == 7
         connection.execute(text("DROP TABLE user_sentinel"))
+    command.upgrade(config, "0001_initial")
+    # Verify the additive report migration against a populated old schema.
+    tenant_id, user_id, export_id = str(uuid4()), str(uuid4()), str(uuid4())
+    with engine.begin() as connection:
+        insert(connection, "tenants", id=tenant_id)
+        insert(connection, "users", id=user_id, tenant_id=tenant_id)
+        insert(
+            connection,
+            "report_exports",
+            id=export_id,
+            tenant_id=tenant_id,
+            requested_by=user_id,
+            snapshot='{"preserve":"frozen input"}',
+        )
+        original = dict(
+            connection.execute(text("SELECT * FROM report_exports WHERE id=:id"), {"id": export_id})
+            .mappings()
+            .one()
+        )
     command.upgrade(config, "head")
+    with engine.begin() as connection:
+        upgraded = dict(
+            connection.execute(text("SELECT * FROM report_exports WHERE id=:id"), {"id": export_id})
+            .mappings()
+            .one()
+        )
+        assert {key: upgraded[key] for key in original} == original
+        assert upgraded["object_version"] is upgraded["size_bytes"] is None
+        connection.execute(text("DELETE FROM report_exports WHERE id=:id"), {"id": export_id})
+        connection.execute(text("DELETE FROM users WHERE id=:id"), {"id": user_id})
+        connection.execute(text("DELETE FROM tenants WHERE id=:id"), {"id": tenant_id})
     with engine.connect() as connection:
         report = verify_schema(connection)
         print(json.dumps(report, indent=2))

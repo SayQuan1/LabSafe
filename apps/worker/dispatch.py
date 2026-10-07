@@ -11,6 +11,7 @@ from apps.worker.app.main import create_celery_app
 from packages.application.dispatch import DispatchPublisher, sweep_dispatch
 from packages.application.inference_execution import InferenceExecution
 from packages.application.job_execution import ImageExecution
+from packages.application.report_execution import ReportExecution
 from packages.application.rule_execution import RuleExecution
 from packages.persistence.database import database_engine
 from packages.shared.environment import development_environment
@@ -27,7 +28,7 @@ def send_dispatch(event_id, message):
             "labsafe.tasks.dispatch",
             args=[message],
             task_id=event_id,
-            queue="q.general",
+            queue="q.reports" if message.get("task_type") == "report_export" else "q.general",
             serializer="json",
             retry=False,
             headers={"outbox_event_id": event_id},
@@ -89,7 +90,8 @@ def main():
         raise SystemExit("Set WORKER_DISPATCH_ENABLED=1 for development dispatch")
     logging.basicConfig(level=logging.INFO)
     engine = database_engine()
-    publisher = DispatchPublisher(engine, CeleryDispatchTransport())
+    report_enabled = os.getenv("WORKER_REPORT_EXPORT_ENABLED", "0") == "1"
+    publisher = DispatchPublisher(engine, CeleryDispatchTransport(), report_enabled=report_enabled)
     try:
         while True:
             try:
@@ -100,7 +102,8 @@ def main():
                     expired = ImageExecution(engine).recover_expired()
                     expired += InferenceExecution(engine).recover_expired()
                     expired += RuleExecution(engine).recover_expired()
-                    recovered, resent = sweep_dispatch(engine)
+                    expired += ReportExecution(engine).recover_expired()
+                    recovered, resent = sweep_dispatch(engine, report_enabled=report_enabled)
                     logging.info(
                         "execution_recovered=%d dispatch_recovered=%d redispatched=%d",
                         expired,

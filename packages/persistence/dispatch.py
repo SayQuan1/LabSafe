@@ -39,6 +39,7 @@ def validate_dispatch(message):
         "validate_image",
         "inference_pipeline",
         "rule_evaluation",
+        "report_export",
     }:
         raise ValueError("Unsupported dispatch protocol or task type")
     for name in ("tenant_id", "task_id", "resource_id"):
@@ -79,13 +80,17 @@ def validate_dispatch(message):
             or not 1 <= payload["submission_revision"] <= 2147483647
         ):
             raise ValueError("Invalid inference revision")
-    else:
+    elif message["task_type"] == "rule_evaluation":
         if set(payload) != {"run_id", "fact_revision_id", "rule_bundle_id"}:
             raise ValueError("Invalid rule_evaluation payload")
         for name in ("run_id", "fact_revision_id", "rule_bundle_id"):
             identifier(payload[name])
         if payload["run_id"] != message["resource_id"]:
             raise ValueError("Inconsistent rule evaluation resource")
+    else:
+        if set(payload) != {"export_id"} or payload["export_id"] != message["resource_id"]:
+            raise ValueError("Invalid report_export payload")
+        identifier(payload["export_id"])
     return message
 
 
@@ -98,16 +103,39 @@ def db_now(connection):
     return connection.scalar(text("SELECT UTC_TIMESTAMP(3)"))
 
 
-def claim(connection, owner):
+def _supported(alias, report_enabled, *, outbox=False):
+    if type(report_enabled) is not bool:
+        raise ValueError("Report dispatch flag must be boolean")
+    kind = (
+        f"JSON_UNQUOTE(JSON_EXTRACT({alias}.payload,'$.task_type'))"
+        if outbox
+        else f"{alias}.task_type"
+    )
+    existing = f"{kind} IN ('validate_image','inference_pipeline','rule_evaluation')"
+    if not report_enabled:
+        return existing
+    resource = (
+        f"JSON_UNQUOTE(JSON_EXTRACT({alias}.payload,'$.resource_id'))"
+        if outbox
+        else f"{alias}.resource_id"
+    )
+    return (
+        f"({existing} OR ({kind}='report_export' AND EXISTS ("
+        f"SELECT 1 FROM report_exports e WHERE e.tenant_id={alias}.tenant_id "
+        f"AND e.id={resource} AND e.format='csv')))"
+    )
+
+
+def claim(connection, owner, *, report_enabled=False):
     """Claim just one row so waiting behind slow publishes cannot expire a batch."""
     identifier(owner)
     db_now(connection)
     row = (
         connection.execute(
             text(
-                "SELECT * FROM outbox_events WHERE event_type='TaskDispatch' "
-                "AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.task_type')) "
-                "IN ('validate_image','inference_pipeline','rule_evaluation') "
+                "SELECT o.* FROM outbox_events o WHERE event_type='TaskDispatch' AND "
+                + _supported("o", report_enabled, outbox=True)
+                + " "
                 "AND state='pending' AND available_at<=UTC_TIMESTAMP(3) "
                 "ORDER BY available_at,id LIMIT 1 FOR UPDATE SKIP LOCKED"
             )
@@ -172,16 +200,16 @@ def owned_update(connection, row, owner, operation):
     return True
 
 
-def recover_publications(connection, limit=100):
+def recover_publications(connection, limit=100, *, report_enabled=False):
     require_transaction(connection)
     if type(limit) is not int or not 1 <= limit <= 100:
         raise ValueError("Batch limit must be 1..100")
     rows = (
         connection.execute(
             text(
-                "SELECT id FROM outbox_events WHERE event_type='TaskDispatch' "
-                "AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.task_type')) "
-                "IN ('validate_image','inference_pipeline','rule_evaluation') "
+                "SELECT o.id FROM outbox_events o WHERE event_type='TaskDispatch' AND "
+                + _supported("o", report_enabled, outbox=True)
+                + " "
                 "AND state='leased' AND lease_until<=UTC_TIMESTAMP(3) "
                 "ORDER BY lease_until,id LIMIT :limit FOR UPDATE SKIP LOCKED"
             ),
@@ -202,7 +230,7 @@ def recover_publications(connection, limit=100):
     return len(rows)
 
 
-def redispatch(connection, limit=100):
+def redispatch(connection, limit=100, *, report_enabled=False):
     """Rebuild notices from DB payload, even if the initial event was published.
 
     last_dispatched_at is the time an intent was registered, not a broker ack.
@@ -214,8 +242,7 @@ def redispatch(connection, limit=100):
     rows = (
         connection.execute(
             text(
-                "SELECT * FROM task_runs WHERE task_type IN "
-                "('validate_image','inference_pipeline','rule_evaluation') "
+                "SELECT t.* FROM task_runs t WHERE " + _supported("t", report_enabled) + " "
                 "AND state IN ('ready','retry_wait') AND available_at<=UTC_TIMESTAMP(3) "
                 "AND (last_dispatched_at IS NULL OR "
                 "last_dispatched_at<=UTC_TIMESTAMP(3)-INTERVAL 30 SECOND) "

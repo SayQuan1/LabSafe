@@ -754,6 +754,8 @@ CREATE TABLE `report_exports` (
   `checksum` CHAR(64) NULL,
   `expires_at` DATETIME(3) NULL,
   `last_error_code` VARCHAR(80) NULL,
+  `object_version` VARCHAR(200) NULL,
+  `size_bytes` BIGINT UNSIGNED NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_report_exports_0` (`tenant_id`, `id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;

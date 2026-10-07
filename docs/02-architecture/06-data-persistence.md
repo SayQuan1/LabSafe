@@ -4,6 +4,8 @@
 
 完整列/空值/默认值/索引/唯一键/外键见 [数据字典](../../contracts/data-model.json)，建表顺序与约束见 [设计 DDL](../../contracts/database-design.sql)。生成源 tools/design/data_model.py。目标是 MySQL 8.0.16+、InnoDB、utf8mb4_bin、UTC；不是已经运行过的生产迁移。
 
+I-02I2 新增前向迁移 `0002_report_object_version`：report_exports 增加 nullable object_version VARCHAR(200) 和 size_bytes BIGINT UNSIGNED，既有 key/checksum 与精确版本一起由围栏事务登记。初始 0001 迁移及快照保持冻结；结构检查和 API readiness 要求新 head。对已有报告行的升级保留原字段，新增字段为空，不为历史未登记对象猜测版本。
+
 DDL 先建表再加 FK 以解决 current pointer 环依赖。迁移使用 Alembic，先在空数据库执行并 introspection 对比字典，再测试同租户/跨租户数据；真实数据库未执行前只能报告静态验证。所有连接设置 session time_zone='+00:00'、严格 SQL mode；应用每次更新显式维护 updated_at/version。
 
 ## 2. 核心约束

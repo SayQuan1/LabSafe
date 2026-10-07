@@ -5823,6 +5823,20 @@
           "default_sql": null,
           "description": "",
           "generated_sql": null
+        },
+        "object_version": {
+          "type": "VARCHAR(200)",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
+        },
+        "size_bytes": {
+          "type": "BIGINT UNSIGNED",
+          "nullable": true,
+          "default_sql": null,
+          "description": "",
+          "generated_sql": null
         }
       },
       "primary_key": [

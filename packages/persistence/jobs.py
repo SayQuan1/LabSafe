@@ -1,11 +1,11 @@
-"""Image-job read models and atomic generation replay, using domain-first locks."""
+"""Image/report job read models and atomic replay, using domain-first locks."""
 
 from uuid import UUID, uuid4
 
 from sqlalchemy import text
 
 from packages.domain.security import Permission, authorize, not_found
-from packages.persistence import job_execution
+from packages.persistence import job_execution, reports
 from packages.persistence.dispatch import db_now, decoded, validate_dispatch
 from packages.persistence.foundations import BASE, project
 from packages.persistence.security import append_audit
@@ -17,8 +17,10 @@ FIELDS = (
 )
 COLUMNS = ",".join("job." + name for name in FIELDS.split(","))
 FROM = (
-    "task_runs job JOIN asset_images image ON image.tenant_id=job.tenant_id "
-    "AND image.id=job.resource_id"
+    "task_runs job LEFT JOIN asset_images image ON image.tenant_id=job.tenant_id "
+    "AND image.id=job.resource_id AND job.task_type='validate_image' "
+    "LEFT JOIN report_exports report ON report.tenant_id=job.tenant_id "
+    "AND report.id=job.resource_id AND job.task_type='report_export'"
 )
 
 
@@ -30,11 +32,27 @@ def job_projection(row):
 
 class JobRepository:
     def get(self, connection, actor, job_id):
+        report = (
+            connection.execute(
+                text(
+                    "SELECT job.* "
+                    "FROM task_runs job JOIN report_exports e ON e.tenant_id=job.tenant_id "
+                    "AND e.id=job.resource_id "
+                    "WHERE job.tenant_id=:tenant AND job.id=:id AND job.task_type='report_export'"
+                ),
+                {"tenant": actor.tenant_id, "id": job_id},
+            )
+            .mappings()
+            .first()
+        )
+        if report is not None:
+            reports.get(connection, actor, report["resource_id"])
+            return job_projection(report)
         row = (
             connection.execute(
                 text(
                     f"SELECT {COLUMNS},image.laboratory_id FROM {FROM} WHERE job.tenant_id=:tenant "
-                    "AND job.id=:id AND job.task_type='validate_image'"
+                    "AND job.id=:id AND job.task_type='validate_image' AND image.id IS NOT NULL"
                 ),
                 {"tenant": actor.tenant_id, "id": job_id},
             )
@@ -50,7 +68,8 @@ class JobRepository:
         authorize(actor, Permission.ADMIN)
         params = {"tenant": actor.tenant_id}
         where = (
-            "job.tenant_id=:tenant AND job.task_type='validate_image' "
+            "job.tenant_id=:tenant AND ((job.task_type='validate_image' AND image.id IS NOT NULL) "
+            "OR (job.task_type='report_export' AND report.id IS NOT NULL)) "
             "AND job.state IN ('failed','dead_letter')"
         )
         if laboratory_id is not None:
@@ -62,7 +81,10 @@ class JobRepository:
             if lab is None:
                 raise not_found()
             params["lab"] = laboratory_id
-            where += " AND image.laboratory_id=:lab"
+            where += (
+                " AND (image.laboratory_id=:lab OR "
+                "JSON_CONTAINS(report.filters,JSON_QUOTE(:lab),'$.laboratory_ids'))"
+            )
         total = connection.scalar(text(f"SELECT COUNT(*) FROM {FROM} WHERE {where}"), params)
         rows = connection.execute(
             text(
@@ -81,10 +103,25 @@ class JobRepository:
 
     def replay_source(self, connection, actor, job_id):
         # Same tenant -> owner -> upload -> image -> task order as claim/commit/recover.
+        report = (
+            connection.execute(
+                text(
+                    "SELECT * FROM task_runs WHERE tenant_id=:tenant AND id=:id "
+                    "AND task_type='report_export'"
+                ),
+                {"tenant": actor.tenant_id, "id": job_id},
+            )
+            .mappings()
+            .first()
+        )
+        if report is not None:
+            return reports.replay_source(connection, actor, report)
         return job_execution._load(connection, actor.tenant_id, job_id)
 
     def replay(self, connection, actor, task, reason, request_id):
         now = db_now(connection)
+        if task["task_type"] == "report_export":
+            reports.restore_failed(connection, actor, task["resource_id"], now)
         generation, sequence = task["replay_generation"] + 1, task["dispatch_sequence"] + 1
         version = task["version"] + 1
         message = validate_dispatch(
@@ -93,7 +130,7 @@ class JobRepository:
                 "tenant_id": actor.tenant_id,
                 "trace_id": UUID(request_id).hex,
                 "task_id": task["id"],
-                "task_type": "validate_image",
+                "task_type": task["task_type"],
                 "resource_id": task["resource_id"],
                 "replay_generation": generation,
                 "dispatch_sequence": sequence,

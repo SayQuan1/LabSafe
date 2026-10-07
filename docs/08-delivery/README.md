@@ -26,5 +26,9 @@
 24. [I-03A2规则评估任务执行](24-i03a2-rule-evaluation.md)。
 25. [I-02规则配置管理](25-i02-rule-management.md)。
 26. [I-02事实修订与人工复核](26-i02-review.md)。
+27. [I-02整改任务与证据闭环](27-i02-remediation.md)。
+28. [I-02I1 report/export 快照与任务受理](28-i02-report-export.md)。
+29. [I-02I2 CSV 报告持久执行与对象版本登记](29-i02-report-csv-execution.md)。
+30. [I-02I3 报告下载签发](30-i02-report-download.md)。
 
 本页仅导航；现行设计状态见 [文档控制](../00-document-control.md)，不把候选设计视为已经批准。
