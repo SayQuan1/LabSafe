@@ -13,7 +13,7 @@
 | apps/web | Vue 3、TypeScript、Vite、Element Plus、Vue Router、TanStack Query；Pinia 只管会话/UI | 复制状态机、长期对象凭据 |
 | apps/api | Python 3.11、FastAPI、Pydantic v2；路由调用命令/查询 | 加载模型，外部调用持有 DB 事务 |
 | apps/worker | Celery、Redis、持久任务、AI client、规则、裁剪、导出 | 覆盖历史结果 |
-| apps/ai_inference | Python3.11独立FastAPI supervisor + spawn计算子进程；D-FINE-N四类ONNX/PP-OCRv4 CPU；建议检测CUDA FP32，CPU功能保留；业务API/Worker同为Python3.11，依赖环境仍隔离 | 业务ORM、数据库、Redis、最终风险 |
+| apps/ai_inference | Python3.11独立FastAPI supervisor + spawn计算子进程；官方 D-FINE-N COCO 80 类 ONNX/PP-OCRv6_small ONNX CPU；建议检测CUDA FP32，CPU功能保留；业务API/Worker同为Python3.11，依赖环境仍隔离 | 业务ORM、数据库、Redis、最终风险 |
 | packages/domain | 状态、guards、权限动作、不变事实类型 | 通用 status setter |
 | packages/application | 命令处理器、查询、unit_of_work；每命令唯一入口 | 路由另写业务逻辑 |
 | packages/persistence | SQLAlchemy 2、MySQL 8.0.16+、Alembic、Outbox repository | 省略租户条件 |

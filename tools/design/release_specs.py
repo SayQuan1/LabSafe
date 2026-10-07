@@ -4,15 +4,15 @@ def extend_release(g):
     S['Session']['properties']['environment']=enum('dev','test','production');S['Session']['required'].append('environment')
     S['InferenceRun']['properties']['is_simulated']=BOOL;S['InferenceRun']['required'].append('is_simulated')
     version=OUT['contracts/inference-v1.yaml']['components']['schemas']['Version']
-    version['properties'].update({'purpose':enum('development','evaluation','production'),'is_simulated':BOOL,'adapter_id':enum('dfine-n4-rgb-stretch-v1','fixture-v1'),'runtime_profile':enum('dfine-cpu-fp32-ocrv4cpu-v1','dfine-cuda-fp32-ocrv4cpu-v1','fixture-v1'),'runtime_lock_sha256':SHA,'detector_device':enum('cpu','cuda','mock'),'ocr_device':enum('cpu','mock')})
+    version['properties'].update({'purpose':enum('development','evaluation','production'),'is_simulated':BOOL,'adapter_id':enum('dfine-coco80-rgb-stretch-v1','fixture-v1'),'runtime_profile':enum('dfine-cpu-fp32-ocrv6smallcpu-v1','dfine-cuda-fp32-ocrv6smallcpu-v1','fixture-v1'),'runtime_lock_sha256':SHA,'detector_device':enum('cpu','cuda','mock'),'ocr_device':enum('cpu','mock')})
     version['required']+=['purpose','is_simulated','adapter_id','runtime_profile','runtime_lock_sha256','detector_device','ocr_device']
     model('Calibration',{'status':enum('uncalibrated','calibrated','failed'),'validation_split_sha256':nullable(SHA),'report_sha256':nullable(SHA)})
     model('InferenceRuntime',{'detector_device':enum('cpu','cuda','mock'),'ocr_device':enum('cpu','mock'),'detector_precision':enum('fp32','mock'),'preprocess_id':enum('dfine-rgb-stretch640-v1','fixture-v1'),'postprocess_id':enum('dfine-qmax-v1','fixture-v1'),'onnx_opset':{'type':'integer','enum':[16,0]},'runtime_lock_sha256':SHA})
-    additions={'purpose':enum('development','evaluation','production'),'adapter_id':enum('dfine-n4-rgb-stretch-v1','fixture-v1'),'model_family':enum('dfine_n','mock_fixture'),'source_ref':text(200),'source_commit':{'type':'string','pattern':'^[a-f0-9]{40}$'},'runtime_profile':enum('dfine-cpu-fp32-ocrv4cpu-v1','dfine-cuda-fp32-ocrv4cpu-v1','fixture-v1'),'runtime':ref('InferenceRuntime'),'content_sha256':SHA,'calibration':ref('Calibration'),'evaluation_policy_id':nullable(text(80)),'evaluation_policy_sha256':nullable(SHA),'evaluation_report_sha256':nullable(SHA)}
+    additions={'purpose':enum('development','evaluation','production'),'adapter_id':enum('dfine-coco80-rgb-stretch-v1','fixture-v1'),'model_family':enum('dfine_n','mock_fixture'),'source_ref':text(200),'source_commit':{'type':'string','pattern':'^[a-f0-9]{40}$'},'runtime_profile':enum('dfine-cpu-fp32-ocrv6smallcpu-v1','dfine-cuda-fp32-ocrv6smallcpu-v1','fixture-v1'),'runtime':ref('InferenceRuntime'),'content_sha256':SHA,'calibration':ref('Calibration'),'evaluation_policy_id':nullable(text(80)),'evaluation_policy_sha256':nullable(SHA),'evaluation_report_sha256':nullable(SHA)}
     S['ModelManifest']['properties'].update(additions);S['ModelManifest']['required']+=list(additions)
     S['ModelManifest']['properties']['input_max_side']={'type':'integer','const':640}
     S['ModelManifest']['properties']['detector_backend']=enum('onnxruntime','mock')
-    S['ModelManifest']['properties']['ocr_backend']=enum('paddleocr','mock')
+    S['ModelManifest']['properties']['ocr_backend']=enum('onnxruntime','mock')
     S['ModelManifest']['properties']['evaluation_report_key']=nullable(text(1024))
     metric_ids=['DET-P','DET-R','OCR-NAME','OCR-DATE','ENT-P','ENT-COVER','ENT-OOV','Q-FALSE-REJECT','Q-FALSE-ACCEPT','RISK-P','RISK-R','UNCERTAIN-ROUTING','LATENCY-CUDA']
     model('AcceptanceMetric',{'metric_id':enum(*metric_ids),'groups':arr(text(80),1,10),'unit':enum('ratio','seconds'),'direction':enum('ge','le'),'target':{'type':'number','minimum':0,'maximum':1000000},'min_denominator':integer(1),'min_scene_count':integer(),'min_positive_count':integer(),'min_negative_count':integer()})
@@ -28,7 +28,9 @@ def extend_release(g):
     metrics=[]
     def target(mid,value,direction='ge',minimum=100,scenes=30,groups=None,unit='ratio'):
         metrics.append({'metric_id':mid,'groups':groups or ['overall'],'unit':unit,'direction':direction,'target':value,'min_denominator':minimum,'min_scene_count':scenes,'min_positive_count':200 if mid.startswith('DET-') else (100 if mid.startswith('RISK-') else 0),'min_negative_count':100 if mid.startswith('RISK-') else 0})
-    target('DET-P',.85,minimum=200,groups=['bottle','label','shelf','cabinet']);target('DET-R',.90,minimum=200,groups=['bottle','label','shelf','cabinet'])
+    # Per-class COCO metrics live in the evaluation report; the release contract
+    # keeps one bounded aggregate group to avoid an unbounded policy payload.
+    target('DET-P',.85,minimum=200,groups=['coco80']);target('DET-R',.90,minimum=200,groups=['coco80'])
     target('OCR-NAME',.90,minimum=200);target('OCR-DATE',.95)
     target('ENT-P',.98,minimum=200);target('ENT-COVER',.80,minimum=200);target('ENT-OOV',.99)
     target('Q-FALSE-REJECT',.10,'le');target('Q-FALSE-ACCEPT',.05,'le')

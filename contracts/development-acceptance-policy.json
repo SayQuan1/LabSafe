@@ -7,10 +7,7 @@
     {
       "metric_id": "DET-P",
       "groups": [
-        "bottle",
-        "label",
-        "shelf",
-        "cabinet"
+        "coco80"
       ],
       "unit": "ratio",
       "direction": "ge",
@@ -23,10 +20,7 @@
     {
       "metric_id": "DET-R",
       "groups": [
-        "bottle",
-        "label",
-        "shelf",
-        "cabinet"
+        "coco80"
       ],
       "unit": "ratio",
       "direction": "ge",

@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "executed_at_utc": "2026-09-28T11:19:31.719885+00:00",
+  "executed_at_utc": "2026-10-07T10:23:09.509474+00:00",
   "python_version": "3.11.4",
   "counts": {
     "openapi_specs": 2,
@@ -20,11 +20,11 @@
     "truth_table_cases": 9,
     "rule_semantic_negative_cases": 1,
     "rule_scope_cases": 2,
-    "doc_links": 150,
+    "doc_links": 355,
     "public_operations": 94,
     "traceable_test_ids": 42,
-    "synthetic_release_gate_checks": 41,
-    "synthetic_dfine_semantic_checks": 39,
+    "synthetic_release_gate_checks": 43,
+    "synthetic_dfine_semantic_checks": 112,
     "synthetic_readiness_checks": 148,
     "dfine_doc_tieouts": 6
   },

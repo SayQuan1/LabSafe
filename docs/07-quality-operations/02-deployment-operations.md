@@ -6,9 +6,11 @@
 
 建议试验宿主8逻辑CPU、16GiB内存、500GiB磁盘；这是起步配置非性能保证。初始内存上限api1GiB/general1GiB/inference1GiB/AI6GiB/MySQL3GiB/Redis512MiB/MinIO1GiB，余量留给OS。CUDA显存需求取真实bundle评测，未测不得承诺支持任意GPU；CPU profile并发1。worker-general并发2、worker-inference并发1；任务路由分别命名q.general/q.inference.cpu/q.inference.cuda。
 
+I-02I2 当前 dev/test 实现额外使用独立 q.reports：`WORKER_REPORT_EXPORT_ENABLED=1` 启用 CSV 发布与消费，报告 Worker 为 solo/concurrency=1，可与 general 同进程订阅。未启用报告的 general Worker 不订阅 q.reports。此配置不代表新增生产服务已部署；迁移、启动、存储权限及停用步骤见 [开发指南 3.15](../../DEVELOPMENT.md)。
+
 ### D-FINE-N CUDA部署补充
 
-本期生产建议配置为D-FINE-N/ORT CUDA FP32，OCR仍为PP-OCRv4 CPU。API、数据库、Redis、Worker和规则无需GPU；只有ai-inference获得单GPU访问。首期不增加推理平台、跨主机调度或多模型动态装卸。CPU功能profile仍可开发/评测，CPU生产必须单独批准，不自动继承CUDA性能报告。
+本期生产建议配置为D-FINE-N/ORT CUDA FP32，OCR仍为PP-OCRv6_small ONNX CPU。API、数据库、Redis、Worker和规则无需GPU；只有ai-inference获得单GPU访问。首期不增加推理平台、跨主机调度或多模型动态装卸。CPU功能profile仍可开发/评测，CPU生产必须单独批准，不自动继承CUDA性能报告。
 
 宿主使用Linux x86_64、受支持的NVIDIA驱动和NVIDIA Container Toolkit；驱动须满足实际锁定CUDA/cuDNN镜像要求。I-ML-01记录具体版本及验证命令结果，不从“有GPU”推定可运行。AI镜像只安装一种ORT发行包；CUDA、CPU分别构建并固定digest。GPU型号、总/空闲显存、模型稳定占用和峰值、宿主RAM及驱动写入评测快照。现有AI6GiB是宿主内存起步限制，不是显存保证；实测超限则有记录地调整，不隐瞒OOM。
 

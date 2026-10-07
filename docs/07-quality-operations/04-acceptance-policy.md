@@ -80,6 +80,6 @@ API validate/publish/activate和AI readiness检查匹配条目、两位批准人
 
 机器定义见contracts/acceptance-policy-v1.json、model-evaluation-v1.json及development-acceptance-policy.json。ML-BASE-02的content_sha256对artifacts、pipeline_version、dictionary_version_id、dictionary_sha256、thresholds、input_max_side、adapter_id、model_family、source_ref、source_commit、git_commit、detector_backend、ocr_backend、device_profiles、runtime_profile、runtime这16项的规范JSON计算；源码常量以tools/design/release_reference.py为准。evaluation绑定content_sha256，批准台账再绑定完整manifest hash，避免循环。runtime内含两阶段设备、精度、预后处理、opset、实际runtime-lock文件hash；锁文件变化必须新评测，不能复用同为cuda但内容不同的报告。校准报告是独立sidecar，不打包进4个模型artifact；正式validate从受控制品记录取出并校验report/split hash，不能只看字段非空。CPU/CUDA各有独立runtime_profile和bundle，评测policy的profile必须匹配。
 
-本次检测器变更不降低第3节业务目标；D-FINE的sigmoid分数重新做validation校准，不继承旧检测器阈值的业务含义。正式报告必须包含四类映射/导出一致性、标签裁剪/OCR、瓶与容器关联、重复检测对规则结果的回归。50图PyTorch/ORT对照以及GPU容量/恢复工程门禁见模型方案和部署规范；不得以纯合成39项语义测试替代真实模型验收。
+本次检测器变更不降低第3节业务目标；官方 D-FINE COCO 80 类的分数重新做 validation 校准，不继承旧检测器阈值的业务含义。正式报告必须包含 80 类映射/导出一致性、受支持类别的标签裁剪/OCR、瓶与容器关联、重复检测对规则结果的回归。50 图 PyTorch/ORT 对照以及 GPU 容量/恢复工程门禁见模型方案和部署规范；不得以纯合成语义测试替代真实模型验收。
 
 现在完成：目标、公式、样本下限、校准算法、版本/审批结构和缺失处理均已明确。I阶段编写评测器、采集标注、跑validation和模型；R阶段由实际责任人批准policy/规则并完成test。当前并不要求用户先交付这些尚未开发的产物，也不把它们的待执行状态改写成“设计未完成”。

@@ -153,7 +153,7 @@ def main():
     from test_readiness_design import run_tests as run_readiness_tests
     count('synthetic_readiness_checks',run_readiness_tests())
     model_doc=(ROOT/'docs/04-ai-rules/02-model-data-plan.md').read_text(encoding='utf-8')
-    for token in [ADAPTER_ID,SOURCE_COMMIT,'dfine-cpu-fp32-ocrv4cpu-v1','dfine-cuda-fp32-ocrv4cpu-v1','dfine-qmax-v1','runtime_lock_sha256']:
+    for token in [ADAPTER_ID,SOURCE_COMMIT,'dfine-cpu-fp32-ocrv6smallcpu-v1','dfine-cuda-fp32-ocrv6smallcpu-v1','dfine-qmax-v1','runtime_lock_sha256']:
         check(token in model_doc,'model contract not documented: '+token);count('dfine_doc_tieouts')
     report={'status':'PASS','executed_at_utc':datetime.now(timezone.utc).isoformat(),'python_version':sys.version.split()[0],'counts':COUNT,'limitations':['No application runtime tests','No live MySQL DDL execution','No real model or expert safety-rule evaluation','No GPU, ONNX export or real-image resize validation','No live MinIO IAM, nginx or presigned URL validation','No human approval']}
     rendered=json.dumps(report,ensure_ascii=False,indent=2)+'\n'

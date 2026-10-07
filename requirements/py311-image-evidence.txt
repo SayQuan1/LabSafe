@@ -1,0 +1,4 @@
+# Shared crop reconstruction runtime; no ONNX, CUDA or business dependencies.
+numpy==2.2.2
+Pillow==11.3.0
+opencv-python-headless==4.11.0.86

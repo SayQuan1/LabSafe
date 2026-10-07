@@ -49,10 +49,10 @@ def validate_manifest(manifest,environment,tenant_id=None,policy=None,report=Non
         require(manifest['purpose']=='development' and manifest['model_family']=='mock_fixture' and manifest['runtime_profile']=='fixture-v1','invalid fixture identity')
         require(manifest['detector_backend']=='mock' and manifest['ocr_backend']=='mock','invalid fixture backends')
     else:
-        require(manifest['adapter_id']=='dfine-n4-rgb-stretch-v1' and manifest['model_family']=='dfine_n','unsupported adapter')
+        require(manifest['adapter_id']=='dfine-coco80-rgb-stretch-v1' and manifest['model_family']=='dfine_n','unsupported adapter')
         require(manifest['source_ref']=='https://github.com/Peterande/D-FINE' and manifest['source_commit']==SOURCE_COMMIT,'unsupported source revision')
-        require(manifest['detector_backend']=='onnxruntime' and manifest['ocr_backend']=='paddleocr','unsupported backend')
-        expected={'dfine-cpu-fp32-ocrv4cpu-v1':['cpu'],'dfine-cuda-fp32-ocrv4cpu-v1':['cuda']}
+        require(manifest['detector_backend']=='onnxruntime' and manifest['ocr_backend']=='onnxruntime','unsupported backend')
+        expected={'dfine-cpu-fp32-ocrv6smallcpu-v1':['cpu'],'dfine-cuda-fp32-ocrv6smallcpu-v1':['cuda']}
         require(manifest['runtime_profile'] in expected and manifest['device_profiles']==expected[manifest['runtime_profile']],'device/runtime mismatch')
     if environment!='production':return True
     require(not mock and manifest['purpose']=='production','development bundle cannot run in production')
