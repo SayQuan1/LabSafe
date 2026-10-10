@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from packages.inference_protocol.contract import validate
+from packages.inference_protocol.evidence import validate_closure
 from packages.inference_protocol.hashing import request_hash
 
 
@@ -49,6 +50,7 @@ TECHNICAL_ERRORS = {
 class InferenceImage:
     image_id: str
     object_key: str
+    object_version: str
     sha256: str
     mime_type: str
     role: str
@@ -149,3 +151,7 @@ def validate_result(result: dict, lease: InferenceLease) -> None:
     ]
     if hashes != expected_hashes:
         raise InferenceInvalidResult()
+    try:
+        validate_closure(result, [image.image_id for image in lease.input.images])
+    except ValueError as exc:
+        raise InferenceInvalidResult() from exc

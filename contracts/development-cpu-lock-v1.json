@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://labsafe.local/contracts/DevelopmentCPULock.json",
+  "$ref": "#/$defs/DevelopmentCPULock",
+  "$defs": {
+    "DevelopmentCPULock": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "development"
+          ]
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "cpu-direct-runtime-v1"
+          ]
+        },
+        "python": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "packages": {
+          "type": "object",
+          "properties": {
+            "fastapi": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "pydantic": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "uvicorn": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "PyYAML": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "jsonschema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "rfc3339-validator": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "onnxruntime": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "numpy": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "Pillow": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "opencv-python-headless": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "pyclipper": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          },
+          "required": [
+            "fastapi",
+            "pydantic",
+            "uvicorn",
+            "PyYAML",
+            "jsonschema",
+            "rfc3339-validator",
+            "onnxruntime",
+            "numpy",
+            "Pillow",
+            "opencv-python-headless",
+            "pyclipper"
+          ],
+          "additionalProperties": false
+        },
+        "crop_runtime_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "code_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "purpose",
+        "scope",
+        "python",
+        "platform",
+        "packages",
+        "crop_runtime_sha256",
+        "code_sha256"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

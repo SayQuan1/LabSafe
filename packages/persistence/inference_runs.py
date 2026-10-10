@@ -7,6 +7,7 @@ tenant identifiers are trusted.
 """
 
 import hashlib
+import json
 from uuid import uuid4
 
 from sqlalchemy import text
@@ -105,7 +106,8 @@ def _images(connection, tenant, item_id, selections):
     rows = (
         connection.execute(
             text(
-                "SELECT id,tenant_id,laboratory_id,inspection_item_id,status,analysis_sha256 "
+                "SELECT id,tenant_id,laboratory_id,inspection_item_id,status,analysis_sha256,"
+                "analysis_object_version "
                 "FROM asset_images WHERE tenant_id=:tenant AND inspection_item_id=:item "
                 "ORDER BY id FOR UPDATE"
             ),
@@ -129,7 +131,13 @@ def _images(connection, tenant, item_id, selections):
                 owner_id=item_id,
                 location_id=None,
                 status=row["status"],
-                available=row["analysis_sha256"] is not None,
+                available=(
+                    row["analysis_sha256"] is not None
+                    and isinstance(row["analysis_object_version"], str)
+                    and 1 <= len(row["analysis_object_version"]) <= 200
+                    and row["analysis_object_version"] != "null"
+                    and all(33 <= ord(c) <= 126 for c in row["analysis_object_version"])
+                ),
             )
         )
     return tuple(loaded), tuple(by_id[s.image_id] for s in selections)
@@ -271,7 +279,7 @@ def _projection(connection, tenant, run_id):
             text(
                 "SELECT r.id,r.created_at,r.updated_at,r.version,r.item_id,r.status,r.stage,"
                 "r.submission_revision,r.model_bundle_id,r.dictionary_version_id,r.rule_bundle_id,"
-                "r.pipeline_version,r.result_hash,r.error_code,t.id AS job_id "
+                "r.pipeline_version,r.result_hash,r.result,r.error_code,t.id AS job_id "
                 "FROM inference_runs r JOIN task_runs t ON t.tenant_id=r.tenant_id "
                 "AND t.resource_id=r.id AND t.task_type='inference_pipeline' "
                 "WHERE r.tenant_id=:tenant AND r.id=:id"
@@ -295,10 +303,13 @@ def _projection(connection, tenant, run_id):
         .all()
     )
     value = dict(row)
+    raw_result = value.pop("result")
+    result = json.loads(raw_result) if isinstance(raw_result, str) else (raw_result or {})
+    value["text_regions"] = result.get("text_regions", [])
     value["created_at"] = timestamp(value["created_at"])
     value["updated_at"] = timestamp(value["updated_at"])
     value["input_image_ids"] = list(images)
-    value["is_simulated"] = True
+    value["is_simulated"] = result.get("execution_identity", {}).get("is_simulated", True)
     return value
 
 
@@ -387,8 +398,10 @@ def submit(connection, actor, item_id, expected_version, selections, request_id)
             "image_id": selection.image_id,
             "role": selection.role,
             "parent_image_id": selection.parent_image_id,
+            "analysis_sha256": image["analysis_sha256"],
+            "analysis_object_version": image["analysis_object_version"],
         }
-        for selection in selections
+        for selection, image in zip(selections, image_rows)
     ]
     reference_date = now.date()
     config = {
@@ -429,8 +442,8 @@ def submit(connection, actor, item_id, expected_version, selections, request_id)
         connection.execute(
             text(
                 "INSERT INTO run_images (id,tenant_id,item_id,run_id,image_id,ordinal,role,"
-                "parent_image_id,analysis_sha256) "
-                "VALUES (:id,:tenant,:item,:run,:image,:ordinal,:role,:parent,:sha)"
+                "parent_image_id,analysis_sha256,analysis_object_version) "
+                "VALUES (:id,:tenant,:item,:run,:image,:ordinal,:role,:parent,:sha,:object_version)"
             ),
             {
                 "id": str(uuid4()),
@@ -442,6 +455,7 @@ def submit(connection, actor, item_id, expected_version, selections, request_id)
                 "role": selection.role,
                 "parent": selection.parent_image_id,
                 "sha": image["analysis_sha256"],
+                "object_version": image["analysis_object_version"],
             },
         )
     payload = {

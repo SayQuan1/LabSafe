@@ -9,6 +9,7 @@ from uuid import uuid4
 
 from sqlalchemy import text
 
+from packages.domain.inference_evidence import validate_derivatives
 from packages.domain.inference_execution import (
     RETRYABLE_ERRORS,
     InferenceImage,
@@ -105,6 +106,7 @@ def _load(connection, tenant, task_id):
         connection.execute(
             text(
                 "SELECT ri.image_id,ri.role,ri.parent_image_id,ri.analysis_sha256,"
+                "ri.analysis_object_version AS frozen_object_version,"
                 "ai.analysis_sha256 AS asset_analysis_sha256,ai.analysis_key,"
                 "ai.analysis_object_version,ai.mime_type,ai.status AS image_status,i.location_id "
                 "FROM run_images ri JOIN asset_images ai ON ai.tenant_id=ri.tenant_id "
@@ -124,6 +126,8 @@ def _load(connection, tenant, task_id):
         row["analysis_key"] is None
         or row["analysis_sha256"] != row["asset_analysis_sha256"]
         or row["analysis_object_version"] in (None, "", "null")
+        or row["frozen_object_version"] in (None, "", "null")
+        or row["frozen_object_version"] != row["analysis_object_version"]
         or row["analysis_sha256"] is None
         or row["mime_type"] != "image/png"
         or row["image_status"] != "ready"
@@ -134,6 +138,7 @@ def _load(connection, tenant, task_id):
         InferenceImage(
             image_id=row["image_id"],
             object_key=row["analysis_key"],
+            object_version=row["frozen_object_version"],
             sha256=row["analysis_sha256"],
             mime_type=row["mime_type"],
             role=row["role"],
@@ -396,12 +401,50 @@ def fail(connection, lease, code):
     return True
 
 
-def commit_result(connection, lease, result):
+def commit_result(connection, lease, result, derivatives=()):
     validate_result(result, lease)
+    validate_derivatives(lease, result, derivatives)
     task, current = _load(connection, lease.tenant_id, lease.task_id)
     now = db_now(connection)
     if not _owned(task, lease, now) or current != lease.input:
         raise InferenceLeaseLost()
+    active_attempt = connection.scalar(
+        text(
+            "SELECT id FROM task_attempts WHERE tenant_id=:tenant AND id=:id "
+            "AND task_id=:task AND status='running' AND lease_owner=:owner "
+            "AND fencing_token=:token AND replay_generation=:generation AND attempt=:attempt "
+            "FOR UPDATE"
+        ),
+        {
+            "tenant": lease.tenant_id,
+            "id": lease.attempt_id,
+            "task": lease.task_id,
+            "owner": lease.owner,
+            "token": lease.token,
+            "generation": lease.generation,
+            "attempt": lease.attempt,
+        },
+    )
+    if active_attempt is None:
+        raise InferenceLeaseLost()
+    crops = {row["crop_id"]: row for row in result["crops"]}
+    for artifact in derivatives:
+        connection.execute(
+            text(
+                "INSERT INTO image_derivatives "
+                "(id,tenant_id,run_id,image_id,crop_id,line_id,detection_id,kind,recipe,"
+                "object_key,object_version,sha256,size_bytes) VALUES "
+                "(:id,:tenant,:run,:image_id,:crop_id,:line_id,:detection_id,'crop',:recipe,"
+                ":object_key,:object_version,:sha256,:size_bytes)"
+            ),
+            {
+                "id": str(uuid4()),
+                "tenant": lease.tenant_id,
+                "run": lease.input.run_id,
+                **artifact.__dict__,
+                "recipe": canonical_json(crops[artifact.crop_id]),
+            },
+        )
     outcome = result["outcome"]
     if outcome == "needs_retake":
         run_status, run_stage, item_status = "needs_retake", "done", "needs_retake"
@@ -539,6 +582,8 @@ def commit_result(connection, lease, result):
             "run": lease.input.run_id,
         },
     )
+    if not _owned(task, lease, db_now(connection)):
+        raise InferenceLeaseLost()
     _attempt(connection, task, lease.attempt_id, "succeeded", None, now)
     connection.execute(
         text(

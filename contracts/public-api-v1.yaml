@@ -9574,6 +9574,12 @@ components:
             - RULESET_INVALID
             - LEASE_LOST
           - type: 'null'
+        text_regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TextRegion'
+          minItems: 0
+          maxItems: 100
         is_simulated: *id002
       required:
       - id
@@ -9592,6 +9598,7 @@ components:
       - result_hash
       - job_id
       - error_code
+      - text_regions
       - is_simulated
       additionalProperties: false
     Notification:
@@ -12081,6 +12088,55 @@ components:
       required:
       - data
       - request_id
+      additionalProperties: false
+    Point:
+      type: object
+      properties:
+        x: &id011
+          type: number
+          minimum: 0
+          maximum: 1
+        y: *id011
+      required:
+      - x
+      - y
+      additionalProperties: false
+    TextRegion:
+      type: object
+      properties:
+        line_id: &id012
+          type: string
+          format: uuid
+        image_id: *id012
+        crop_id: *id012
+        detection_id:
+          anyOf:
+          - *id012
+          - type: 'null'
+          description: 'text-bottle-quad80-v1: same-image real COCO bottle (class 39), center inside and >=80% quad
+            intersection area, unique smallest bbox; otherwise null. Worker recomputes. No synthetic label/container.'
+        raw_text:
+          type: string
+          minLength: 0
+          maxLength: 2000
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        quad:
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+          minItems: 4
+          maxItems: 4
+      required:
+      - line_id
+      - image_id
+      - crop_id
+      - detection_id
+      - raw_text
+      - confidence
+      - quad
       additionalProperties: false
     Calibration:
       type: object

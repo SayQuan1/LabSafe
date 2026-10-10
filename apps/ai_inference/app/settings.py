@@ -1,4 +1,4 @@
-"""Explicit, development-only AI startup settings and verified fixture identity."""
+"""Explicit development-only AI startup settings and immutable artifact pins."""
 
 import hashlib
 import json
@@ -22,6 +22,9 @@ class Settings:
     identity: dict[str, Any]
     model_checksum: str
     dictionary_sha256: str
+    mode: str = "mock"
+    bundle: Any = None
+    analysis: Any = field(default=None, repr=False)
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -30,8 +33,9 @@ class Settings:
         environment = os.environ.get("APP_ENV")
         if environment not in {"dev", "test"}:
             raise RuntimeError("I-01A requires APP_ENV=dev or test; production is disabled")
-        if os.environ.get("AI_MODE") != "mock":
-            raise RuntimeError("I-01A implements AI_MODE=mock only; real inference is not ready")
+        mode = os.environ.get("AI_MODE")
+        if mode not in {"mock", "cpu"}:
+            raise RuntimeError("AI_MODE must be mock or cpu")
         if os.environ.get("AI_MAX_INFLIGHT", "1") != "1":
             raise RuntimeError("AI_MAX_INFLIGHT must be 1")
         token_path = os.environ.get("AI_TOKEN_FILE")
@@ -60,6 +64,25 @@ class Settings:
         commit = os.environ.get("SERVICE_COMMIT", "local-development")
         if not 1 <= len(commit) <= 40:
             raise RuntimeError("SERVICE_COMMIT must contain 1 to 40 characters")
+        if mode == "cpu":
+            from apps.ai_inference.analysis import AnalysisSettings
+            from apps.ai_inference.bundle import CPUBundle
+
+            bundle = CPUBundle.from_env(commit)
+            analysis = AnalysisSettings.from_env()
+            return cls(
+                environment,
+                token,
+                allowed_tenants,
+                scenario,
+                delay_ms,
+                bundle.identity,
+                bundle.sha256,
+                bundle.identity["dictionary_sha256"],
+                mode,
+                bundle,
+                analysis,
+            )
         fixture_dir = files("apps.ai_inference").joinpath("fixtures")
         model_bytes = fixture_dir.joinpath("model.json").read_bytes()
         dictionary_bytes = fixture_dir.joinpath("dictionary.json").read_bytes()
@@ -82,6 +105,8 @@ class Settings:
             "runtime_lock_sha256": hashlib.sha256(lock_bytes).hexdigest(),
             "detector_device": "mock",
             "ocr_device": "mock",
+            "model_checksum": hashlib.sha256(model_bytes).hexdigest(),
+            "dictionary_sha256": hashlib.sha256(dictionary_bytes).hexdigest(),
         }
         return cls(
             environment,

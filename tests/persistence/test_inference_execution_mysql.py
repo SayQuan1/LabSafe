@@ -5,9 +5,17 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import text
+from sqlalchemy import event, text
 
+from packages.domain.inference_execution import InferenceLeaseLost
 from packages.persistence import inference_execution, rule_execution
+from tests.evidence_helpers import (
+    add_bottles,
+    add_chemical_context,
+    add_regions,
+    artifacts_for,
+    synthetic_chemical_entries,
+)
 from tests.persistence.factories import insert
 from tests.persistence.test_identity_mysql import ORIGIN, login
 from tests.persistence.test_item_queries_mysql import inspection
@@ -26,7 +34,12 @@ def post(http, session, path, body):
 
 
 @pytest.mark.usefixtures("database")
-def test_inference_claim_and_facts_commit_are_fenced(identity, database):
+@pytest.mark.parametrize("outcome", ["facts_ready", "needs_review"])
+@pytest.mark.parametrize("simulated", [False, True])
+@pytest.mark.parametrize("association", ["none", "unique", "tie"])
+def test_inference_claim_and_facts_commit_are_fenced(
+    identity, database, outcome, simulated, association
+):
     tenant, _, app = identity
     with TestClient(app, base_url=ORIGIN) as http:
         session = login(http, tenant).json()
@@ -80,6 +93,23 @@ def test_inference_claim_and_facts_commit_are_fenced(identity, database):
                 dictionary_version_id=dictionary,
                 status="published",
             )
+            if outcome == "needs_review":
+                synthetic = {
+                    "model_bundle_id": model,
+                    "dictionary_version_id": dictionary,
+                    "ocr_fields": [],
+                    "text_regions": [],
+                    "pipeline_version": "vision-v1",
+                }
+                add_chemical_context(synthetic, synthetic_chemical_entries())
+                connection.execute(
+                    text("UPDATE dictionary_versions SET checksum=:sha WHERE id=:id"),
+                    {"id": dictionary, "sha": synthetic["dictionary_sha256"]},
+                )
+                connection.execute(
+                    text("UPDATE model_versions SET checksum=:sha WHERE id=:id"),
+                    {"id": model, "sha": synthetic["model_checksum"]},
+                )
             rules = insert(connection, "rule_bundles", tenant_id=tenant["tenant_id"])
             rule_set = insert(connection, "rule_sets", tenant_id=tenant["tenant_id"])
             rule_version = insert(
@@ -143,9 +173,32 @@ def test_inference_claim_and_facts_commit_are_fenced(identity, database):
                 {"task": run["job_id"]},
             )
         )
+    # Every rejected mutation is rolled back, so the original frozen run remains executable.
+    for table, value in (("run_images", None), ("asset_images", "analysis-v2")):
+        with database.connect() as connection:
+            transaction = connection.begin()
+            try:
+                connection.execute(
+                    text(
+                        f"UPDATE {table} SET analysis_object_version=:value WHERE "
+                        + ("run_id=:id" if table == "run_images" else "id=:id")
+                    ),
+                    {"value": value, "id": run["id"] if table == "run_images" else image},
+                )
+                assert inference_execution.claim(connection, message, str(uuid4())) is None
+                assert (
+                    connection.scalar(
+                        text("SELECT COUNT(*) FROM task_attempts WHERE task_id=:id"),
+                        {"id": message["task_id"]},
+                    )
+                    == 0
+                )
+            finally:
+                transaction.rollback()
     with database.begin() as connection:
         lease = inference_execution.claim(connection, message, str(uuid4()))
         assert lease is not None
+        assert lease.input.images[0].object_version == "analysis-v1"
         result = {
             "run_id": lease.input.run_id,
             "attempt_id": lease.attempt_id,
@@ -160,7 +213,7 @@ def test_inference_claim_and_facts_commit_are_fenced(identity, database):
             "dictionary_version_id": lease.input.dictionary_version_id,
             "dictionary_sha256": lease.input.dictionary_sha256,
             "pipeline_version": "vision-v1",
-            "outcome": "facts_ready",
+            "outcome": outcome,
             "quality": [
                 {
                     "image_id": image,
@@ -172,6 +225,7 @@ def test_inference_claim_and_facts_commit_are_fenced(identity, database):
                 }
             ],
             "detections": [],
+            "text_regions": [],
             "crops": [],
             "ocr_fields": [],
             "entities": [],
@@ -188,7 +242,130 @@ def test_inference_claim_and_facts_commit_are_fenced(identity, database):
                 )
             },
         }
-        inference_execution.commit_result(connection, lease, result)
+        # Synthetic wire metadata tests persistence/projection, not real numerical execution.
+        from tests.ai.test_supervisor import IDENTITY
+
+        result["execution_identity"] = dict(
+            IDENTITY,
+            is_simulated=simulated,
+            **{
+                key: result[key]
+                for key in (
+                    "model_bundle_id",
+                    "model_checksum",
+                    "dictionary_version_id",
+                    "dictionary_sha256",
+                    "pipeline_version",
+                )
+            },
+        )
+        add_regions(lease, result)
+        if association != "none":
+            add_bottles(lease, result, 1 if association == "unique" else 2)
+        if outcome == "needs_review":
+            result["text_regions"][0].update(raw_text="NAME", confidence=0.9)
+            result["text_regions"][1].update(raw_text="Alpha", confidence=0.3)
+            add_chemical_context(result, synthetic_chemical_entries())
+            result["execution_identity"]["is_simulated"] = simulated
+            assert result["model_checksum"] == lease.input.model_checksum
+            assert result["dictionary_sha256"] == lease.input.dictionary_sha256
+        artifacts = artifacts_for(lease, result)
+        for mutation in (
+            "UPDATE task_runs SET lease_until=UTC_TIMESTAMP(3)-INTERVAL 1 SECOND WHERE id=:id",
+            "UPDATE inference_runs SET status='superseded' WHERE id=:id",
+        ):
+            savepoint = connection.begin_nested()
+            connection.execute(
+                text(mutation),
+                {"id": lease.task_id if "task_runs" in mutation else lease.input.run_id},
+            )
+            with pytest.raises(InferenceLeaseLost):
+                inference_execution.commit_result(connection, lease, result, artifacts)
+            savepoint.rollback()
+        savepoint = connection.begin_nested()
+        connection.execute(
+            text("UPDATE asset_images SET analysis_object_version='analysis-v2' WHERE id=:id"),
+            {"id": image},
+        )
+        with pytest.raises(InferenceLeaseLost):
+            inference_execution.commit_result(connection, lease, result, artifacts)
+        savepoint.rollback()
+
+        # Every derivative and all success state must roll back if a later DB write fails.
+        def fail_after_crops(conn, cursor, statement, parameters, context, many):
+            if statement.startswith("UPDATE inference_runs SET status="):
+                raise RuntimeError("Injected result write fault")
+
+        savepoint = connection.begin_nested()
+        event.listen(connection, "before_cursor_execute", fail_after_crops)
+        try:
+            with pytest.raises(RuntimeError, match="Injected"):
+                inference_execution.commit_result(connection, lease, result, artifacts)
+        finally:
+            event.remove(connection, "before_cursor_execute", fail_after_crops)
+            savepoint.rollback()
+        assert (
+            connection.scalar(
+                text("SELECT COUNT(*) FROM image_derivatives WHERE run_id=:run"),
+                {"run": lease.input.run_id},
+            )
+            == 0
+        )
+        assert (
+            connection.scalar(
+                text("SELECT state FROM task_runs WHERE id=:task"), {"task": lease.task_id}
+            )
+            == "leased"
+        )
+        for field, wrong in (
+            ("owner", str(uuid4())),
+            ("token", lease.token + 1),
+            ("attempt_id", str(uuid4())),
+            ("generation", lease.generation + 1),
+            ("attempt", lease.attempt + 1),
+        ):
+            from dataclasses import replace
+
+            stale = replace(lease, **{field: wrong})
+            stale_result = {**result, "attempt_id": stale.attempt_id, "fencing_token": stale.token}
+            with pytest.raises(InferenceLeaseLost):
+                inference_execution.commit_result(connection, stale, stale_result, artifacts)
+        inference_execution.commit_result(connection, lease, result, artifacts)
+        stored = json.loads(
+            connection.scalar(
+                text("SELECT result FROM inference_runs WHERE id=:run"),
+                {"run": lease.input.run_id},
+            )
+        )
+        assert stored["ocr_fields"] == result["ocr_fields"]
+        assert stored["entities"] == result["entities"]
+        if outcome == "needs_review" and association == "unique":
+            assert len(stored["ocr_fields"][0]["source_lines"]) == 2
+            assert stored["ocr_fields"][0]["confidence"] == 0.3
+            assert stored["entities"][0]["resolution"] == "candidate"
+            assert stored["extraction_context"] == result["extraction_context"]
+        registered = (
+            connection.execute(
+                text(
+                    "SELECT crop_id,line_id,detection_id,object_key,object_version,"
+                    "sha256,size_bytes,recipe "
+                    "FROM image_derivatives WHERE tenant_id=:tenant AND run_id=:run"
+                ),
+                {"tenant": lease.tenant_id, "run": lease.input.run_id},
+            )
+            .mappings()
+            .all()
+        )
+        assert len(registered) == 2
+        expected_detection = (
+            result["detections"][0]["detection_id"] if association == "unique" else None
+        )
+        assert all(
+            row["detection_id"] == expected_detection and row["line_id"] for row in registered
+        )
+        crops_by_id = {row["crop_id"]: row for row in result["crops"]}
+        assert all(json.loads(row["recipe"]) == crops_by_id[row["crop_id"]] for row in registered)
+        assert {row["object_version"] for row in registered} == {artifacts[0].object_version}
         state = connection.execute(
             text(
                 "SELECT r.status AS run_status,r.stage,t.state,i.status AS item_status,"
@@ -199,11 +376,23 @@ def test_inference_claim_and_facts_commit_are_fenced(identity, database):
             ),
             {"run": lease.input.run_id},
         ).one()
-        assert state.run_status == "processing"
-        assert state.stage == "rules"
+        assert state.run_status == ("processing" if outcome == "facts_ready" else "needs_review")
+        assert state.stage == ("rules" if outcome == "facts_ready" else "done")
         assert state.state == "succeeded"
-        assert state.item_status == "processing"
-        assert state.current_fact_revision_id is not None
+        assert state.item_status == ("processing" if outcome == "facts_ready" else "needs_review")
+        assert (state.current_fact_revision_id is not None) == (outcome == "facts_ready")
+        from packages.persistence.inference_runs import _projection
+
+        assert (
+            _projection(connection, lease.tenant_id, lease.input.run_id)["text_regions"]
+            == result["text_regions"]
+        )
+        assert (
+            _projection(connection, lease.tenant_id, lease.input.run_id)["is_simulated"]
+            == simulated
+        )
+    if outcome == "needs_review":
+        return
     with database.connect() as connection:
         rule_message = json.loads(
             connection.scalar(

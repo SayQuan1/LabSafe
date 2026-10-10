@@ -32,6 +32,15 @@ image-evidence = [
   "Pillow==11.3.0",
   "opencv-python-headless==4.11.0.86",
 ]
+worker-evidence = [
+  "numpy==2.2.2",
+  "Pillow==11.3.0",
+  "opencv-python-headless==4.11.0.86",
+  "boto3==1.43.106",
+  "pydantic==2.10.5",
+  "jsonschema==4.23.0",
+  "rfc3339-validator==0.1.4",
+]
 api = [
   "fastapi==0.115.6",
   "pydantic==2.10.5",

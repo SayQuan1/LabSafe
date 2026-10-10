@@ -1,5 +1,6 @@
 """Real MySQL acceptance for the atomic submitInspectionItem command."""
 
+import hashlib
 import json
 from pathlib import Path
 from uuid import uuid4
@@ -9,6 +10,7 @@ from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator, FormatChecker
 from sqlalchemy import text
 
+from packages.shared.json_hash import canonical_json
 from tests.persistence.factories import insert
 from tests.persistence.test_identity_mysql import ORIGIN, login
 from tests.persistence.test_item_queries_mysql import inspection
@@ -103,6 +105,42 @@ def test_submit_creates_pinned_run_task_and_outbox(identity, database):
         assert run["input_image_ids"] == [image_id]
         assert run["model_bundle_id"] == model and run["dictionary_version_id"] == dictionary
         with database.connect() as connection:
+            frozen = (
+                connection.execute(
+                    text(
+                        "SELECT analysis_sha256,analysis_object_version "
+                        "FROM run_images WHERE run_id=:id"
+                    ),
+                    {"id": run["id"]},
+                )
+                .mappings()
+                .one()
+            )
+            assert frozen == {"analysis_sha256": "a" * 64, "analysis_object_version": "analysis-v1"}
+            inputs = (
+                connection.execute(
+                    text("SELECT * FROM inference_runs WHERE id=:id"), {"id": run["id"]}
+                )
+                .mappings()
+                .one()
+            )
+            config = {
+                key: inputs[key]
+                for key in (
+                    "model_bundle_id",
+                    "dictionary_version_id",
+                    "rule_bundle_id",
+                    "pipeline_version",
+                    "device_profile",
+                )
+            }
+            config["reference_date"] = inputs["reference_date"].isoformat()
+            config["images"] = [
+                {"image_id": image_id, "role": "overview", "parent_image_id": None, **frozen}
+            ]
+            assert (
+                inputs["input_hash"] == hashlib.sha256(canonical_json(config).encode()).hexdigest()
+            )
             item = (
                 connection.execute(
                     text("SELECT status,current_run_id FROM inspection_items WHERE id=:id"),

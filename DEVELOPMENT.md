@@ -200,7 +200,7 @@ Redis URL 必须指向操作者已准备好的专用开发实例；上例是变�
 
 登录 `POST /api/v1/auth/login` 发送 JSON `{tenant_code,username,password}` 与 Origin；后续请求携带服务端 session cookie。`GET /api/v1/me` 获取 CSRF；创建用户/禁用/退出还需单个 X-CSRF-Token、Idempotency-Key、Origin 和 application/json。具体字段、响应和错误使用 [公共契约](contracts/public-api-v1.yaml)，不要将密码或 cookie 粘贴到日志/PR。
 
-本阶段不信任 X-Forwarded-For；反代后的 IP 限流按直接 peer 计数，不声称已识别真实终端 IP。身份及基础小请求暂限 64 KiB，模板创建为 2 MiB，以容纳 100 项完整 Unicode/转义正文；这不是未来上传/import 限额。/ready 只核对 `0002_report_object_version` 与 Redis ping；模式结构仍必须用 CLI verify，存储、Worker、完整业务流程和真实模型均未纳入该门禁。生产/远端数据库仍被拒绝。
+本阶段不信任 X-Forwarded-For；反代后的 IP 限流按直接 peer 计数，不声称已识别真实终端 IP。身份及基础小请求暂限 64 KiB，模板创建为 2 MiB，以容纳 100 项完整 Unicode/转义正文；这不是未来上传/import 限额。/ready 只核对 `0004_ocr_evidence` 与 Redis ping；模式结构仍必须用 CLI verify，存储、Worker、完整业务流程和真实模型均未纳入该门禁。生产/远端数据库仍被拒绝。
 
 ### 3.7 组织→模板→巡检草稿（I-02D）
 
@@ -445,6 +445,127 @@ crop = rebuild_ocr_evidence(pixels, metadata)
 
 当前AI环境已有所需数值依赖；共享依赖独立锁在requirements/py311-image-evidence.txt，未来Worker启用需匹配图像运行环境，且重建SHA必须实际相同。未在业务环境安装NumPy/OpenCV，不改变HTTP fixture依赖隔离。真实三图/9区域跨进程重建和旋转验证见[验收记录](docs/08-delivery/35-i-ml01-rebuildable-ocr-evidence.md)。
 
+### 3.20 受控analysis准确对象版本输入
+
+第36批提供可调用 `apps.ai_inference.analysis_cpu.run_analysis_pipeline(options, payload, settings)`，复用联合CPU质量/检测/OCR实现，不新建HTTP路由。options为PipelineOptions；payload为生成契约InferenceRequest；settings用 `AnalysisSettings.from_env()`读取独立AI只读secret和显式allowlist（见.env.example）。在Python主模块的 `if __name__ == '__main__':` 内调用，APP_ENV必须dev/test，device_profile必须cpu。模型目录仍由options显式提供并核制品摘要；请求的bundle字段仅校验结构/请求hash，不代表已经批准或激活该bundle，开发报告不回写业务结果。
+
+每个image_ref必须含Worker提交时冻结的object_version；只读规范analysis路径，准确VersionId GET，核回包版本/大小/MIME/SHA和静态无元数据RGB PNG。保留Worker的image_id及顺序，不再做EXIF、RGB转换或resize。analysis字节上限128MiB与本地原图CLI的12MiB分开；单边10000/40MP一致。下载前重验租户、请求hash与overview/detail图片关系；不读取请求URL、代理环境、AWS credential chain或最新对象版本。
+
+quality-only总预算≤10秒，联合≤180秒，与options及请求deadline取较小值；预算包含spawn/下载/解码/加载/推理。超时回收，无部分报告。输出 `cpu-pipeline-analysis-v1` development报告；仍需人工复核，HTTP仍mock，未接真实Worker RPC、瓶子关联、化学/日期事实或对象写入。
+
+专用dev/test库先upgrade至head，再verify。0003仅追加run_images.analysis_object_version，初始快照与0002不变；ready要求新head。历史run的新列保持NULL，不用asset当前版本回填；旧run不可执行，授权用户重新提交后生成新的冻结输入，保留旧记录。升级Worker/AI必须同步内部新契约，旧无版本请求拒绝。回滚保留新增列和历史，只有明确确认的可丢弃test库允许downgrade。
+
+真实模型工程smoke用合成图和loopback对象存储模拟器，无真实凭据，运行：
+
+~~~powershell
+$env:APP_ENV = 'test'
+.\.venv-ai\Scripts\python.exe -B -m tools.ml.smoke_analysis_cpu `
+  --model C:/Users/12847/Desktop/model.onnx `
+  --det-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_det_onnx `
+  --rec-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_rec_onnx `
+  --font C:/Windows/Fonts/msyh.ttc `
+  --output docs/08-delivery/36-i-ml01-analysis-cpu-smoke.json
+~~~
+
+范围/测试/部署限制见[第36批验收](docs/08-delivery/36-i-ml01-controlled-analysis-input.md)。真实MinIO/IAM/TLS仍须单独验收。
+
+### 3.21 独立OCR文字证据与Worker（第37批）
+
+第37批已接text_regions/crops闭包、固定源版本重建、准确D对象版本及围栏原子登记。仅dev/test，常驻真实CPU HTTP和受控bundle身份待第38批；HTTP默认仍为mock。迁移head为0004_ocr_evidence，历史0001–0003与旧证据保留，回滚策略见[交付](docs/08-delivery/37-i-ml01-worker-ocr-evidence.md)。
+
+单独创建Worker证据环境，不向AI或业务ORM环境安装彼此依赖：
+
+~~~powershell
+.venv-business/Scripts/python.exe -m venv .venv-evidence
+.venv-evidence/Scripts/python.exe -m pip install -r requirements/py311-worker-evidence.txt
+.venv-evidence/Scripts/python.exe -m pip check
+.venv-evidence/Scripts/python.exe -B -m unittest tests.worker.test_evidence_pixels -v
+$env:WORKER_EVIDENCE_PYTHON=(Resolve-Path .venv-evidence/Scripts/python.exe).Path
+~~~
+
+独立进程只需要numpy/Pillow/OpenCV、S3 SDK及协议验证依赖，无ORM/Celery/Redis/ONNX/Paddle/CUDA。Worker使用现有S3_ENDPOINT/S3_PUBLIC_ENDPOINT/PUBLIC_ORIGIN及专用S3_WORKER_ACCESS_KEY_FILE/SECRET_KEY_FILE，不使用AI只读凭据或API存储凭据。使用有版本的labsafe-private桶；源只读准确analysis VersionId、目标限定D路径。20秒包含启动到结果，取消/超时强制kill并回收；IPC输入≤2MiB、artifact输出≤256KiB，错误不输出SDK原文/凭据。任一crop失败仅可能留下未引用孤儿，数据库不部分成功；孤儿清理和crop下载另批实现。
+
+真实模型→Worker工程smoke（合成图、loopback存储，不代表真实IAM/TLS或正式bundle批准）：
+
+~~~powershell
+$env:APP_ENV='test'
+.venv-ai/Scripts/python.exe -B -m tools.ml.smoke_worker_evidence --model C:/Users/12847/Desktop/model.onnx --det-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_det_onnx --rec-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_rec_onnx --font C:/Windows/Fonts/msyh.ttc --evidence-python .venv-evidence/Scripts/python.exe --output docs/08-delivery/37-i-ml01-worker-evidence-smoke.json
+~~~
+
+两图/6区域真实ONNX、三个摘要重建、D准确版本及重放、第二crop失败已验证。数据库围栏与有旧数据004迁移由隔离MySQL用例单独验证；不将这些成绩当作完整生产端到端。
+
+### 3.22 常驻真实CPU HTTP（第38批）
+
+AI_MODE=cpu仅dev/test，沿用官方80类D-FINE和PP-OCRv6_small CPU。使用现有独立.venv-ai真实CPU依赖，.venv-business不安装ORT/OpenCV；.venv-evidence仍独立。先生成本地不可变身份（空输出目录，不覆盖已有bundle）：
+
+~~~powershell
+.venv-ai/Scripts/python.exe -B -m tools.ml.create_cpu_bundle --output .local-secrets/cpu-bundle-38 --model C:/Users/12847/Desktop/model.onnx --det-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_det_onnx --rec-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_rec_onnx --commit local-development
+~~~
+
+输出实际bundle_file/bundle_sha256/artifact_roots/expected_version_file。在AI进程设置AI_MODE=cpu、AI_CPU_BUNDLE_FILE为输出绝对路径、AI_CPU_BUNDLE_SHA256为实际输出、AI_ARTIFACT_ROOTS为输出roots按Windows分号连接（Unix冒号），SERVICE_COMMIT须与生成参数一致；继续设置AI_TOKEN_FILE、AI_ALLOWED_TENANTS、AI_S3_ENDPOINT/AI_S3_ALLOWED_ENDPOINTS及独立只读secret，AI_MAX_INFLIGHT=1。启动：
+
+~~~powershell
+.venv-ai/Scripts/python.exe -B -m apps.ai_inference.run
+~~~
+
+health/ready/version仍需Bearer token；启动120秒内核验、加载和smoke，ready成功后才接请求。version取实际加载身份，未ready时503。每实例固定一个bundle，拒绝请求切模型；繁忙429/同attempt409。失效至少30秒后重载，连续3次加载失败锁not_ready。代码/依赖/资产/配置变化需新lock/bundle与重启，保留旧环境才能恢复旧身份。生成的development bundle不代表完整ModelManifest审批、公共activation或多版本路由实现。
+
+Worker设置AI_EXPECTED_VERSION_FILE为输出expected-version.json绝对路径（只含身份，不含权重路径），AI_INFERENCE_URL来自受控配置，token须匹配；每次RPC核ready/version与pin。将真实bundle/checksum/dictionary绑定到测试任务的既有固定输入，不能让fixture旧任务请求真实服务或伪造activation；公共模型配置完整导入/激活仍待后续实现。保留默认关闭的Worker开关，启用仍按既有dev/test运行指南；Worker沿用第37批独立证据环境与专用可写D凭据，AI只有analysis准确版本读权限。
+
+正式HTTP工程smoke在业务环境编排，AI模型和Worker证据分别在独立环境执行。只用合成图/loopback模拟存储，专用测试host通过文件控制graceful stop，不给生产服务添加控制接口：
+
+~~~powershell
+.venv-business/Scripts/python.exe -B -m tools.ml.smoke_cpu_http --ai-python .venv-ai/Scripts/python.exe --evidence-python .venv-evidence/Scripts/python.exe --model C:/Users/12847/Desktop/model.onnx --det-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_det_onnx --rec-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_rec_onnx --font C:/Windows/Fonts/msyh.ttc --output docs/08-delivery/38-i-ml01-cpu-http-smoke.json
+~~~
+
+smoke生成临时bundle并在结束后清理，只保留成绩摘要；重新运行会生成新UUID/SHA，不能把成绩内旧pin当作持久配置。运行回滚、验证与未覆盖范围见[第38批](docs/08-delivery/38-i-ml01-resident-cpu-http.md)。真实HTTP仍needs_review，不替代字段/词典/日期/容器事实或生产批准。
+
+### 3.23 文字与真实bottle关联（第39批）
+
+联合CPU加入text-bottle-quad80-v1：同图COCO bottle（class39）、文字中心/实际quad交面积≥80%、唯一最小瓶框；无候选/并列NULL。不伪造label/shelf/cabinet，OCR原文/置信度、line/crop ID及三个摘要保留。Worker重算全部关联，包括NULL，错误框或伪关联在读取/写入存储前拒绝；runs仍needs_review，无化学/日期字段。
+
+本地联合报告升级v3，非quality-only成功时bottle_association能力为true，其余语义仍false；独立OCR入口仍无关联。代码/契约摘要变化后，按3.22在**新空目录**生成bundle/lock并更新成套AI/Worker pin，排空旧固定身份任务后切换，不手改旧SHA。不需要新迁移，仍0004；历史结果不回填。
+
+~~~powershell
+.venv-business/Scripts/python.exe -B -m pytest tests/business/test_text_bottle_association.py tests/business/test_text_association_closure.py -q
+.venv-ai/Scripts/python.exe -B -m unittest tests.ai.test_text_association_pixels tests.ai.test_pipeline_cpu -q
+.venv-evidence/Scripts/python.exe -B -m unittest tests.worker.test_evidence_pixels -q
+.venv-business/Scripts/python.exe -B -m tools.ml.smoke_cpu_http --ai-python .venv-ai/Scripts/python.exe --evidence-python .venv-evidence/Scripts/python.exe --model C:/Users/12847/Desktop/model.onnx --det-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_det_onnx --rec-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_rec_onnx --font C:/Windows/Fonts/msyh.ttc --output docs/08-delivery/39-i-ml01-text-association-smoke.json
+~~~
+
+第39批真实权重smoke为合成标签图，实际0瓶/6条NULL；正向关联使用显式合成检测框在几何、实际像素、HTTP和MySQL分别验证，不作为现场模型成绩。第40批已接字段词法/完整来源，见下节。
+
+### 3.24 OCR字段词法与多行证据（第40批）
+
+联合CPU报告v4加入ocr-fields-v1，仅真实唯一bottle关联进入字段，按全局紧邻行解析；source_lines保留1–2行全部line/crop/原文/置信度，字段confidence取min。Worker在存储读取前重算完整字段，任何省略/伪值/坏引用均整批失败。严格日期/CAS只生成待复核字段，runs仍needs_review；化学词典/实体/日期事实后续接入。
+
+AI/Worker/内部契约必须协调升级，在新空目录重新生成bundle/lock与成套pin；旧有跨行字段不得补猜来源，历史JSON不重写，迁移仍0004。回滚恢复成套旧代码/契约/身份/环境，保留已执行结果。
+
+~~~powershell
+.venv-business/Scripts/python.exe -B -m pytest tests/business/test_ocr_fields.py -q
+.venv-business/Scripts/python.exe -B -m unittest tests.ai.test_cpu_http -q
+.venv-evidence/Scripts/python.exe -B -m unittest tests.worker.test_evidence_pixels -q
+.venv-business/Scripts/python.exe -B -m tools.ml.smoke_cpu_http --ai-python .venv-ai/Scripts/python.exe --evidence-python .venv-evidence/Scripts/python.exe --model C:/Users/12847/Desktop/model.onnx --det-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_det_onnx --rec-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_rec_onnx --font C:/Windows/Fonts/msyh.ttc --output test-results/ocr-fields-smoke.json
+~~~
+
+smoke可选 `--input <本地素材路径>`，转为临时去元数据RGB分析图，真实图片和像素结果不入Git。默认合成标签中NAME/Ethanol配对的正向字段probe使用明确synthetic瓶框、真实ONNX OCR/裁剪，标记is_simulated=true；不计模型检测成绩。用户素材工程探针和全部局限见[第40批](docs/08-delivery/40-i-ml01-ocr-fields.md)。下一批第41批先冻结开发化学词典，再接CAS/别名候选与同瓶名称冲突聚合。
+
+### 3.25 冻结开发词典、名称候选与真实MinIO（第41批）
+
+第41批加入chemical-candidates-v1：CAS精确匹配、名称/别名精确及有界Levenshtein候选，同瓶全部name字段参与共识/冲突判断，再取top5。无前缀文字只接受冻结名称/别名整行精确匹配。开发词典最多100条、原始UTF-8≤64KiB，必填来源，不含安全分类；默认空词典，测试条目不得作为真实化学或安全数据。resolved结果也仍needs_review，日期聚合/事实快照尚待实现。
+
+开发profile升级为dfine-cpu-fp32-ocrv6smallcpu-chemical-v2，联合报告v5，bundle新增entity_min=0.9。生成器可选 `--dictionary <冻结JSON路径>`；输入与输出均校验词典结构/名称/CAS/容量，生成器在新目录写入受控词典快照。沿用3.22的启动配置，在新空目录重建bundle/lock/expected-version与AI/Worker成套pin，不手改旧SHA。内部结果携带实际加载bundle/dictionary原始JSON的extraction_context；Worker核固定摘要和身份，用固定阈值/词典重算全部字段与候选。快照中路径只用于摘要验证，Worker不打开这些路径。迁移仍0004，历史结果不回填。
+
+真实MinIO工程smoke使用业务环境编排、独立AI/证据环境执行：
+
+~~~powershell
+.venv-business/Scripts/python.exe -B -m tools.ml.smoke_minio_cpu --minio D:/Tool/minio/bin/minio.exe --ai-python .venv-ai/Scripts/python.exe --evidence-python .venv-evidence/Scripts/python.exe --model C:/Users/12847/Desktop/model.onnx --det-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_det_onnx --rec-dir D:/LenovoSoftstore/Obsidian-Storage/PP-OCRv6_small_rec_onnx --font C:/Windows/Fonts/msyh.ttc --input <本地素材路径> --output test-results/minio-cpu-smoke.json
+~~~
+
+工具使用独立临时数据目录、随机loopback端口/凭据和有版本的labsafe-private测试桶，退出清理自己创建的目录/进程，不改安装目录的data或持久配置。AI只读同tenant/lab的analysis；Worker读analysis/derivatives、写derivatives，并仅允许该derivatives前缀的ListBucket以识别HEAD缺失。已实测11项IAM拒绝、准确V1读取（latest故意替换为坏V2）、裁剪准确版本/SHA与复用。新素材四图及空词典成绩见[第41批](docs/08-delivery/41-i-ml01-chemical-candidates.md)。
+
+可选 `--synthetic-dictionary` 仅生成明确synthetic测试名称/CAS映射，并在真实OCR正向probe中使用显式synthetic瓶框；is_simulated=true，不作为现场检测/实体准确率。默认空词典素材结果与正向probe分开记录。nginx、公开下载签名、TLS、持久部署/备份和生产权限门禁仍待验收。下一批第42批接同瓶日期聚合与完整DateFact证据，继续保留未知和人工复核。
+
 ## 4. 验证
 
 根目录、业务环境执行：领域守卫也使用业务环境，不向 AI 环境引入业务授权或持久化依赖。
@@ -465,7 +586,7 @@ AI 环境执行：
 ~~~powershell
 .\.venv-ai\Scripts\python.exe -m unittest discover -s tests/ai -t . -v
 .\.venv-ai\Scripts\python.exe -m unittest discover -s tests/protocol -t . -v
-.\.venv-ai\Scripts\python.exe -m unittest tests.ai.test_dfine_adapter tests.ai.test_cpu_runner tests.ai.test_cpu_pixels tests.ai.test_ocrv6_adapter tests.ai.test_quality_pixels tests.ai.test_pipeline_cpu tests.ai.test_crop_evidence -v
+.\.venv-ai\Scripts\python.exe -m unittest tests.ai.test_dfine_adapter tests.ai.test_cpu_runner tests.ai.test_cpu_pixels tests.ai.test_ocrv6_adapter tests.ai.test_quality_pixels tests.ai.test_pipeline_cpu tests.ai.test_crop_evidence tests.ai.test_analysis -v
 ~~~
 
 最后一条须在已安装真实CPU依赖的AI环境执行，覆盖真实NumPy/Pillow及子进程恢复；fixture环境缺这些依赖时的跳过不计为通过。真实权重合成图证据可用 `APP_ENV=test`、`python -m tools.ml.smoke_cpu --model C:\Users\12847\Desktop\model.onnx --output docs/08-delivery/32-cpu-inference-evidence.json` 重建，不需要CUDA，也不证明现场照片准确率。
@@ -488,6 +609,8 @@ python -B tools/design/validate_specs.py
 CI 必须先 --check，不能先生成来掩盖漂移。设计校验不是应用、模型或部署验收。
 
 ## 5. 提交和下一阶段
+
+2026-10-10当前状态：第36–41批已本地实现与验证，位于wsq/i-ml01-analysis-input，实现提交726786c已Push并创建[PR #13](https://github.com/SayQuan1/LabSafe/pull/13)，等待CI与独立审查；第27–35批已通过PR #11/#12合并。下一批第42批日期聚合；以下早期批次的未提交和PR基线说明保留为历史，最新交付以docs/08-delivery/01-implementation-plan.md为准。真实MinIO固定版本/限定IAM已有第41批临时loopback证据，完整生产部署门禁仍未完成。
 
 遵循 [Git 协作规范](CONTRIBUTING.md)。提交特性分支、创建 PR；不直接推送 main，不自行合并或代替独立审查。
 不提交虚拟环境、.local-secrets、真实图片、权重或 .env。

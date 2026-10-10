@@ -493,6 +493,15 @@ components:
           type: string
           minLength: 1
           maxLength: 1024
+        object_version:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[!-~]+$
+          not:
+            anyOf:
+            - const: 'null'
+            - pattern: '[^!-~]'
         sha256: &id002
           type: string
           pattern: ^[a-f0-9]{64}$
@@ -515,6 +524,7 @@ components:
       required:
       - image_id
       - object_key
+      - object_version
       - sha256
       - mime_type
       - role
@@ -735,12 +745,82 @@ components:
       - bbox
       - confidence
       additionalProperties: false
+    CropEvidence:
+      type: object
+      properties:
+        png_sha256: *id002
+        png_size_bytes:
+          type: integer
+          minimum: 1
+          maximum: 16777216
+        source_rgb_sha256: *id002
+        recognition_rotation_ccw:
+          type: integer
+          enum:
+          - 0
+          - 90
+        recognition_width:
+          type: integer
+          minimum: 1
+          maximum: 2048
+        recognition_height:
+          type: integer
+          minimum: 1
+          maximum: 2048
+        recognition_rgb_sha256: *id002
+      required:
+      - png_sha256
+      - png_size_bytes
+      - source_rgb_sha256
+      - recognition_rotation_ccw
+      - recognition_width
+      - recognition_height
+      - recognition_rgb_sha256
+      additionalProperties: false
+    TextRegion:
+      type: object
+      properties:
+        line_id: *id001
+        image_id: *id001
+        crop_id: *id001
+        detection_id:
+          anyOf:
+          - *id001
+          - type: 'null'
+          description: 'text-bottle-quad80-v1: same-image real COCO bottle (class 39), center inside and >=80% quad
+            intersection area, unique smallest bbox; otherwise null. Worker recomputes. No synthetic label/container.'
+        raw_text:
+          type: string
+          minLength: 0
+          maxLength: 2000
+        confidence: *id003
+        quad:
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+          minItems: 4
+          maxItems: 4
+      required:
+      - line_id
+      - image_id
+      - crop_id
+      - detection_id
+      - raw_text
+      - confidence
+      - quad
+      additionalProperties: false
     CropRecipe:
       type: object
       properties:
         crop_id: *id001
         image_id: *id001
-        detection_id: *id001
+        line_id: *id001
+        detection_id:
+          anyOf:
+          - *id001
+          - type: 'null'
+          description: Same nullable bottle association as the paired TextRegion; it identifies the bottle, not
+            an invented label detection.
         quad:
           type: array
           items:
@@ -759,14 +839,34 @@ components:
           type: string
           enum:
           - perspective-rgb-v1
+        evidence:
+          $ref: '#/components/schemas/CropEvidence'
       required:
       - crop_id
       - image_id
+      - line_id
       - detection_id
       - quad
       - output_width
       - output_height
       - transform_version
+      - evidence
+      additionalProperties: false
+    OCRFieldSource:
+      type: object
+      properties:
+        line_id: *id001
+        crop_id: *id001
+        raw_text:
+          type: string
+          minLength: 0
+          maxLength: 2000
+        confidence: *id003
+      required:
+      - line_id
+      - crop_id
+      - raw_text
+      - confidence
       additionalProperties: false
     OCRField:
       type: object
@@ -774,6 +874,12 @@ components:
         image_id: *id001
         detection_id: *id001
         crop_id: *id001
+        source_lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/OCRFieldSource'
+          minItems: 1
+          maxItems: 2
         field:
           type: string
           enum:
@@ -799,11 +905,15 @@ components:
       - image_id
       - detection_id
       - crop_id
+      - source_lines
       - field
       - raw_text
       - normalized_text
       - confidence
       additionalProperties: false
+      description: 'ocr-fields-v1: actual unique bottle, all 1-2 consecutive source lines with original text/confidence/crop.
+        crop_id is first source only; raw_text joins sources with LF and confidence is min. Worker recomputes full
+        ordered fields; no chemical/date facts.'
     Candidate:
       type: object
       properties:
@@ -953,6 +1063,12 @@ components:
             $ref: '#/components/schemas/Detection'
           minItems: 0
           maxItems: 100
+        text_regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/TextRegion'
+          minItems: 0
+          maxItems: 100
         crops:
           type: array
           items:
@@ -979,6 +1095,10 @@ components:
           maxItems: 200
         timing_ms:
           $ref: '#/components/schemas/Timing'
+        execution_identity:
+          $ref: '#/components/schemas/Version'
+        extraction_context:
+          $ref: '#/components/schemas/ExtractionContext'
       required:
       - run_id
       - attempt_id
@@ -994,6 +1114,7 @@ components:
       - outcome
       - quality
       - detections
+      - text_regions
       - crops
       - ocr_fields
       - entities
@@ -1040,6 +1161,8 @@ components:
           enum:
           - cpu
           - cuda
+        model_checksum: *id002
+        dictionary_sha256: *id002
         purpose:
           type: string
           enum:
@@ -1059,6 +1182,7 @@ components:
           - dfine-cpu-fp32-ocrv6smallcpu-v1
           - dfine-cuda-fp32-ocrv6smallcpu-v1
           - fixture-v1
+          - dfine-cpu-fp32-ocrv6smallcpu-chemical-v2
         runtime_lock_sha256:
           type: string
           pattern: ^[a-f0-9]{64}$
@@ -1079,6 +1203,8 @@ components:
       - model_bundle_id
       - dictionary_version_id
       - device_profile
+      - model_checksum
+      - dictionary_sha256
       - purpose
       - is_simulated
       - adapter_id
@@ -1086,4 +1212,343 @@ components:
       - runtime_lock_sha256
       - detector_device
       - ocr_device
+      additionalProperties: false
+    ExtractionContext:
+      type: object
+      properties:
+        bundle_json:
+          type: string
+          minLength: 1
+          maxLength: 65536
+        dictionary_json:
+          type: string
+          minLength: 1
+          maxLength: 65536
+      required:
+      - bundle_json
+      - dictionary_json
+      additionalProperties: false
+    DevelopmentCPUBundle:
+      type: object
+      properties:
+        purpose:
+          type: string
+          enum:
+          - development
+        bundle_id: *id001
+        dictionary_version_id: *id001
+        pipeline_version:
+          type: string
+          enum:
+          - vision-v1
+        device_profile:
+          type: string
+          enum:
+          - cpu
+        adapter_id:
+          type: string
+          enum:
+          - dfine-coco80-rgb-stretch-v1
+        runtime_profile:
+          type: string
+          enum:
+          - dfine-cpu-fp32-ocrv6smallcpu-chemical-v2
+        artifacts:
+          type: object
+          properties:
+            detector_model:
+              type: object
+              properties:
+                path:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+                sha256: *id002
+              required:
+              - path
+              - sha256
+              additionalProperties: false
+            detector_config:
+              type: object
+              properties:
+                path:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+                sha256: *id002
+              required:
+              - path
+              - sha256
+              additionalProperties: false
+            detector_preprocessor:
+              type: object
+              properties:
+                path:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+                sha256: *id002
+              required:
+              - path
+              - sha256
+              additionalProperties: false
+            ocr_det_model:
+              type: object
+              properties:
+                path:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+                sha256: *id002
+              required:
+              - path
+              - sha256
+              additionalProperties: false
+            ocr_det_config:
+              type: object
+              properties:
+                path:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+                sha256: *id002
+              required:
+              - path
+              - sha256
+              additionalProperties: false
+            ocr_rec_model:
+              type: object
+              properties:
+                path:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+                sha256: *id002
+              required:
+              - path
+              - sha256
+              additionalProperties: false
+            ocr_rec_config:
+              type: object
+              properties:
+                path:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+                sha256: *id002
+              required:
+              - path
+              - sha256
+              additionalProperties: false
+            dictionary:
+              type: object
+              properties:
+                path:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+                sha256: *id002
+              required:
+              - path
+              - sha256
+              additionalProperties: false
+            runtime_lock:
+              type: object
+              properties:
+                path:
+                  type: string
+                  minLength: 1
+                  maxLength: 2048
+                sha256: *id002
+              required:
+              - path
+              - sha256
+              additionalProperties: false
+          required:
+          - detector_model
+          - detector_config
+          - detector_preprocessor
+          - ocr_det_model
+          - ocr_det_config
+          - ocr_rec_model
+          - ocr_rec_config
+          - dictionary
+          - runtime_lock
+          additionalProperties: false
+        thresholds:
+          type: object
+          properties:
+            detection_min: *id003
+            ocr_min: *id003
+            entity_min: *id003
+            blur_min:
+              type: number
+              minimum: 0
+            dark_min: *id003
+            glare_max: *id003
+          required:
+          - detection_min
+          - ocr_min
+          - entity_min
+          - blur_min
+          - dark_min
+          - glare_max
+          additionalProperties: false
+        threads:
+          type: integer
+          minimum: 1
+          maximum: 16
+      required:
+      - purpose
+      - bundle_id
+      - dictionary_version_id
+      - pipeline_version
+      - device_profile
+      - adapter_id
+      - runtime_profile
+      - artifacts
+      - thresholds
+      - threads
+      additionalProperties: false
+    DevelopmentCPULock:
+      type: object
+      properties:
+        purpose:
+          type: string
+          enum:
+          - development
+        scope:
+          type: string
+          enum:
+          - cpu-direct-runtime-v1
+        python:
+          type: string
+          minLength: 1
+          maxLength: 40
+        platform:
+          type: string
+          minLength: 1
+          maxLength: 200
+        packages:
+          type: object
+          properties:
+            fastapi:
+              type: string
+              minLength: 1
+              maxLength: 64
+            pydantic:
+              type: string
+              minLength: 1
+              maxLength: 64
+            uvicorn:
+              type: string
+              minLength: 1
+              maxLength: 64
+            PyYAML:
+              type: string
+              minLength: 1
+              maxLength: 64
+            jsonschema:
+              type: string
+              minLength: 1
+              maxLength: 64
+            rfc3339-validator:
+              type: string
+              minLength: 1
+              maxLength: 64
+            onnxruntime:
+              type: string
+              minLength: 1
+              maxLength: 64
+            numpy:
+              type: string
+              minLength: 1
+              maxLength: 64
+            Pillow:
+              type: string
+              minLength: 1
+              maxLength: 64
+            opencv-python-headless:
+              type: string
+              minLength: 1
+              maxLength: 64
+            pyclipper:
+              type: string
+              minLength: 1
+              maxLength: 64
+          required:
+          - fastapi
+          - pydantic
+          - uvicorn
+          - PyYAML
+          - jsonschema
+          - rfc3339-validator
+          - onnxruntime
+          - numpy
+          - Pillow
+          - opencv-python-headless
+          - pyclipper
+          additionalProperties: false
+        crop_runtime_sha256: *id002
+        code_sha256: *id002
+      required:
+      - purpose
+      - scope
+      - python
+      - platform
+      - packages
+      - crop_runtime_sha256
+      - code_sha256
+      additionalProperties: false
+    DevelopmentDictionaryEntry:
+      type: object
+      properties:
+        entity_id: *id001
+        canonical_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        aliases:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 200
+          minItems: 0
+          maxItems: 10
+        cas:
+          anyOf:
+          - type: string
+            minLength: 1
+            maxLength: 12
+          - type: 'null'
+        source:
+          type: string
+          minLength: 1
+          maxLength: 1000
+      required:
+      - entity_id
+      - canonical_name
+      - aliases
+      - cas
+      - source
+      additionalProperties: false
+    DevelopmentDictionary:
+      type: object
+      properties:
+        purpose:
+          type: string
+          enum:
+          - development
+        dictionary_version_id: *id001
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/DevelopmentDictionaryEntry'
+          minItems: 0
+          maxItems: 100
+      required:
+      - purpose
+      - dictionary_version_id
+      - entries
       additionalProperties: false

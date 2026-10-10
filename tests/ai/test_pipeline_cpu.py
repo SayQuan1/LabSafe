@@ -164,7 +164,23 @@ class PipelinePixelTests(unittest.TestCase):
                         "confidence": 0.3,
                         "detection_confidence": 0.8,
                         "quad": [[0, 0], [1, 0], [1, 1], [0, 1]],
-                        "crop_evidence": {},
+                        "crop_evidence": {
+                            "recipe": {
+                                "quad": [
+                                    {"x": x, "y": y} for x, y in ((0, 0), (1, 0), (1, 1), (0, 1))
+                                ],
+                                "output_width": 20,
+                                "output_height": 10,
+                                "transform_version": "perspective-rgb-v1",
+                            },
+                            "png_sha256": "d" * 64,
+                            "png_size_bytes": 100,
+                            "source_rgb_sha256": "e" * 64,
+                            "recognition_rotation_ccw": 0,
+                            "recognition_width": 20,
+                            "recognition_height": 10,
+                            "recognition_rgb_sha256": "f" * 64,
+                        },
                     }
                     for _ in range(line_count)
                 ]
@@ -189,11 +205,16 @@ class PipelinePixelTests(unittest.TestCase):
             self.assertEqual(det.inputs, ocr.inputs)
             self.assertEqual(report["outcome"], "needs_review")
             self.assertTrue(report["models_executed"])
-            self.assertFalse(any(report["business_capabilities"].values()))
+            self.assertTrue(report["business_capabilities"]["bottle_association"])
+            self.assertFalse(report["business_capabilities"]["chemical_entities"])
+            self.assertFalse(report["business_capabilities"]["container_relations"])
             for image, row in zip(det.inputs, report["images"]):
                 self.assertTrue(row["inference_executed"])
                 self.assertTrue(row["lines"][0]["uncertain"])
-                self.assertIsNone(row["lines"][0]["parent_detection_id"])
+                self.assertEqual(
+                    row["lines"][0]["parent_detection_id"],
+                    row["detections"][0]["detection_id"],
+                )
                 self.assertIsNone(row["detections"][0]["parent_detection_id"])
                 with self.assertRaises(ValueError):
                     image.getpixel((0, 0))
@@ -218,6 +239,52 @@ class PipelinePixelTests(unittest.TestCase):
                     with self.assertRaises(AdapterError) as error:
                         _compute(self.options, self.paths[:2], self.run_id)
                     self.assertEqual(error.exception.code, "MODEL_ERROR")
+
+    def test_joint_pipeline_extracts_both_sources_and_maps_overflow_to_model_error(self):
+        det, ocr = self._models(line_count=2)
+        recognize = ocr.recognize
+
+        def lines(image):
+            result = recognize(image)
+            result[0].update(text="NAME", confidence=0.9)
+            result[1].update(text="Ethanol", confidence=0.3)
+            return result
+
+        ocr.recognize = lines
+        with (
+            patch("apps.ai_inference.pipeline_cpu.OnnxDetector.from_path", return_value=det),
+            patch("apps.ai_inference.pipeline_cpu.OnnxOCR.from_directories", return_value=ocr),
+        ):
+            report = _compute(self.options, self.paths[:1], self.run_id)
+            field = report["ocr_fields"][0]
+            self.assertEqual(field["raw_text"], "NAME\nEthanol")
+            self.assertEqual(field["confidence"], 0.3)
+            self.assertEqual(len(field["source_lines"]), 2)
+            self.assertEqual(report["outcome"], "needs_review")
+            self.assertFalse(report["business_capabilities"]["date_facts"])
+            from tests.evidence_helpers import synthetic_chemical_entries
+
+            data = {
+                "purpose": "development",
+                "dictionary_version_id": str(uuid4()),
+                "entries": synthetic_chemical_entries(),
+            }
+
+            def known_lines(image):
+                result = recognize(image)
+                result[0].update(text="NAME", confidence=0.9)
+                result[1].update(text="Alpha", confidence=0.9)
+                return result
+
+            ocr.recognize = known_lines
+            report = _compute(self.options, self.paths[:1], self.run_id, dictionary=data)
+            self.assertEqual(report["entities"][0]["resolution"], "resolved")
+            self.assertEqual(report["outcome"], "needs_review")
+            self.assertTrue(report["business_capabilities"]["chemical_candidates"])
+            with patch("apps.ai_inference.pipeline_cpu.extract_fields", side_effect=ValueError):
+                with self.assertRaises(AdapterError) as error:
+                    _compute(self.options, self.paths[:1], self.run_id)
+                self.assertEqual(error.exception.code, "MODEL_ERROR")
 
     def test_later_model_failure_closes_all_inputs_and_never_returns_partial_success(self):
         det, ocr = self._models(fail_second=True)

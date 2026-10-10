@@ -66,8 +66,23 @@ jobs:
           cache-dependency-path: requirements/*.txt
       - run: python -m pip install -r requirements/py311-ai-real.txt
       - run: python -m pip check
-      - run: python -m unittest tests.ai.test_dfine_adapter tests.ai.test_cpu_runner tests.ai.test_cpu_pixels tests.ai.test_ocrv6_adapter tests.ai.test_quality_pixels tests.ai.test_pipeline_cpu tests.ai.test_crop_evidence -v
+      - run: python -m unittest tests.ai.test_dfine_adapter tests.ai.test_cpu_runner tests.ai.test_cpu_pixels tests.ai.test_ocrv6_adapter tests.ai.test_quality_pixels tests.ai.test_pipeline_cpu tests.ai.test_crop_evidence tests.ai.test_analysis tests.ai.test_supervisor tests.ai.test_text_association_pixels -v
       # Official weights remain local; real-model smoke is recorded separately.
+
+  worker-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements/*.txt
+      - run: python -m pip install -r requirements/py311-worker-evidence.txt
+      - run: python -m pip check
+      - name: Evidence runtime must not contain models or business infrastructure
+        run: python -c "import importlib.util; assert all(importlib.util.find_spec(n) is None for n in ['sqlalchemy','celery','redis','onnxruntime','torch','paddle'])"
+      - run: python -B -m unittest tests.worker.test_evidence_pixels -v
 
   design-contracts:
     runs-on: ubuntu-latest

@@ -75,7 +75,7 @@ def main():
                 bad=copy.deepcopy(instance);bad['_unexpected']=1;check(not v.is_valid(bad),'extra field accepted '+key);count('negative_schema_instances')
                 if s.get('required'):
                     bad=copy.deepcopy(instance);bad.pop(s['required'][0]);check(not v.is_valid(bad),'missing required accepted '+key);count('negative_schema_instances')
-    for name in ['task-message-v1.json','events-v1.json','rule-dsl-v1.json','model-manifest-v1.json','inference-routes-v1.json','acceptance-policy-v1.json','model-evaluation-v1.json','release-approvals-v1.json']:
+    for name in ['task-message-v1.json','events-v1.json','rule-dsl-v1.json','model-manifest-v1.json','inference-routes-v1.json','acceptance-policy-v1.json','model-evaluation-v1.json','release-approvals-v1.json','development-cpu-bundle-v1.json','development-cpu-lock-v1.json','development-dictionary-v1.json']:
         doc=load('contracts/'+name);Draft202012Validator.check_schema(doc);walk(doc,doc);count('json_schemas')
         v=validator(doc,doc)
         for branch in doc.get('oneOf',[doc]):

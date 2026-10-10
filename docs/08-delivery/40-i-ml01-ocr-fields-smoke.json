@@ -1,0 +1,109 @@
+{
+  "status": "PASS",
+  "executed_at_utc": "2026-10-09T14:51:21.899389+00:00",
+  "inference_kind": "real-official-onnx-cpu-http",
+  "input_kind": "synthetic-rgb-pngs-and-user-photo",
+  "photo_source_sha256": "91fa18bbf8dd77d6202a7f5f3ed8d0dd0f2ab47dcae60edf17d652f9802905f2",
+  "storage_kind": "versioned-loopback-s3-simulator",
+  "identity": {
+    "service_commit": "local-development",
+    "pipeline_version": "vision-v1",
+    "model_bundle_id": "d08bc04f-37dd-4894-aa93-887f128ac3e7",
+    "dictionary_version_id": "f0bf3af8-e5d8-4ba6-94f1-23fabc033f3d",
+    "device_profile": "cpu",
+    "purpose": "development",
+    "is_simulated": false,
+    "adapter_id": "dfine-coco80-rgb-stretch-v1",
+    "runtime_profile": "dfine-cpu-fp32-ocrv6smallcpu-v1",
+    "runtime_lock_sha256": "0c547f478c805647ad4d6722a540eab4693ba3b4035947c81dc4ec1e65864455",
+    "model_checksum": "fb6483388050af34d4b0e1ebc8965bede8523a351da8440168f1762567ab4197",
+    "dictionary_sha256": "04af26cb3038aea4b624ce5d771d9305c29662b35bd7693aac960ab26151791c",
+    "detector_device": "cpu",
+    "ocr_device": "cpu"
+  },
+  "images": 3,
+  "text_regions": 12,
+  "uploaded_crops": 12,
+  "fields_algorithm": "ocr-fields-v1",
+  "ocr_fields": 0,
+  "fields_recomputed_by_worker": true,
+  "positive_field_probe": {
+    "detection_kind": "explicit-synthetic-full-frame-bottles",
+    "is_simulated": true,
+    "ocr_kind": "real-official-onnx",
+    "fields": 4,
+    "two_line_fields": 2,
+    "all_source_crops_rebuilt": true
+  },
+  "per_image": [
+    {
+      "input_kind": "synthetic-label",
+      "quality": {
+        "image_id": "5b3789f6-4647-49ac-9a2f-2cc73db74a52",
+        "status": "pass",
+        "reasons": [],
+        "blur_score": 433.214005,
+        "brightness": 0.6941590588235294,
+        "glare_ratio": 0.0
+      },
+      "detections": 0,
+      "bottles": 0,
+      "text_regions": 4,
+      "associated_regions": 0,
+      "fields": 0
+    },
+    {
+      "input_kind": "synthetic-label",
+      "quality": {
+        "image_id": "e5519c51-fd82-4589-9a7a-388f1342a4e6",
+        "status": "pass",
+        "reasons": [],
+        "blur_score": 433.214005,
+        "brightness": 0.6941590588235294,
+        "glare_ratio": 0.0
+      },
+      "detections": 0,
+      "bottles": 0,
+      "text_regions": 4,
+      "associated_regions": 0,
+      "fields": 0
+    },
+    {
+      "input_kind": "user-photo",
+      "quality": {
+        "image_id": "bce309eb-9511-4d2c-bfa5-0c9d23d508ec",
+        "status": "pass",
+        "reasons": [],
+        "blur_score": 168.25447949702445,
+        "brightness": 0.4679936028773488,
+        "glare_ratio": 0.0012880961100260417
+      },
+      "detections": 0,
+      "bottles": 0,
+      "text_regions": 4,
+      "associated_regions": 0,
+      "fields": 0
+    }
+  ],
+  "association_algorithm": "text-bottle-quad80-v1",
+  "associated_regions": 0,
+  "unassociated_regions": 12,
+  "bottle_detections": 0,
+  "association_recomputed_by_worker": true,
+  "health_during_startup": true,
+  "resident_pid_reused": true,
+  "unknown_pin_no_analysis_get": true,
+  "quality_runs_replay_equal": true,
+  "worker_exact_version_reuse": true,
+  "crash_ready_withdrawn_and_reloaded": true,
+  "shutdown": {
+    "child_reaped": true,
+    "receiver_reaped": true
+  },
+  "limitations": [
+    "No database commit in this smoke; MySQL tested separately",
+    "No live S3/IAM/TLS; one user photo is an engineering probe, not annotated accuracy evaluation",
+    "No semantic facts or production approval",
+    "Synthetic tags may contain no detected bottles; positive association uses explicit synthetic boxes and real pixels in separate tests"
+  ]
+}
