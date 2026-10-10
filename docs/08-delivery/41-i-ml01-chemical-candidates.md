@@ -70,4 +70,4 @@ MySQL结构核对为0004/43表115FK，无错误；业务/MySQL有既有 Starlett
 
 远程Push检查暴露请求取消恰逢IPC发送完成的竞态：Python3.11 asyncio.wait_for可能消费外层取消，导致调用等待到推理超时。发送期限改用asyncio.timeout以保留外层CancelledError和既有进程回收；新增确定性用例调度发送完成与取消的同一时序，原实现稳定出现AI_TIMEOUT，新实现正确取消并回收，无放宽超时预算。第41批两份真实MinIO/官方CPU smoke按修复后的代码锁重新运行，结果及现场局限保持。
 
-提交前主回归1795、CPU/协议75、fixture/spawn/HTTP27、独立Worker9通过，静态/契约/三环境pip与隔离检查通过。取消修复后CPU/协议76、fixture/spawn/HTTP27再次通过，两份真实MinIO smoke通过，确定性新增用例已验证旧实现失败/新实现通过；套件重叠不累加。完整隔离MySQL及本次远程CI最终结果以PR描述和检查页为准，独立协作者批准另行确认，不自动合并。
+提交前主回归1795、CPU/协议75、fixture/spawn/HTTP27、独立Worker9通过，静态/契约/三环境pip与隔离检查通过。取消修复后CPU/协议76、fixture/spawn/HTTP27再次通过，两份真实MinIO smoke通过，确定性新增用例已验证旧实现失败/新实现通过；套件重叠不累加。本次完整隔离MySQL8.0.33持久化套件458项全部通过、无跳过，0004/43表115FK无差异，测试实例已回收；1条既有Starlette/anyio弃用警告。实现与修复提交为726786c/ae53d0a，远程CI最终结果以PR描述和检查页为准，独立协作者批准另行确认，不自动合并。
