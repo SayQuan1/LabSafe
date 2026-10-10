@@ -1,6 +1,6 @@
 # 08.1 实施计划与当前批次
 
-状态更新于2026-10-09。已fetch核验origin/main=13a854f：PR #10包含截至第26批的持久任务、图像、推理/规则执行与复核；PR #11包含第27–30批整改及CSV报告受理/执行/下载；PR #12包含第31–35批官方80类模型、CPU检测/OCR、质量流水线及可重建裁剪。第36–41批已本地实现与验证，包括第41批冻结开发词典、名称候选/冲突聚合和实际MinIO验证，位于wsq/i-ml01-analysis-input，尚未提交/Push/PR。
+状态更新于2026-10-10。已fetch核验origin/main=13a854f：PR #10包含截至第26批的持久任务、图像、推理/规则执行与复核；PR #11包含第27–30批整改及CSV报告受理/执行/下载；PR #12包含第31–35批官方80类模型、CPU检测/OCR、质量流水线及可重建裁剪。第36–41批已本地实现与验证，包括第41批冻结开发词典、名称候选/冲突聚合和实际MinIO验证，位于wsq/i-ml01-analysis-input；实现提交726786c已Push，并创建[PR #13](https://github.com/SayQuan1/LabSafe/pull/13)，尚未合并，等待远程CI及独立审查。最新Git交付状态见[第41批交付记录](41-i-ml01-chemical-candidates.md)。
 
 当前主线为I-ML-01真实CPU推理接线：第41批冻结开发词典、CAS/别名/模糊候选及同瓶冲突聚合已本地完成；下一批确定为**第42批，同瓶日期聚合、冲突/低置信/未知保留与完整DateFact证据闭包**。I-02/I-03/I-ML-01仍进行中，局部工程成绩不替代完整业务、现场模型或生产验收。阶段标准见[阶段门禁](05-stage-gates.md)，运行入口见[开发指南](../../DEVELOPMENT.md)。
 
@@ -51,12 +51,12 @@
 | 33 | PP-OCRv6_small det/rec、DB/CTC、独立文字行与CLI | 已合并PR #12 | [OCR](33-i-ml01-ocrv6-cpu.md) |
 | 34 | quality-rgb-lap1-v1、同一子进程联合模型、整批质量门禁 | 已合并PR #12 | [联合流水线](34-i-ml01-quality-cpu-pipeline.md) |
 | 35 | perspective-rgb-v1共享重建、方向/PNG/识别像素摘要、9区域跨进程核对 | 已合并PR #12 | [可重建证据](35-i-ml01-rebuildable-ocr-evidence.md) |
-| 36 | run_images准确版本冻结/0003、只读SigV4 GET、SHA/128MiB/像素校验、保留Worker图片ID、10/180秒预算 | 本地完成与验证；未提交/Push/PR | [受控输入](36-i-ml01-controlled-analysis-input.md)、[真实模型smoke](36-i-ml01-analysis-cpu-smoke.json) |
-| 37 | 独立text_regions/闭包、0004、独立Worker重建/版本上传、围栏原子登记、只读文字投影 | 本地完成与验证；未提交/Push/PR | [OCR证据](37-i-ml01-worker-ocr-evidence.md)、[真实模型→Worker smoke](37-i-ml01-worker-evidence-smoke.json) |
-| 38 | 常驻CPU加载/smoke、受控development bundle/lock、实际ready/version、正式RPC、Worker pin/有界socket和真实标记 | 本地完成与验证；未提交/Push/PR | [常驻CPU HTTP](38-i-ml01-resident-cpu-http.md)、[真实HTTP→Worker smoke](38-i-ml01-cpu-http-smoke.json) |
-| 39 | text-bottle-quad80-v1实际quad/同图COCO bottle/唯一最小关联、Worker重算及NULL未知、证据不变 | 本地完成与验证；未提交/Push/PR | [文字/bottle关联](39-i-ml01-text-bottle-association.md)、[正式HTTP smoke](39-i-ml01-text-association-smoke.json) |
-| 40 | ocr-fields-v1词法/严格日期CAS/全局连续配对，source_lines全部证据、Worker全量重算、正式CPU/HTTP/像素/MySQL；用户素材工程探针 | 本地完成与验证；未提交/Push/PR | [OCR字段](40-i-ml01-ocr-fields.md)、[真实HTTP/素材smoke](40-i-ml01-ocr-fields-smoke.json) |
-| 41 | 冻结开发词典/身份快照、chemical-candidates-v1及全名称冲突聚合；Worker完整重算/保存；4张新素材及实际MinIO版本/IAM | 本地完成与验证；未提交/Push/PR | [名称候选](41-i-ml01-chemical-candidates.md)、[真实MinIO/素材](41-i-ml01-minio-smoke.json)、[明确synthetic候选probe](41-i-ml01-candidates-smoke.json) |
+| 36 | run_images准确版本冻结/0003、只读SigV4 GET、SHA/128MiB/像素校验、保留Worker图片ID、10/180秒预算 | 已提交/Push，PR #13待审查 | [受控输入](36-i-ml01-controlled-analysis-input.md)、[真实模型smoke](36-i-ml01-analysis-cpu-smoke.json) |
+| 37 | 独立text_regions/闭包、0004、独立Worker重建/版本上传、围栏原子登记、只读文字投影 | 已提交/Push，PR #13待审查 | [OCR证据](37-i-ml01-worker-ocr-evidence.md)、[真实模型→Worker smoke](37-i-ml01-worker-evidence-smoke.json) |
+| 38 | 常驻CPU加载/smoke、受控development bundle/lock、实际ready/version、正式RPC、Worker pin/有界socket和真实标记 | 已提交/Push，PR #13待审查 | [常驻CPU HTTP](38-i-ml01-resident-cpu-http.md)、[真实HTTP→Worker smoke](38-i-ml01-cpu-http-smoke.json) |
+| 39 | text-bottle-quad80-v1实际quad/同图COCO bottle/唯一最小关联、Worker重算及NULL未知、证据不变 | 已提交/Push，PR #13待审查 | [文字/bottle关联](39-i-ml01-text-bottle-association.md)、[正式HTTP smoke](39-i-ml01-text-association-smoke.json) |
+| 40 | ocr-fields-v1词法/严格日期CAS/全局连续配对，source_lines全部证据、Worker全量重算、正式CPU/HTTP/像素/MySQL；用户素材工程探针 | 已提交/Push，PR #13待审查 | [OCR字段](40-i-ml01-ocr-fields.md)、[真实HTTP/素材smoke](40-i-ml01-ocr-fields-smoke.json) |
+| 41 | 冻结开发词典/身份快照、chemical-candidates-v1及全名称冲突聚合；Worker完整重算/保存；4张新素材及实际MinIO版本/IAM | 已提交/Push，PR #13待审查 | [名称候选](41-i-ml01-chemical-candidates.md)、[真实MinIO/素材](41-i-ml01-minio-smoke.json)、[明确synthetic候选probe](41-i-ml01-candidates-smoke.json) |
 
 截至第36批最新本机成绩：63项CPU＋4项协议，无跳过；主业务/领域/安全/协议1552项；持久化单元21项；隔离MySQL8.0.33定向18项通过/429未选，含2项重叠单元。第36批验证时工作树head=0003_run_image_version，43表/115FK；远程main已合并的head仍为0002。最新真实权重工程smoke为两图固定版本读取、两次联合重放、quality一致与6区域裁剪重建。此前第29批完整持久化446项及第30批定向73项为历史成绩，不当作0003的完整重跑。各套件有重叠，不累加成唯一测试数。
 

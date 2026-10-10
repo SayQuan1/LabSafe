@@ -155,10 +155,8 @@ class CPUSupervisor:
             raise ProtocolError("VALIDATION_ERROR", "Inference request exceeds capacity")
         self.busy = True
         try:
-            await asyncio.wait_for(
-                asyncio.to_thread(self.channel.send_bytes, raw),
-                timeout=max(0, deadline - time.monotonic()),
-            )
+            async with asyncio.timeout(max(0, deadline - time.monotonic())):
+                await asyncio.to_thread(self.channel.send_bytes, raw)
             message = await self._message(deadline)
             if message.get("kind") != "result":
                 code = message.get("code", "MODEL_ERROR")

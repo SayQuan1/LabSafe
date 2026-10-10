@@ -9,6 +9,7 @@ import time
 import unittest
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from apps.ai_inference.app.fixture import ProtocolError
 from apps.ai_inference.runtime_cpu import send
@@ -265,6 +266,26 @@ class SupervisorTests(unittest.IsolatedAsyncioTestCase):
         await until(lambda: loading.process is not None)
         await loading.close()
         self.assertIsNone(loading.process)
+
+    async def test_cancel_when_ipc_send_completes_reaps_process(self):
+        runtime = self.runtime("timeout")
+        await until(lambda: runtime.ready)
+        to_thread = asyncio.to_thread
+
+        async def complete_send_and_cancel(operation, *args):
+            if operation.__name__ == "send_bytes":
+                # Schedule cancellation before the send completion wakes its waiter.
+                # asyncio.wait_for can consume this cancellation if the send is done.
+                asyncio.get_running_loop().call_soon(task.cancel)
+                return operation(*args)
+            return await to_thread(operation, *args)
+
+        with patch("asyncio.to_thread", side_effect=complete_send_and_cancel):
+            task = asyncio.create_task(runtime.infer(payload(), "runs"))
+            with self.assertRaises(asyncio.CancelledError):
+                await task
+        self.assertIsNone(runtime.process)
+        self.assertFalse(runtime.busy)
 
     async def test_idle_child_exit_reloads_and_expired_request_keeps_process(self):
         runtime = self.runtime()

@@ -610,7 +610,7 @@ CI 必须先 --check，不能先生成来掩盖漂移。设计校验不是应用
 
 ## 5. 提交和下一阶段
 
-2026-10-09当前状态：第36–41批已本地实现与验证，位于wsq/i-ml01-analysis-input，未提交/Push/PR；第27–35批已通过PR #11/#12合并。下一批第42批日期聚合；以下早期批次的未提交和PR基线说明保留为历史，最新交付以docs/08-delivery/01-implementation-plan.md为准。真实MinIO固定版本/限定IAM已有第41批临时loopback证据，完整生产部署门禁仍未完成。
+2026-10-10当前状态：第36–41批已本地实现与验证，位于wsq/i-ml01-analysis-input，实现提交726786c已Push并创建[PR #13](https://github.com/SayQuan1/LabSafe/pull/13)，等待CI与独立审查；第27–35批已通过PR #11/#12合并。下一批第42批日期聚合；以下早期批次的未提交和PR基线说明保留为历史，最新交付以docs/08-delivery/01-implementation-plan.md为准。真实MinIO固定版本/限定IAM已有第41批临时loopback证据，完整生产部署门禁仍未完成。
 
 遵循 [Git 协作规范](CONTRIBUTING.md)。提交特性分支、创建 PR；不直接推送 main，不自行合并或代替独立审查。
 不提交虚拟环境、.local-secrets、真实图片、权重或 .env。

@@ -63,3 +63,11 @@ MySQL结构核对为0004/43表115FK，无错误；业务/MySQL有既有 Starlett
 只允许dev/test，production开关仍禁止。升级先排空旧CPU/固定身份任务，在新空目录重新生成bundle/lock/pin；回滚恢复成套旧代码、契约、环境和身份，不重写历史结果或删除对象，无迁移downgrade。新词典未获数据/安全审核不得成为规则事实来源。
 
 下一批第42批：同瓶日期字段聚合、冲突/低置信/未知保留及全部行/crop证据，先冻结DateFact契约与Worker重算；仍needs_review，完整事实快照/规则接线、化学安全数据、现场标注/校准、公共模型activation和部署审批分别后续。实际MinIO loopback固定版本/IAM已验，不等于nginx、公开下载签名、TLS、持久部署/备份与生产权限验收。
+
+## 7. 2026-10-10 Git交付与CI收尾
+
+第36–41批实现汇总为提交726786c，已Push到wsq/i-ml01-analysis-input并按.github/PULL_REQUEST_TEMPLATE.md创建[PR #13](https://github.com/SayQuan1/LabSafe/pull/13)，基线main=13a854f，尚未合并。前文未提交/未运行远程CI为实施时的历史状态。
+
+远程Push检查暴露请求取消恰逢IPC发送完成的竞态：Python3.11 asyncio.wait_for可能消费外层取消，导致调用等待到推理超时。发送期限改用asyncio.timeout以保留外层CancelledError和既有进程回收；新增确定性用例调度发送完成与取消的同一时序，原实现稳定出现AI_TIMEOUT，新实现正确取消并回收，无放宽超时预算。第41批两份真实MinIO/官方CPU smoke按修复后的代码锁重新运行，结果及现场局限保持。
+
+提交前主回归1795、CPU/协议75、fixture/spawn/HTTP27、独立Worker9通过，静态/契约/三环境pip与隔离检查通过。取消修复后CPU/协议76、fixture/spawn/HTTP27再次通过，两份真实MinIO smoke通过，确定性新增用例已验证旧实现失败/新实现通过；套件重叠不累加。完整隔离MySQL及本次远程CI最终结果以PR描述和检查页为准，独立协作者批准另行确认，不自动合并。

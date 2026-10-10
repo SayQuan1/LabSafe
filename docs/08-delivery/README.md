@@ -45,6 +45,6 @@
 40. [I-ML-01 OCR字段词法、严格格式与完整多行证据](40-i-ml01-ocr-fields.md)。
 41. [I-ML-01 冻结开发词典、名称候选与实际MinIO验证](41-i-ml01-chemical-candidates.md)。
 
-当前进度与下一批以[实施计划](01-implementation-plan.md)为准：31–35批已合并，第36–41批本地完成与验证，尚未提交；下一批第42批接日期聚合与完整DateFact证据闭包。
+当前进度与下一批以[实施计划](01-implementation-plan.md)为准：31–35批已合并，第36–41批本地完成与验证，已提交/Push并创建[PR #13](https://github.com/SayQuan1/LabSafe/pull/13)，待CI与独立审查；下一批第42批接日期聚合与完整DateFact证据闭包。
 
 本页仅导航；现行设计状态见 [文档控制](../00-document-control.md)，不把候选设计视为已经批准。
