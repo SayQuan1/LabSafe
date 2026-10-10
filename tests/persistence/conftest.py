@@ -20,7 +20,7 @@ from packages.persistence.cli import migration_config
 from packages.persistence.database import database_engine
 from packages.persistence.schema import verify_schema
 from packages.persistence.security import SessionService
-from tests.persistence.factories import insert
+from tests.persistence.factories import Graph, insert
 from tests.persistence.test_security_mysql import create_tenant
 
 
@@ -61,7 +61,67 @@ def database():
             .mappings()
             .one()
         )
+    command.upgrade(config, "0002_report_object_version")
+    with engine.begin() as connection:
+        graph = Graph(connection)
+        frozen = dict(
+            connection.execute(
+                text("SELECT * FROM run_images WHERE run_id=:run"), {"run": graph.run}
+            )
+            .mappings()
+            .one()
+        )
+    command.upgrade(config, "0003_run_image_version")
+    # A historical detection-based crop survives the new nullable OCR fields unchanged.
+    with engine.begin() as connection:
+        graph.connection = connection
+        derivative_id = graph.add(
+            "image_derivatives",
+            run_id=graph.run,
+            image_id=graph.image,
+            crop_id=str(uuid4()),
+            detection_id=str(uuid4()),
+        )
+        old_derivative = dict(
+            connection.execute(
+                text("SELECT * FROM image_derivatives WHERE id=:id"), {"id": derivative_id}
+            )
+            .mappings()
+            .one()
+        )
     command.upgrade(config, "head")
+    with engine.connect() as connection:
+        migrated = dict(
+            connection.execute(text("SELECT * FROM run_images WHERE id=:id"), {"id": frozen["id"]})
+            .mappings()
+            .one()
+        )
+        assert {key: migrated[key] for key in frozen} == frozen
+        assert migrated["analysis_object_version"] is None  # Never infer an old run's version.
+        new_derivative = dict(
+            connection.execute(
+                text("SELECT * FROM image_derivatives WHERE id=:id"), {"id": derivative_id}
+            )
+            .mappings()
+            .one()
+        )
+        assert {key: new_derivative[key] for key in old_derivative} == old_derivative
+        assert new_derivative["line_id"] is new_derivative["size_bytes"] is None
+    with engine.begin() as connection:
+        graph.connection = connection
+        independent = graph.add(
+            "image_derivatives",
+            run_id=graph.run,
+            image_id=graph.image,
+            crop_id=str(uuid4()),
+            detection_id=None,
+            line_id=str(uuid4()),
+            size_bytes=100,
+        )
+    with pytest.raises(RuntimeError, match="forward repair"):
+        command.downgrade(config, "0003_run_image_version")
+    with engine.begin() as connection:
+        connection.execute(text("DELETE FROM image_derivatives WHERE id=:id"), {"id": independent})
     with engine.begin() as connection:
         upgraded = dict(
             connection.execute(text("SELECT * FROM report_exports WHERE id=:id"), {"id": export_id})

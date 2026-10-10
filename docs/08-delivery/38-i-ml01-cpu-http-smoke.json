@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "executed_at_utc": "2026-10-07T13:51:52.969100+00:00",
+  "inference_kind": "real-official-onnx-cpu-http",
+  "input_kind": "synthetic-rgb-pngs",
+  "storage_kind": "versioned-loopback-s3-simulator",
+  "identity": {
+    "service_commit": "local-development",
+    "pipeline_version": "vision-v1",
+    "model_bundle_id": "c0d6d13d-2bdb-47d1-85e0-3d27045a17c0",
+    "dictionary_version_id": "2007daa7-6406-4ced-9c08-5f7b46d7e6bc",
+    "device_profile": "cpu",
+    "purpose": "development",
+    "is_simulated": false,
+    "adapter_id": "dfine-coco80-rgb-stretch-v1",
+    "runtime_profile": "dfine-cpu-fp32-ocrv6smallcpu-v1",
+    "runtime_lock_sha256": "0714eeb11e2bde0b16c06a8a2e07aa5d68b5b7481ff5069cf51a2b17f6d6f88f",
+    "model_checksum": "792459fb21e88c66663474d311a173ddf7005a1840e0cc27cec9da5ca387cce3",
+    "dictionary_sha256": "da59045877505c8f6e1eaa1a4d640d76ad64d73cc79f8fbb68cce37c16aec11d",
+    "detector_device": "cpu",
+    "ocr_device": "cpu"
+  },
+  "images": 2,
+  "text_regions": 6,
+  "uploaded_crops": 6,
+  "health_during_startup": true,
+  "resident_pid_reused": true,
+  "unknown_pin_no_analysis_get": true,
+  "quality_runs_replay_equal": true,
+  "worker_exact_version_reuse": true,
+  "crash_ready_withdrawn_and_reloaded": true,
+  "shutdown": {
+    "child_reaped": true,
+    "receiver_reaped": true
+  },
+  "limitations": [
+    "No database commit in this smoke; MySQL tested separately",
+    "No live S3/IAM/TLS or field-photo evaluation",
+    "No semantic facts or production approval"
+  ]
+}

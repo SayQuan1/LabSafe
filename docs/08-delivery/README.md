@@ -35,5 +35,16 @@
 33. [I-ML-01 PP-OCRv6_small ONNX CPU 续批](33-i-ml01-ocrv6-cpu.md)。
 34. [I-ML-01 真实质量门禁与联合 CPU 流水线](34-i-ml01-quality-cpu-pipeline.md)。
 35. [I-ML-01 可重建 OCR 裁剪证据](35-i-ml01-rebuildable-ocr-evidence.md)。
+36. [I-ML-01 受控analysis输入与对象版本冻结](36-i-ml01-controlled-analysis-input.md)。
+
+37. [I-ML-01 独立OCR文字证据与Worker原子登记](37-i-ml01-worker-ocr-evidence.md)。
+
+38. [I-ML-01 常驻真实CPU HTTP与受控身份门禁](38-i-ml01-resident-cpu-http.md)。
+
+39. [I-ML-01 独立文字与真实bottle确定性关联](39-i-ml01-text-bottle-association.md)。
+40. [I-ML-01 OCR字段词法、严格格式与完整多行证据](40-i-ml01-ocr-fields.md)。
+41. [I-ML-01 冻结开发词典、名称候选与实际MinIO验证](41-i-ml01-chemical-candidates.md)。
+
+当前进度与下一批以[实施计划](01-implementation-plan.md)为准：31–35批已合并，第36–41批本地完成与验证，尚未提交；下一批第42批接日期聚合与完整DateFact证据闭包。
 
 本页仅导航；现行设计状态见 [文档控制](../00-document-control.md)，不把候选设计视为已经批准。

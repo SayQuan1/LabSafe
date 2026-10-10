@@ -66,3 +66,9 @@ IRR-04：completeUpload用API内部HEAD取得准确versionId/大小/MIME，HEAD�
 2026-09-29 实现说明：I-01B 已提供 packages/persistence 的 Alembic 0001_initial、只读结构核对和原子租户/角色/管理员初始化。操作与失败恢复见 [开发指南](../../DEVELOPMENT.md)，真实 MySQL 证据见 [I-01B 验收](../08-delivery/08-i01b-acceptance.md)。本阶段迁移/初始化凭据只供离线管理 CLI；不代表 API/Worker 已获得业务数据库访问能力。
 
 真实库核对发现 DDL 生成器遗漏了 user_roles.scope_key 的 NOT NULL；生成源与未发布的初始迁移快照已补齐，以保持原数据字典定义，不改变角色 scope 规则。迁移发布后不得修改历史快照；后续设计变更必须新增 revision，并更新当前 head 的核对基准。
+
+2026-10-07 第36批新增迁移head `0003_run_image_version`，在run_images追加nullable `analysis_object_version VARCHAR(200)`，0001/0002与历史快照不变。nullable仅容纳历史run；新submit必须从锁定的ready asset取非空准确版本，与SHA/角色/顺序共同冻结并进入input_hash。Worker构造ImageRef使用冻结版本，asset版本替换或历史冻结值NULL均拒绝claim；执行后版本变化也拒绝旧lease提交。禁止用asset当前版本回填旧run，历史不可执行run由授权用户受控重新提交，保留旧记录。迁移与ready均以新head为准，回滚优先保留新增列并恢复上一应用版本；drop列仅允许明确确认的可丢弃test库。证据见[第36批](../08-delivery/36-i-ml01-controlled-analysis-input.md)。
+
+2026-10-07 第37批迁移head为0004_ocr_evidence：image_derivatives.detection_id改nullable，增加nullable line_id/size_bytes；nullable新列容纳历史行，新Worker登记必须具完整line/大小及当前结果闭包。唯一(tenant,run,crop)及run_images同tenant/run/image FK不变。固定源版本GET、重建和D版本上传在事务外，完整artifacts经租约及实际attempt_id重验后与结果/指针/task/attempt在同一事务登记；提交前再核租约时间。任何crop或DB写失败不提交部分成功。0001–0003及历史对象保留，存在独立NULL检测证据时downgrade拒绝，采用前向修复；真实数据库/存储部署批准另行验收。见[第37批交付](../08-delivery/37-i-ml01-worker-ocr-evidence.md)。
+
+2026-10-09 第41批将开发词典候选和extraction_context完整保存在已有inference_runs.result JSON中，包含冻结bundle/dictionary原始文本和全部名称来源。提交前核固定SHA/身份、重算全部字段/候选，并同derivatives/任务/attempt围栏登记；低置信候选不建立FactRevision。无新增列/迁移，head仍0004，公共投影不暴露内部快照，历史结果不回填。定向MySQL保存/拒绝证据见[第41批](../08-delivery/41-i-ml01-chemical-candidates.md)。

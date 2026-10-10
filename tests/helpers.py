@@ -69,6 +69,7 @@ def make_request(settings, *, seconds=10):
             {
                 "image_id": image_id,
                 "object_key": f"tenant/{TENANT}/lab/{lab_id}/analysis/{image_id}/{image_hash}.png",
+                "object_version": "synthetic-analysis-v1",
                 "sha256": image_hash,
                 "mime_type": "image/png",
                 "role": "overview",

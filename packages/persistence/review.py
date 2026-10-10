@@ -425,6 +425,7 @@ def _validate_fact_snapshot(connection, tenant, item_id, run, body):
         for value in detections
         if isinstance(value, dict) and isinstance(value.get("detection_id"), str)
     }
+    detection_images = {value.get("detection_id"): value.get("image_id") for value in detections}
     image_ids = {
         value
         for value in connection.execute(
@@ -461,7 +462,9 @@ def _validate_fact_snapshot(connection, tenant, item_id, run, body):
                 raise ServiceError(
                     "STATE_CONFLICT", 409, "Evidence image is not in the current run"
                 )
-            if detection_id is not None and detection_id not in detection_ids:
+            if detection_id is not None and (
+                detection_id not in detection_ids or detection_images[detection_id] != image_id
+            ):
                 raise ServiceError(
                     "STATE_CONFLICT", 409, "Evidence detection is not in the current run"
                 )

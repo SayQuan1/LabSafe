@@ -1,0 +1,147 @@
+{
+  "status": "PASS",
+  "executed_at_utc": "2026-10-07T12:47:39.127830+00:00",
+  "inference_kind": "real-official-onnx-cpu",
+  "storage_kind": "versioned-loopback-s3-simulator",
+  "input_kind": "synthetic-rgb-pngs",
+  "images": 2,
+  "text_regions": 6,
+  "uploaded_crops": 6,
+  "worker_replay_exact_versions": true,
+  "successful_pinned_gets": 12,
+  "second_crop_failure_no_partial_success": true,
+  "unreferenced_orphan_on_failure": 1,
+  "artifacts": {
+    "detector": {
+      "model_sha256": "0f684f409618ee8a822410e754a29caa817d1aa16283ce89cad936d0a48e2f35",
+      "config_sha256": "a5c7533f3b72be6bb102b93e1b34ca3643af4e0590408a7881543cbb0aa80c4c",
+      "preprocessor_sha256": "cd38cd59999e7a95d68e487fbe5132df3d4e5c32a0836add57e6126ba0c4eaf1"
+    },
+    "ocr": {
+      "det": {
+        "inference.onnx": "d73e0058b7a8086bbd57f3d10b8bcd4ff95363f67e06e2762b5e814fe9c9410e",
+        "inference.yml": "193f435274bf9f0b5f71a929bbfbcf148282df7e633b34e7c373e8f44741b516"
+      },
+      "rec": {
+        "inference.onnx": "5435fd747c9e0efe15a96d0b378d5bd157e9492ed8fd80edf08f30d02fa24634",
+        "inference.yml": "ab078671bb49f06228eadccd34f1bb501e157f7a047095ffb943ba81512c77d1"
+      }
+    }
+  },
+  "runtime": {
+    "python": "3.11.4",
+    "platform": "Windows-10-10.0.22000-SP0",
+    "quality": {
+      "algorithm_id": "quality-rgb-lap1-v1",
+      "packages": {
+        "numpy": "2.2.2",
+        "Pillow": "11.3.0"
+      },
+      "resize": {
+        "max_side": 1024,
+        "interpolation": "Pillow-BILINEAR",
+        "rounding": "integer-half-up",
+        "upscale": false,
+        "padding": false
+      },
+      "gray": {
+        "weights": [
+          77,
+          150,
+          29
+        ],
+        "offset": 128,
+        "divisor": 256,
+        "dtype": "uint32"
+      },
+      "laplacian": {
+        "kernel": [
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            1,
+            -4,
+            1
+          ],
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        "border": "REFLECT_101",
+        "singleton_axis": "repeat",
+        "dtype": "float64",
+        "variance_ddof": 0
+      },
+      "brightness_divisor": 255,
+      "glare_gray_min": 250,
+      "round_scores": false
+    },
+    "detector": {
+      "adapter_id": "dfine-coco80-rgb-stretch-v1",
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "intra_op_threads": 2,
+      "inter_op_threads": 1,
+      "execution_mode": "sequential",
+      "preprocess": "rgb-stretch640-bilinear-rescale255",
+      "postprocess": "qmax-sigmoid-threshold-geometry-no-nms"
+    },
+    "ocr": {
+      "python": "3.11.4",
+      "platform": "Windows-10-10.0.22000-SP0",
+      "packages": {
+        "onnxruntime": "1.20.1",
+        "numpy": "2.2.2",
+        "Pillow": "11.3.0",
+        "opencv-python-headless": "4.11.0.86",
+        "pyclipper": "1.3.0.post6",
+        "PyYAML": "6.0.2"
+      },
+      "providers": [
+        "CPUExecutionProvider"
+      ],
+      "intra_op_threads": 2,
+      "inter_op_threads": 1,
+      "execution_mode": "sequential",
+      "det_preprocess": "bgr-imagenet-max960-round32-v1",
+      "det_postprocess": "db-thresh0.2-box0.45-unclip1.4-no-dilation-v1",
+      "rec_preprocess": "bgr-height48-minwidth320-align8-max3200-pad0-v1",
+      "rec_postprocess": "ctc-blank0-deduplicate-append-space-v1",
+      "crop": {
+        "transform_version": "perspective-rgb-v1",
+        "png_encoding": "pillow-rgb-png-compress9-v1",
+        "packages": {
+          "numpy": "2.2.2",
+          "Pillow": "11.3.0",
+          "opencv-python-headless": "4.11.0.86"
+        },
+        "opencv_build_sha256": "5777d52b5896f4c13271d645344e144da1227f18d32d2259ece192e46a892aa0",
+        "zlib_version": "1.3.1.zlib-ng",
+        "point_scaling": "float64-widthminus1-heightminus1-then-float32",
+        "interpolation": "INTER_LINEAR",
+        "border": "BORDER_CONSTANT-rgb0",
+        "recognition_rotation": "ccw90-if-height-over-width-ge1.5",
+        "recognition_digest": "sha256-ascii-rgb8:width:height:-then-c-order-rgb-bytes"
+      },
+      "orientation_classifier": false
+    }
+  },
+  "checks": [
+    "formal schema and run/image closure",
+    "source RGB/PNG/recognition digests",
+    "independent bounded Worker process",
+    "exact VersionId and verified reuse"
+  ],
+  "limitations": [
+    "No approved bundle activation or real CPU HTTP service",
+    "No live S3/IAM/TLS",
+    "No database commit in this smoke; tested separately against MySQL",
+    "No field/entity/date/bottle association or field-photo evaluation"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "status": "PASS",
+  "executed_at_utc": "2026-10-09T14:18:06.006698+00:00",
+  "inference_kind": "real-official-onnx-cpu-http",
+  "input_kind": "synthetic-rgb-pngs",
+  "storage_kind": "versioned-loopback-s3-simulator",
+  "identity": {
+    "service_commit": "local-development",
+    "pipeline_version": "vision-v1",
+    "model_bundle_id": "d1a3b857-5e10-4527-8647-8c3fed4d3b92",
+    "dictionary_version_id": "3053a2c4-b13a-474f-8dbd-71f0c8567c02",
+    "device_profile": "cpu",
+    "purpose": "development",
+    "is_simulated": false,
+    "adapter_id": "dfine-coco80-rgb-stretch-v1",
+    "runtime_profile": "dfine-cpu-fp32-ocrv6smallcpu-v1",
+    "runtime_lock_sha256": "5064de74c5c5be89470d5f4550ef23d7a4cceaff691bbfed33d3eb604b2f8e8a",
+    "model_checksum": "e8bf328a6c5155a16f67cfa089d98372db97f77d11debe2bf69ee0eb931cca76",
+    "dictionary_sha256": "07e0a72f98e4e349ab324b4df6ffc637368cddc308aa392fe1b4a122ddace23f",
+    "detector_device": "cpu",
+    "ocr_device": "cpu"
+  },
+  "images": 2,
+  "text_regions": 6,
+  "uploaded_crops": 6,
+  "association_algorithm": "text-bottle-quad80-v1",
+  "associated_regions": 0,
+  "unassociated_regions": 6,
+  "bottle_detections": 0,
+  "association_recomputed_by_worker": true,
+  "health_during_startup": true,
+  "resident_pid_reused": true,
+  "unknown_pin_no_analysis_get": true,
+  "quality_runs_replay_equal": true,
+  "worker_exact_version_reuse": true,
+  "crash_ready_withdrawn_and_reloaded": true,
+  "shutdown": {
+    "child_reaped": true,
+    "receiver_reaped": true
+  },
+  "limitations": [
+    "No database commit in this smoke; MySQL tested separately",
+    "No live S3/IAM/TLS or field-photo evaluation",
+    "No semantic facts or production approval",
+    "Synthetic tags may contain no detected bottles; positive association uses explicit synthetic boxes and real pixels in separate tests"
+  ]
+}

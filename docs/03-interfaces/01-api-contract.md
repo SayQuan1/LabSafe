@@ -125,4 +125,30 @@ CSV列固定：inspection_id,item_id,laboratory_id,location_id,run_id,fact_revis
 
 ## 6. 命令实现映射和变更
 
+第36批同步内部InferenceRequest：ImageRef新增必填object_version，Worker仅从run_images冻结版本构造，SHA和版本进入请求hash；缺失/空/null/控制字符/超过200字符均拒绝。submitInspectionItem公共请求不新增版本字段，版本由服务端锁定asset冻结。此为未部署1.1.0候选的内部破坏性变更，旧消费者须同步升级，禁止兼容回退到latest；外部既有消费者需另行迁移。当前真实CPU受控输入仅产出开发报告，HTTP仍mock，未改变InferenceResult事实/证据闭包。
+
 所有领域写请求遵循状态机和统一事务模板；返回值从本事务写后的资源投影生成。字段Schema不能替代guard。当前设计不支持通用删除组织/改密码等未列出的端点；相关需求只能走后续契约评审，禁止开发人员自行扩API。
+
+### 5.9 独立OCR文字证据（第37批）
+
+InferenceResult新增必填text_regions≤100：line_id/image_id/crop_id、raw_text、confidence、quad和nullable detection_id。CropRecipe新增必填line_id及evidence（源RGB、PNG SHA/大小、识别旋转/尺寸/像素SHA），其detection_id可NULL，≤100。文字与crop必须属于当前run/image、一对一且quad/检测关联一致，关联真实检测时须同图存在；Schema之外执行共享闭包与UUIDv5身份校验。OCRField仍用于已关联目标的语义字段，独立原文不自动归为化学/日期事实。
+
+公共InferenceRun在原有读取授权下增加只读text_regions，旧结果无该字段返回[]。EvidenceRef的nullable detection_id/crop_id可引用当前run的独立文字crop，禁止将line_id伪造成主体检测ID；本批未实现crop下载接口。内部旧结果缺必填字段拒绝，Worker/fixture及后续真实AI协调升级，候选版本不代表已部署批准。见[第37批](../08-delivery/37-i-ml01-worker-ocr-evidence.md)。
+
+### 5.10 实际CPU身份（第38批）
+
+内部Version新增必填model_checksum/dictionary_sha256，InferenceResult增加可选execution_identity（完整Version）。真实CPU响应必带，Worker按受控expected-version和ready/version逐项核验，且身份与结果模型/词典/pipeline一致；旧fixture响应可由Worker补入已核模拟身份。Version未ready为503，不用请求回显代替实际加载身份。旧缺摘要Version拒绝，AI/Worker协调升级；公共InferenceRun既有is_simulated从已登记execution_identity投影，历史或未有结果默认true，不增加公共字段、不重写历史。development bundle是本地工程绑定，不等于完整ModelManifest/activation/现场批准；见[第38批](../08-delivery/38-i-ml01-resident-cpu-http.md)。
+
+### 5.11 文字到瓶子关联（第39批）
+
+内部/公共TextRegion及CropRecipe字段形状保持，nullable detection_id明确指同图真实COCO bottle（class 39）。按text-bottle-quad80-v1中心/实际quad交面积≥80%/唯一最小框选择；无候选/并列NULL。line/crop关联与quad一致；AI/Worker重算全部几何选择，不接受任意同图检测、错误几何或遗漏唯一关联。无伪label/shelf/cabinet，无化学/日期字段，runs仍needs_review。旧输出可能不符合新语义门禁，AI/Worker与development代码锁协调升级，历史投影只读保留，不补写旧关联；见[第39批](../08-delivery/39-i-ml01-text-bottle-association.md)。
+
+### 5.12 OCR字段与全部行证据（第40批）
+
+OCRField新增必填source_lines，1–2项OCRFieldSource，逐项包含line_id/crop_id/raw_text/confidence；image_id/detection_id指同图真实唯一bottle，crop_id仅表示首行，全部来源由source_lines引用。字段raw_text按单LF连接，confidence取min；规范文本由ocr-fields-v1从正式文字生成。AI/Worker按全量有序重算核遗漏、伪值、跨图/瓶和容量；坏字段整批拒绝。runs仍needs_review，无entities/DateFact或事实快照。公共InferenceRun本批不新增字段投影或下载端点；历史JSON不回填。未部署候选内部兼容变更要求AI/Worker/lock同步升级，见[第40批](../08-delivery/40-i-ml01-ocr-fields.md)。
+
+### 5.13 冻结开发词典与名称候选（第41批）
+
+DevelopmentDictionary.entries升级有界对象，0–100条entity_id/canonical_name/aliases/cas/source，语义核重复/空名称/坏CAS和实际≤64KiB字节容量。DevelopmentCPUBundle新增entity_min并采用development chemical-v2 profile，内部Version允许该profile，完整ModelManifest的正式发布profile保持独立。
+
+InferenceResult增加extraction_context（bundle_json/dictionary_json各≤64KiB UTF-8）。chemical-v2响应必带，Worker按固定model_checksum/dictionary_sha256重算原始字节摘要及ID，使用bundle内阈值核全部字段/候选/共识；原始内部路径只作摘要验证数据，不读响应指定文件。实际CPU和所有候选响应与消费者需同步升级，无快照非空entities拒绝；公共InferenceRun仍既有授权/文字投影，不暴露内部快照/路径或新增下载端点。仍needs_review，无日期事实或自动安全判断；见[第41批](../08-delivery/41-i-ml01-chemical-candidates.md)。

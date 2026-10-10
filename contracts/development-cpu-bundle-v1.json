@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://labsafe.local/contracts/DevelopmentCPUBundle.json",
+  "$ref": "#/$defs/DevelopmentCPUBundle",
+  "$defs": {
+    "DevelopmentCPUBundle": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "development"
+          ]
+        },
+        "bundle_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dictionary_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "pipeline_version": {
+          "type": "string",
+          "enum": [
+            "vision-v1"
+          ]
+        },
+        "device_profile": {
+          "type": "string",
+          "enum": [
+            "cpu"
+          ]
+        },
+        "adapter_id": {
+          "type": "string",
+          "enum": [
+            "dfine-coco80-rgb-stretch-v1"
+          ]
+        },
+        "runtime_profile": {
+          "type": "string",
+          "enum": [
+            "dfine-cpu-fp32-ocrv6smallcpu-chemical-v2"
+          ]
+        },
+        "artifacts": {
+          "type": "object",
+          "properties": {
+            "detector_model": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "detector_config": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "detector_preprocessor": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "ocr_det_model": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "ocr_det_config": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "ocr_rec_model": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "ocr_rec_config": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "dictionary": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "runtime_lock": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "detector_model",
+            "detector_config",
+            "detector_preprocessor",
+            "ocr_det_model",
+            "ocr_det_config",
+            "ocr_rec_model",
+            "ocr_rec_config",
+            "dictionary",
+            "runtime_lock"
+          ],
+          "additionalProperties": false
+        },
+        "thresholds": {
+          "type": "object",
+          "properties": {
+            "detection_min": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "ocr_min": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "entity_min": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "blur_min": {
+              "type": "number",
+              "minimum": 0
+            },
+            "dark_min": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "glare_max": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "required": [
+            "detection_min",
+            "ocr_min",
+            "entity_min",
+            "blur_min",
+            "dark_min",
+            "glare_max"
+          ],
+          "additionalProperties": false
+        },
+        "threads": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        }
+      },
+      "required": [
+        "purpose",
+        "bundle_id",
+        "dictionary_version_id",
+        "pipeline_version",
+        "device_profile",
+        "adapter_id",
+        "runtime_profile",
+        "artifacts",
+        "thresholds",
+        "threads"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

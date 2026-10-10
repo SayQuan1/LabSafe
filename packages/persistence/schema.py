@@ -23,6 +23,29 @@ def model():
             "description": "",
             "generated_sql": None,
         }
+    value["tables"]["run_images"]["columns"]["analysis_object_version"] = {
+        "type": "VARCHAR(200)",
+        "nullable": True,
+        "default_sql": None,
+        "description": "",
+        "generated_sql": None,
+    }
+    columns = value["tables"]["image_derivatives"]["columns"]
+    columns["detection_id"]["nullable"] = True
+    # Preserve generated column ordering, as well as types, without editing old snapshots.
+    ordered = {}
+    for name, column in columns.items():
+        ordered[name] = column
+        if name == "detection_id":
+            for added, sql_type in (("line_id", "CHAR(36)"), ("size_bytes", "BIGINT UNSIGNED")):
+                ordered[added] = {
+                    "type": sql_type,
+                    "nullable": True,
+                    "default_sql": None,
+                    "description": "",
+                    "generated_sql": None,
+                }
+    value["tables"]["image_derivatives"]["columns"] = ordered
     return value
 
 
@@ -238,7 +261,7 @@ def verify_schema(connection) -> dict:
                 )
                 compare(f"{table}.{name}.enforced", checks[table][name]["ENFORCED"], "YES")
     head = connection.scalar(text("SELECT version_num FROM alembic_version"))
-    compare("migration_head", head, "0002_report_object_version")
+    compare("migration_head", head, "0004_ocr_evidence")
     compare("session.time_zone", connection.scalar(text("SELECT @@session.time_zone")), "+00:00")
     actual_modes = set(connection.scalar(text("SELECT @@session.sql_mode")).split(","))
     required_modes = set(STRICT_SQL_MODE.split(","))

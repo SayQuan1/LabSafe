@@ -4,8 +4,9 @@ import asyncio
 from datetime import datetime, timezone
 from typing import Any
 
+from apps.ai_inference.adapters.dfine import AdapterError
+from apps.ai_inference.inputs import verify_image_inputs
 from packages.inference_protocol.contract import DOCUMENT
-from packages.inference_protocol.hashing import request_hash
 
 from .settings import Settings
 
@@ -21,40 +22,21 @@ class ProtocolError(Exception):
 
 def verify_request(payload: dict[str, Any], settings: Settings) -> None:
     if payload["tenant_id"] not in settings.allowed_tenants:
-        raise ProtocolError("FORBIDDEN", "Tenant is not allowed on this fixture instance")
+        raise ProtocolError("FORBIDDEN", "Tenant is not allowed on this instance")
     for key in ("model_bundle_id", "dictionary_version_id", "pipeline_version", "device_profile"):
         if payload[key] != settings.identity[key]:
             raise ProtocolError(
-                "MODEL_VERSION_UNAVAILABLE", "Request does not match loaded fixture"
+                "MODEL_VERSION_UNAVAILABLE", "Request does not match loaded identity"
             )
     if (
         payload["model_checksum"] != settings.model_checksum
         or payload["dictionary_sha256"] != settings.dictionary_sha256
     ):
-        raise ProtocolError("HASH_MISMATCH", "Fixture artifact hash mismatch")
-    if payload["request_hash"] != request_hash(payload):
-        raise ProtocolError("HASH_MISMATCH", "Request content hash mismatch")
-    refs = payload["image_refs"]
-    overview = refs[0]
-    if overview["role"] != "overview" or overview["parent_image_id"] is not None:
-        raise ProtocolError("VALIDATION_ERROR", "First image must be the unique overview")
-    if len({image["image_id"] for image in refs}) != len(refs):
-        raise ProtocolError("VALIDATION_ERROR", "Image IDs must be unique")
-    for index, image in enumerate(refs):
-        expected_key = (
-            f"tenant/{payload['tenant_id']}/lab/{payload['laboratory_id']}/analysis/"
-            f"{image['image_id']}/{image['sha256']}.png"
-        )
-        if image["object_key"] != expected_key:
-            raise ProtocolError("UNAUTHORIZED_REF", "Only exact analysis object keys are accepted")
-        if image["mime_type"] != "image/png":
-            raise ProtocolError("VALIDATION_ERROR", "Analysis images must be normalized PNG")
-        if image["location_id"] != overview["location_id"]:
-            raise ProtocolError("VALIDATION_ERROR", "Images must share a location")
-        if index and (
-            image["role"] != "detail" or image["parent_image_id"] != overview["image_id"]
-        ):
-            raise ProtocolError("VALIDATION_ERROR", "Detail must refer to the overview")
+        raise ProtocolError("HASH_MISMATCH", "Loaded artifact hash mismatch")
+    try:
+        verify_image_inputs(payload, settings.allowed_tenants)
+    except AdapterError as error:
+        raise ProtocolError(error.code, str(error)) from None
 
 
 async def compute(payload: dict[str, Any], settings: Settings, stage: str) -> dict[str, Any]:
@@ -107,6 +89,7 @@ async def compute(payload: dict[str, Any], settings: Settings, stage: str) -> di
             for image in payload["image_refs"]
         ],
         "detections": [],
+        "text_regions": [],
         "crops": [],
         "ocr_fields": [],
         "entities": [],

@@ -203,10 +203,15 @@ def run_cpu_workload(options, paths, run_id: str, target):
     if not isinstance(paths, (list, tuple)) or not 1 <= len(paths) <= 3:
         raise AdapterError("VALIDATION_ERROR", "Supply 1..3 local images")
     paths = tuple(str(Path(path).resolve()) for path in paths)
+    return run_bounded_child(options.timeout_seconds, target, options, paths, run_id)
+
+
+def run_bounded_child(timeout_seconds, target, *arguments):
+    """Spawn and reclaim a CPU child with structured or local inputs."""
     context = multiprocessing.get_context("spawn")
     receive, send = context.Pipe(duplex=False)
-    child = context.Process(target=target, args=(send, options, paths, run_id), daemon=True)
-    deadline = time.monotonic() + options.timeout_seconds
+    deadline = time.monotonic() + timeout_seconds
+    child = context.Process(target=target, args=(send, *arguments), daemon=True)
     try:
         child.start()
         send.close()

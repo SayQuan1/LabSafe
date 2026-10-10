@@ -5,11 +5,12 @@ from packages.persistence.dispatch import validate_dispatch
 
 
 def consume_inference(message):
+    from apps.worker.inference_evidence import BoundedEvidencePrepare
     from packages.application.inference_execution import InferenceExecution
 
     validate_dispatch(message)
     engine = database_engine()
     try:
-        return InferenceExecution(engine).execute(message)
+        return InferenceExecution(engine, prepare=BoundedEvidencePrepare()).execute(message)
     finally:
         engine.dispose()

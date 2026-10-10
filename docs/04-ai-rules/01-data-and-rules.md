@@ -28,6 +28,8 @@ label→bottle关联：label中心在bottle内且包含面积≥80%时选面积�
 
 实体仅当唯一最佳候选且score≥entity_min、OCR相应字段confidence≥ocr_min才resolved；并列最佳或低阈值为candidate；无结果unknown。模糊候选不能直接给规则提供确定storage_class。人工选择必须属于固定dictionary，保留reason和证据。
 
+第41批已接上述名称候选和所有字段共识，开发词典/算法范围见[事实规范](03-fact-extraction-contract.md)和[交付](../08-delivery/41-i-ml01-chemical-candidates.md)。合法CAS token仅精确检索，未命中unknown，不模糊猜CAS。业务安全分类、日期聚合和事实快照仍未接；真实素材使用空词典，测试用条目不作为化学安全数据。development新profile不代表完整ModelManifest/词典公共治理已经批准。
+
 ## 3. rules-dnf-v1 语法
 
 [规则Schema](../../contracts/rule-dsl-v1.json)，[可执行语义参考](../../tools/design/rule_reference.py)。clauses为OR，内部atoms为AND；不支持NOT、脚本、网络、任意字段、隐式类型转换。最大200规则，每规则10子句，每子句10原子。

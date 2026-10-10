@@ -29,7 +29,14 @@ from packages.domain.report_execution import (
     report_key,
 )
 from packages.domain.security import ServiceError
-from packages.domain.uploads import GRANT_SECONDS, MAX_BYTES, MIME_TYPES, digest, staging_key
+from packages.domain.uploads import (
+    GRANT_SECONDS,
+    MAX_BYTES,
+    MIME_TYPES,
+    digest,
+    identifier,
+    staging_key,
+)
 
 BUCKET = "labsafe-private"
 MAX_ANALYSIS_BYTES = (
@@ -508,6 +515,72 @@ class S3Storage:
         existing = self.reuse_version(
             key, hashlib.sha256(payload).hexdigest(), "image/png", MAX_ANALYSIS_BYTES
         )
+        if existing is not None:
+            return existing
+        try:
+            result = self.internal.put_object(
+                Bucket=BUCKET, Key=key, Body=payload, ContentType="image/png"
+            )
+            return self.result_version(result)
+        except (BotoCoreError, ClientError, OSError) as error:
+            raise self._failure(error) from None
+
+    def read_analysis(self, tenant, laboratory, reference):
+        """Read the frozen canonical version, bound bytes and verify actual SHA."""
+        for value in (tenant, laboratory, reference["image_id"]):
+            identifier(value)
+        digest(reference["sha256"])
+        expected = (
+            f"tenant/{tenant}/lab/{laboratory}/analysis/{reference['image_id']}/"
+            f"{reference['sha256']}.png"
+        )
+        version = self.result_version({"VersionId": reference["object_version"]})
+        if reference["object_key"] != expected or reference["mime_type"] != "image/png":
+            raise ServiceError("SCHEMA_MISMATCH", 502, "Invalid frozen analysis reference")
+        stream = None
+        try:
+            result = self.internal.get_object(Bucket=BUCKET, Key=expected, VersionId=version)
+            stream = result["Body"]
+            size = result.get("ContentLength")
+            if (
+                result.get("VersionId") != version
+                or type(size) is not int
+                or not 1 <= size <= MAX_ANALYSIS_BYTES
+                or result.get("ContentType") != "image/png"
+                or result.get("DeleteMarker") is True
+                or result.get("ContentEncoding")
+            ):
+                raise ServiceError("IMAGE_INVALID", 422, "Frozen analysis metadata differs")
+            chunks, checksum, total = [], hashlib.sha256(), 0
+            while chunk := stream.read(min(64 * 1024, size - total + 1)):
+                total += len(chunk)
+                if total > size:
+                    raise ServiceError("IMAGE_INVALID", 422, "Analysis size differs")
+                checksum.update(chunk)
+                chunks.append(chunk)
+            if total != size:
+                raise ServiceError("IMAGE_INVALID", 422, "Analysis stream was truncated")
+            if not hmac.compare_digest(checksum.hexdigest(), reference["sha256"]):
+                raise ServiceError("HASH_MISMATCH", 422, "Analysis hash differs")
+            return b"".join(chunks)
+        except (BotoCoreError, ClientError, OSError) as error:
+            raise self._failure(error) from None
+        finally:
+            if stream is not None:
+                stream.close()
+
+    def put_derivative(self, key, payload):
+        """Canonical D object, deterministic bytes, explicit non-null VersionId."""
+        from packages.domain.inference_evidence import derivative_key
+        from packages.inference_protocol.evidence import MAX_CROP_BYTES
+
+        if not isinstance(payload, bytes) or not 1 <= len(payload) <= MAX_CROP_BYTES:
+            raise ServiceError("INTERNAL_ERROR", 500, "Crop encoding exceeds limit")
+        parts = key.split("/")
+        sha = hashlib.sha256(payload).hexdigest()
+        if len(parts) != 8 or key != derivative_key(parts[1], parts[3], parts[5], parts[6], sha):
+            raise ServiceError("SCHEMA_MISMATCH", 502, "Invalid derivative namespace")
+        existing = self.reuse_version(key, sha, "image/png", MAX_CROP_BYTES)
         if existing is not None:
             return existing
         try:

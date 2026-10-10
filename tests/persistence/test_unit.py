@@ -26,12 +26,32 @@ def test_head_schema_matches_authoritative_design_and_preserves_initial_baseline
     head = model()
     for name in ("object_version", "size_bytes"):
         del head["tables"]["report_exports"]["columns"][name]
+    del head["tables"]["run_images"]["columns"]["analysis_object_version"]
+    columns = head["tables"]["image_derivatives"]["columns"]
+    columns["detection_id"]["nullable"] = False
+    del columns["line_id"], columns["size_bytes"]
     assert head == baseline
     snapshot = MODEL_PATH.with_suffix(".sql").read_text(encoding="utf-8").strip()
     head_ddl = (ROOT / "contracts/database-design.sql").read_text(encoding="utf-8").strip()
     additions = "  `object_version` VARCHAR(200) NULL,\n  `size_bytes` BIGINT UNSIGNED NULL,\n"
     assert head_ddl.count(additions) == 1
-    assert snapshot == head_ddl.replace(additions, "")
+    version_column = "  `analysis_object_version` VARCHAR(200) NULL,\n"
+    # One existing asset column and one new frozen run column.
+    assert head_ddl.count(version_column) == 2
+    index = head_ddl.index("CREATE TABLE `run_images`")
+    without_version = head_ddl[:index] + head_ddl[index:].replace(version_column, "", 1)
+    derivative_start = without_version.index("CREATE TABLE `image_derivatives`")
+    derivative_end = without_version.index("CREATE TABLE", derivative_start + 1)
+    derivative = without_version[derivative_start:derivative_end]
+    original = derivative.replace(
+        "`detection_id` CHAR(36) NULL", "`detection_id` CHAR(36) NOT NULL"
+    )
+    for name, sql_type in (("line_id", "CHAR(36)"), ("size_bytes", "BIGINT UNSIGNED")):
+        original = original.replace(f"  `{name}` {sql_type} NULL,\n", "")
+    without_version = (
+        without_version[:derivative_start] + original + without_version[derivative_end:]
+    )
+    assert snapshot == without_version.replace(additions, "")
 
 
 @pytest.mark.parametrize("environment", ["production", "staging", "", "prod"])

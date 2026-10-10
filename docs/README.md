@@ -1,11 +1,13 @@
 # LabSafe 文档入口
 
-状态：设计版本 1.1.0；实现进度更新于 2026-10-03。设计结论见 [最新审计](08-delivery/03-design-audit.md)，不要把结构检查或局部实现通过当作全系统可上线。
+状态：设计版本 1.1.0；实现进度更新于 2026-10-09。设计结论见 [最新审计](08-delivery/03-design-audit.md)，不要把结构检查或局部实现通过当作全系统可上线。
+
+当前续批：[第41批冻结开发词典、名称候选与实际MinIO验证](08-delivery/41-i-ml01-chemical-candidates.md)已本地完成；第36–41批未提交/Push/PR。PR #10（截至26批）/#11（27–30批）/#12（31–35批）已合并。下一批第42批接同瓶日期聚合与完整DateFact证据，生产验收仍待完成。
 
 ## 阅读顺序
 
-实现进度：I-01A/B/C、I-02A/B/C/D/E/F1/F2 已合并（后者为 PR #9）；当前在 I-03A1/A2 调度与围栏、I-02F3 general 图像处理、I-03A3 图像任务查询/管理员重放上接通 I-02F4 ready 图像受控下载，并已接通 I-02G1 `submitInspectionItem` 的 run/task/outbox 原子入队；代码本地完成、真实存储部署验收与推理 worker 仍待关闭，完整 I-02/I-03 仍未完成。审批状态、远程 CI 与本机测试分别记录。
-运行入口见 [开发指南](../DEVELOPMENT.md)，本轮证据见 [I-02G1 提交入队验收](08-delivery/22-i02g1-submit-inference-enqueue.md)，前序证据见 [I-02F4 图片下载验收](08-delivery/21-i02f4-image-download.md) 与 [I-03A3 图像任务重放](08-delivery/20-i03a3-image-job-replay.md)，完整阶段状态见下方实施计划。
+实现进度：持久任务、图像处理/下载、推理/规则执行、人工复核、整改及CSV报告已分批交付；真实CPU主线已本地接通常驻HTTP、文字关联/字段和开发词典候选，实际MinIO固定版本及限定IAM已有工程证据。完整I-02/I-03/I-ML-01仍进行中，现场模型、公开签名/TLS/持久部署和独立批准仍待验收。审批状态、远程CI与本机测试分别记录。
+运行入口见 [开发指南](../DEVELOPMENT.md)，完整阶段状态和各批证据见[实施计划](08-delivery/01-implementation-plan.md)。
 
 1. [文档控制](00-document-control.md)：规范边界和变更要求。
 2. [产品](01-requirements/01-product-requirements.md)与[范围](01-requirements/01-scope-and-acceptance.md)。
